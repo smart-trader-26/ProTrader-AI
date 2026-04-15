@@ -1,0 +1,27 @@
+flowchart LR
+  subgraph Inputs
+    TF["30-Day Technical\nFeatures"]
+    SF["8 Sentiment\nFeatures"]
+    VF["6 Volatility\nFeatures VIX"]
+  end
+  subgraph Experts["Expert Models"]
+    TE["Technical Expert\nGRU(128->64->32)->Dense(1)"]
+    SE["Sentiment Expert\nDense(64->32->16)->Dense(1)"]
+    VE["Volatility Expert\nMLP(32->16->8)->Dense(1)"]
+  end
+  subgraph Uncertainty["Rolling Uncertainty (N=15 days)"]
+    ST["sigma^2_tech\nRolling MSE"]
+    SS["sigma^2_sent\nRolling MSE"]
+    SV["sigma^2_vol\nRolling MSE"]
+  end
+  TF --> TE --> ST
+  SF --> SE --> SS
+  VF --> VE --> SV
+  ST --> BAY["Bayesian Weights\nw_i = exp(-sigma_i^2)\n/ Sum_j exp(-sigma_j^2)\nSum(w) = 1.0"]
+  SS --> BAY
+  SV --> BAY
+  TE --> FUSE["y_fusion =\nw_tech*y_tech\n+ w_sent*y_sent\n+ w_vol*y_vol"]
+  SE --> FUSE
+  VE --> FUSE
+  BAY --> FUSE
+  FUSE --> RESULT["Final\nFusion\nPrediction"]

@@ -1,0 +1,19 @@
+flowchart LR
+  IN["27 Features\nMinMaxScaled"] --> XGB["XGBoost\nn=150, d=4\n2.1s"]
+  IN --> LGB["LightGBM\nn=200, leaves=31\n1.1s"]
+  IN --> CAT["CatBoost\niter=300, d=6\nOrdered Boosting\n7.8s"]
+  IN --> SEQ["60-day\nSequence\n(LSTM-GRU)"]
+  SEQ --> LSTM["LSTM(64->32)"]
+  SEQ --> GRU["GRU(64->32)"]
+  LSTM --> CONCAT["Concatenate"]
+  GRU --> CONCAT
+  CONCAT --> D1["Dense(32)\nDropout(0.2)"]
+  D1 --> D2["Dense(16)->Dense(1)\nReturn prediction"]
+  XGB --> OOF["Out-of-Fold\nPredictions\n5-fold expanding"]
+  LGB --> OOF
+  CAT --> OOF
+  OOF --> RIDGE["Ridge\nMeta-Stacker\nalpha=1.0"]
+  D2 --> RIDGE
+  RIDGE --> DYN["Dynamic Weight\nAdjustment\nw_xgb <= 0.65"]
+  DYN --> ISO["Isotonic\nCalibration"]
+  ISO --> OUT["y_hat + P(up)"]

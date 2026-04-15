@@ -1,0 +1,48 @@
+# ProTrader AI - Dependencies
+# Python 3.9+ required
+
+# Core Framework
+streamlit>=1.28.0
+
+# Data Sources
+yfinance>=0.2.28
+feedparser>=6.0.0
+requests>=2.31.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Machine Learning
+xgboost>=2.0.0
+lightgbm>=4.0.0
+tensorflow>=2.13.0
+scikit-learn>=1.3.0
+shap>=0.44.0
+
+# NLP / Sentiment
+transformers>=4.30.0
+
+# Visualization
+plotly>=5.15.0
+matplotlib>=3.7.0
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Optional - AI Analysis (used conditionally, install if needed)
+google-generativeai>=0.3.0
+openai>=1.0.0
+
+# Optional - Advanced Forecasting (used conditionally, install if needed)
+prophet>=1.1.0
+statsmodels>=0.14.0
+
+# Optional - Hyperparameter Optimization (used conditionally, install if needed)
+optuna>=3.3.0
+
+# Optional - Sentiment Sources (used conditionally, install if needed)
+praw>=7.7.0
+pytrends>=4.9.0
+nselib>=2.4.0

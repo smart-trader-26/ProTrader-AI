@@ -1,0 +1,26 @@
+flowchart TD
+  subgraph Inputs
+    PRICE["Current Price\n+ ATR(14)\n+ Directional Prob"]
+    VIX["India VIX\nLevel"]
+    FCAST["Model Forecast\nTarget Price"]
+  end
+  subgraph StopLoss["ATR-Based Stop-Loss"]
+    MULT["Multiplier\nconf>=0.65: 1.5x ATR\nconf<0.65:  2.0x ATR"]
+    STOP["Stop = Entry\n- mult * ATR_14"]
+  end
+  subgraph Fib["Fibonacci Levels (90-day)"]
+    FIBCALC["F_k = High - phi_k*(High-Low)\nphi: 0, 0.236, 0.382\n0.5, 0.618, 1.0"]
+  end
+  subgraph Kelly["Kelly Position Sizing"]
+    KF["f* = (p*b - q) / b\nb = (Target-P)/(Stop-P)"]
+    FRAC["f_actual = 0.5 * f*\n(fractional Kelly)"]
+  end
+  subgraph VIXAdj["VIX Regime Adjustment"]
+    VADJ["f_vix = f_actual *\nVIX<12:  1.2x\nVIX<20:  1.0x\nVIX<25:  0.7x\nVIX>=25: 0.5x"]
+  end
+  PRICE --> MULT --> STOP
+  PRICE --> FIBCALC
+  PRICE & FCAST --> KF --> FRAC
+  VIX --> VADJ
+  FRAC --> VADJ
+  VADJ --> OUT["Position Size\n+ Stop Level\n+ Target Level\n+ Risk/Reward Ratio"]

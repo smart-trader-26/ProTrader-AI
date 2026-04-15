@@ -1,0 +1,25 @@
+flowchart TD
+  subgraph Input
+    OHLCV["Daily OHLCV\nClose prices"]
+  end
+  subgraph Classical["Classical Detection (scipy)"]
+    O3["order=3\nMinor swings"]
+    O5["order=5\nMedium swings"]
+    O7["order=7\nMajor swings"]
+    PEAKS["Peaks + Troughs\nProminence filter >= 1%"]
+    GEOM["Geometric Constraints\n12 Pattern Archetypes\nDouble Top/Bottom\nH&S / Inv H&S\nTriangles, Channels\nFlags, BB Squeeze"]
+  end
+  subgraph Vision["Vision Detection (Roboflow)"]
+    CHART["Generate 60-day\nChart Image 100 DPI"]
+    API["Roboflow Vision API\nObject Detection\nconf >= 0.30"]
+    MAP["Class Mapping\nW_Bottom->Double Bottom\nM_Head->Double Top\nH_S->Head and Shoulders\nInv_H_S->Inverse H&S"]
+  end
+  subgraph Consensus["Hybrid Consensus"]
+    MERGE["Merge Detections\nVision conf>=0.70: override\nElse: consensus vote"]
+    SCORE["Confidence Score\nTarget Price\nVolume Confirmation\nMulti-TF Flag"]
+  end
+  OHLCV --> O3 & O5 & O7 --> PEAKS --> GEOM
+  OHLCV --> CHART --> API --> MAP
+  GEOM --> MERGE
+  MAP --> MERGE
+  MERGE --> SCORE --> RESULT["Pattern Output\nPrecision: 64.1% -> 71.3% -> 78.4%"]

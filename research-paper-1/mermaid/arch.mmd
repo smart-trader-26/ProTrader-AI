@@ -1,0 +1,50 @@
+flowchart TD
+  subgraph DataSources["Data Sources"]
+    YF[Yahoo Finance OHLCV]
+    NSE[NSE FII/DII]
+    VIX[India VIX]
+    RSS["RSS Feeds (30%)"]
+    NAPI["NewsAPI (25%)"]
+    RED["Reddit (25%)"]
+    GT["Google Trends (20%)"]
+  end
+  subgraph Features["Feature Engineering (27 features)"]
+    TC["Technical Core x5\nLog_Ret, Vol_5D, RSI, VR, MA_Div"]
+    TE["Technical Enhanced x9\nMACD, BB, ATR, OBV, Ret_kD"]
+    TA["Technical Advanced x4\nCMF, Williams%R, RSI_Div"]
+    SF["Sentiment x3\nBase, Multi, Confidence"]
+    IF["Institutional x4\nFII/DII Net + 5D Avg"]
+    VF["Volatility x2\nVIX_Norm, VIX_Change"]
+  end
+  subgraph Models["Hybrid Prediction Engine"]
+    XGB["XGBoost n=150 d=4"]
+    LGB["LightGBM n=200 leaves=31"]
+    CAT["CatBoost iter=300 d=6"]
+    GRU["LSTM-GRU seq=60 units=64/32"]
+    META["Ridge Meta-Stacker OOF 5-fold"]
+    ISO["Isotonic Calibration P(up|y_hat)"]
+  end
+  subgraph Fusion["Dynamic Fusion Framework"]
+    TE_EX["Technical Expert GRU(128->64->32)"]
+    SE_EX["Sentiment Expert Dense(64->32->16)"]
+    VE_EX["Volatility Expert MLP(32->16->8)"]
+    BAY["Bayesian Weights w=exp(-sigma^2)/Sum"]
+  end
+  subgraph Output["Output and UI"]
+    PRED["Price Forecast 200 MC paths P5/P25/P75/P95"]
+    RISK["Risk Management ATR Stop + Fibonacci + Kelly"]
+    PAT["Pattern Analysis 12 archetypes Hybrid Vision"]
+    UI["8-Tab Streamlit Dashboard DeepSeek + Gemini AI"]
+  end
+  DataSources --> Features
+  Features --> Models
+  XGB --> META
+  LGB --> META
+  CAT --> META
+  GRU --> META
+  META --> ISO
+  ISO --> Fusion
+  TE_EX --> BAY
+  SE_EX --> BAY
+  VE_EX --> BAY
+  BAY --> Output

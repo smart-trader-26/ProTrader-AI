@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Bash(pip list:*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''app.py'', encoding=''utf-8''\\).read\\(\\)\\); print\\(''OK''\\)\")",
+      "Bash(wc -l /c/Users/divya/Desktop/finance/models/*.py /c/Users/divya/Desktop/finance/data/*.py /c/Users/divya/Desktop/finance/utils/*.py /c/Users/divya/Desktop/finance/ui/*.py)",
+      "Bash(grep -c \"\\\\\\\\bibitem\\\\|@article\\\\|@book\\\\|@inproceedings\\\\|@techreport\" \"c:/Users/divya/Desktop/finance/docs/part2.bib\")",
+      "Bash(where pdflatex:*)",
+      "Bash(mmdc --version)",
+      "Bash(npx @mermaid-js/mermaid-cli --version)",
+      "Bash(sed 's|\\\\\\\\usepackage\\\\[pdftex\\\\]{color,graphicx}|\\\\\\\\usepackage[pdftex]{color,graphicx}\\\\n\\\\\\\\graphicspath{{figures/}}|' \"c:/Users/divya/Desktop/finance/docs/part2.tex\")",
+      "Bash(\"c:/Users/divya/Desktop/finance/research paper:*)",
+      "Bash(python figures_code.py)",
+      "Bash(npx --yes @mermaid-js/mermaid-cli --version)",
+      "Read(//c/Users/divya/AppData/Roaming/npm/**)",
+      "Bash(ls \"c:/Users/divya/Desktop/finance/research paper 1/\"*.pdf)",
+      "Bash(pdflatex -interaction=nonstopmode part2.tex)",
+      "Bash(bibtex part2:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(grep -c \"\\\\\\\\\\\\\\\\textbf{\" \"c:\\\\Users\\\\divya\\\\Desktop\\\\finance\\\\research-paper-1\\\\part2.tex\")",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\textbf{\" \"c:\\\\Users\\\\divya\\\\Desktop\\\\finance\\\\research-paper-1\\\\part2.tex\")",
+      "Bash(grep -v \"caption\\\\|\\\\\\\\\\\\\\\\hline\\\\|textbf{Model}\\\\|textbf{Feature}\\\\|textbf{Pattern}\\\\|textbf{Study}\\\\|textbf{Strategy}\\\\|textbf{Config}\\\\|textbf{Source}\\\\|textbf{Rank}\\\\|textbf{Market}\\\\|textbf{5-Model}\\\\|textbf{Dynamic\\\\|textbf{Overall\\\\|textbf{ProTrader\")",
+      "Bash(grep -c \"\\\\\\\\\\\\\\\\begin{equation}\\\\|\\\\\\\\\\\\\\\\begin{align}\" \"c:\\\\Users\\\\divya\\\\Desktop\\\\finance\\\\research-paper-1\\\\part2.tex\")",
+      "Bash(grep -ni \"\\\\\\\\\\\\\\\\begin{document}\\\\|\\\\\\\\\\\\\\\\end{document}\\\\|\\\\\\\\\\\\\\\\section{\\\\|\\\\\\\\\\\\\\\\subsection{\" \"c:\\\\Users\\\\divya\\\\Desktop\\\\finance\\\\research-paper-1\\\\part2.tex\")",
+      "Bash(gh pr:*)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\RequirePackage\\\\|\\\\\\\\\\\\\\\\usepackage\\\\|\\\\\\\\\\\\\\\\input\\\\|\\\\\\\\\\\\\\\\LoadClass\" \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/USG.cls\")",
+      "Bash(rm -f Optimal-Design-layout.tex Optimal-Design-layout.aux Optimal-Design-layout.bbl Optimal-Design-layout.blg Optimal-Design-layout.log Optimal-Design-layout.pag Optimal-Design-layout.pdf Optimal-Design-layout.synctex.gz wileyNJD-Chicago-lastoo.bst wileyNJD-Chicago.bib box.eps empty.eps empty-eps-converted-to.pdf)",
+      "Bash(rm -rf images/)",
+      "Bash(pdflatex -interaction=nonstopmode part3.tex)",
+      "Bash(miktex packages:*)",
+      "Bash(mpm --install=ifmtarg --install=cuted --install=dashrule --install=changepage --install=floatpag --install=dblfloatfix --install=rotating --install=soul --install=subfig --install=twoopt --install=footmisc --install=tabularx --install=xargs --install=tcolorbox --install=varwidth --install=dcolumn --install=stix2-otf --install=microtype --install=bookmark)",
+      "Bash(miktex --admin packages install ifmtarg cuted changepage floatpag dblfloatfix)",
+      "Read(//c/Users/divya/AppData/**)",
+      "Read(//c/Users/divya/AppData/Local/Programs/MiKTeX/**)",
+      "Bash(miktex fndb:*)",
+      "Bash(mkdir -p /c/Users/divya/AppData/Local/Temp/paper_build)",
+      "Bash(cp -r \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/\"* /c/Users/divya/AppData/Local/Temp/paper_build/)",
+      "Bash(bibtex part3:*)",
+      "Bash(grep -n \"algorithm\\\\|\\\\\\\\\\\\\\\\REQUIRE\\\\|\\\\\\\\\\\\\\\\ENSURE\\\\|\\\\\\\\\\\\\\\\STATE\" \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/part3.tex\")",
+      "Bash(cp \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/part3.tex\" /c/Users/divya/AppData/Local/Temp/paper_build/part3.tex)",
+      "Bash(mv \"/c/Users/divya/Desktop/Visual Studio Code.lnk\" \"/c/Users/divya/Desktop/Visual Studio Code.lnk.bak\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\divya\\Desktop",
+      "C:\\Users\\divya\\AppData\\Local\\Temp\\paper_build"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+flowchart TD
+  subgraph Sources["Data Sources"]
+    RSS["RSS Feeds\nMoneycontrol, ET, Mint, BS\nWeight: 30%"]
+    NAPI["NewsAPI\nGlobal financial news\nWeight: 25%"]
+    RED["Reddit\nr/IndianStockMarket\nr/DalalStreetTalks\nWeight: 25%"]
+    GT["Google Trends\nRetail search proxy\nWeight: 20%"]
+  end
+  subgraph Processing["Processing Pipeline"]
+    TD["Temporal Decay\nw = e^(-0.3d)\n3-day-old = 0.41 weight"]
+    EW["Event-Type Weight\nEarnings: 2x\nRegulatory: 1.8x\nDividend: 1.5x\nGeneral: 1.0x"]
+    NLP["DistilRoBERTa-Financial\ns = P(pos) - P(neg)\ns in [-1, +1]"]
+    RW["Reddit Engagement\nw = 1 + min(upvotes/100, 0.5)"]
+  end
+  subgraph Output["Aggregated Output"]
+    DISC["Disagreement Detector\nstd(sources) > 0.2\nconfidence penalty"]
+    COMB["Combined Score\nS_multi = 0.30*RSS + 0.25*News\n+ 0.25*Reddit + 0.20*Trends"]
+    CONF["Confidence Score\nC = min(N/10,1) * Agreement"]
+  end
+  RSS --> TD --> NLP
+  NAPI --> TD --> NLP
+  RED --> RW --> NLP
+  GT --> EW --> NLP
+  NLP --> DISC
+  NLP --> COMB
+  DISC --> CONF
+  COMB --> CONF
+  CONF --> FEAT["Sentiment Features\nfor ML Models"]

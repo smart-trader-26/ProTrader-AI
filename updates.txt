@@ -1,0 +1,25 @@
+1. Using Temporal Fusion Transformer (TFT) {If you want interpretability without the massive engineering headache of TFT, a middle-ground step is to use SHAP (SHapley Additive exPlanations) on your current XGBoost/GRU models.
+
+Effort: Low (Easy to install).
+Result: It gives you 80% of the interpretability ("XGBoost relied 40% on RSI for this prediction") without rewriting your entire data pipeline.}
+
+
+The Concept: TFT is a modern Google-developed architecture designed specifically for time-series forecasting. It fixes the "Black Box" problem of GRUs/LSTMs.
+
+The Problem with GRU/LSTM: They process data sequentially (Day 1 -> Day 2 -> Day 3).
+
+Memory Loss: By day 100, they often "forget" the context of Day 1.
+Opaque: If the GRU says "Buy", it cannot tell you why. Is it because of the price action 50 days ago, or the volume yesterday?
+The TFT Solution: TFT uses Attention Mechanisms (like ChatGPT) to look at the entire history simultaneously.
+
+Two Killer Features:
+
+Variable Selection Network:
+The model dynamically weights inputs for each time step.
+Result: It can tell you: "For Reliance today, I put 80% weight on Oil Prices and 0% on RSI. But for TCS, I put 90% on NASDAQ."
+Benefit: You can audit the model's logic.
+Temporal Attention:
+It identifies specific past events that are relevant now.
+Result: "I am predicting a drop today not because of yesterday's action, but because the market structure looks exactly like March 2020."
+Benefit: It captures long-range dependencies and seasonality (holidays, dividends) much better than RNNs.
+Summary: Moving to TFT is like moving from a calculator (GRU) to a data scientist (TFT)—it doesn't just give you the answer, it explains its work.

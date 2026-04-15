@@ -1,0 +1,250 @@
+\begin{thebibliography}{10}
+
+\bibitem{appel2005}
+Gerald Appel.
+\newblock {\em Technical Analysis: Power Tools for Active Investors}.
+\newblock FT Press, 2005.
+
+\bibitem{araci2019}
+Dogu Araci.
+\newblock {FinBERT}: Financial sentiment analysis with pre-trained language
+  models.
+\newblock {\em arXiv preprint arXiv:1908.10063}, 2019.
+
+\bibitem{bollen2011}
+Johan Bollen, Huina Mao, and Xiaojun Zeng.
+\newblock Twitter mood predicts the stock market.
+\newblock {\em Journal of Computational Science}, 2(1):1--8, 2011.
+
+\bibitem{bollerslev1986}
+Tim Bollerslev.
+\newblock Generalized autoregressive conditional heteroskedasticity.
+\newblock {\em Journal of Econometrics}, 31(3):307--327, 1986.
+
+\bibitem{box2015}
+George E.~P. Box, Gwilym~M. Jenkins, Gregory~C. Reinsel, and Greta~M. Ljung.
+\newblock {\em Time Series Analysis: Forecasting and Control}.
+\newblock Wiley, 5th edition, 2015.
+
+\bibitem{chaikin1978}
+Marc Chaikin.
+\newblock The use of volume in technical analysis.
+\newblock In {\em Market Technicians Association Seminar}, 1978.
+
+\bibitem{chen2016}
+Tianqi Chen and Carlos Guestrin.
+\newblock {XGBoost}: A scalable tree boosting system.
+\newblock In {\em Proceedings of the 22nd ACM SIGKDD International Conference
+  on Knowledge Discovery and Data Mining}, pages 785--794, 2016.
+
+\bibitem{cho2014}
+Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi
+  Bougares, Holger Schwenk, and Yoshua Bengio.
+\newblock Learning phrase representations using {RNN} encoder--decoder for
+  statistical machine translation.
+\newblock In {\em Proceedings of the 2014 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 1724--1734, 2014.
+
+\bibitem{lopez2018}
+Marcos~L{\'o}pez de~Prado.
+\newblock {\em Advances in Financial Machine Learning}.
+\newblock Wiley, 2018.
+
+\bibitem{devlin2019}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock {BERT}: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock In {\em Proceedings of NAACL-HLT}, pages 4171--4186, 2019.
+
+\bibitem{edwards1948}
+Robert~D. Edwards and John Magee.
+\newblock {\em Technical Analysis of Stock Trends}.
+\newblock John Magee, 1948.
+
+\bibitem{fama1970}
+Eugene~F. Fama.
+\newblock Efficient capital markets: A review of theory and empirical work.
+\newblock {\em The Journal of Finance}, 25(2):383--417, 1970.
+
+\bibitem{fischer2018}
+Thomas Fischer and Christopher Krauss.
+\newblock Deep learning with long short-term memory networks for financial
+  market predictions.
+\newblock {\em European Journal of Operational Research}, 270(2):654--669,
+  2018.
+
+\bibitem{gal2016}
+Yarin Gal and Zoubin Ghahramani.
+\newblock Dropout as a {B}ayesian approximation: Representing model uncertainty
+  in deep learning.
+\newblock In {\em Proceedings of the 33rd International Conference on Machine
+  Learning (ICML)}, pages 1050--1059, 2016.
+
+\bibitem{grinsztajn2022}
+L{\'e}o Grinsztajn, Edouard Oyallon, and Ga{\"e}l Varoquaux.
+\newblock Why do tree-based models still outperform deep learning on typical
+  tabular data?
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~35, 2022.
+
+\bibitem{hamilton1989}
+James~D. Hamilton.
+\newblock A new approach to the economic analysis of nonstationary time series
+  and the business cycle.
+\newblock {\em Econometrica}, 57(2):357--384, 1989.
+
+\bibitem{hochreiter1997}
+Sepp Hochreiter and J{\"u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural Computation}, 9(8):1735--1780, 1997.
+
+\bibitem{hurst1951}
+Harold~Edwin Hurst.
+\newblock Long-term storage capacity of reservoirs.
+\newblock {\em Transactions of the American Society of Civil Engineers},
+  116:770--799, 1951.
+
+\bibitem{ke2017}
+Guolin Ke, Qi~Meng, Thomas Finley, Taifeng Wang, Wei Chen, Weidong Ma, Qiwei
+  Ye, and Tie-Yan Liu.
+\newblock {LightGBM}: A highly efficient gradient boosting decision tree.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~30, 2017.
+
+\bibitem{kelly1956}
+John~L. Kelly.
+\newblock A new interpretation of information rate.
+\newblock {\em Bell System Technical Journal}, 35(4):917--926, 1956.
+
+\bibitem{kingma2015}
+Diederik~P. Kingma and Jimmy Ba.
+\newblock Adam: A method for stochastic optimization.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2015.
+
+\bibitem{kumar2022}
+Saurabh Kumar, Vinay~Kumar Jain, and Sanjeev Sofat.
+\newblock Stock market prediction using deep learning techniques: A review.
+\newblock {\em Multimedia Tools and Applications}, 81:38203--38228, 2022.
+
+\bibitem{lecun2015}
+Yann LeCun, Yoshua Bengio, and Geoffrey Hinton.
+\newblock Deep learning.
+\newblock {\em Nature}, 521:436--444, 2015.
+
+\bibitem{liu2019}
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
+  Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov.
+\newblock {RoBERTa}: A robustly optimized {BERT} pretraining approach.
+\newblock {\em arXiv preprint arXiv:1907.11692}, 2019.
+
+\bibitem{lo1991}
+Andrew~W. Lo.
+\newblock Long-term memory in stock market prices.
+\newblock {\em Econometrica}, 59(5):1279--1313, 1991.
+
+\bibitem{lo2000}
+Andrew~W. Lo, Harry Mamaysky, and Jiang Wang.
+\newblock Foundations of technical analysis: Computational algorithms,
+  statistical inference, and empirical implementation.
+\newblock {\em The Journal of Finance}, 55(4):1705--1765, 2000.
+
+\bibitem{loughran2011}
+Tim Loughran and Bill McDonald.
+\newblock When is a liability not a liability? {T}extual analysis,
+  dictionaries, and 10-{K}s.
+\newblock {\em The Journal of Finance}, 66(1):35--65, 2011.
+
+\bibitem{lundberg2017}
+Scott~M. Lundberg and Su-In Lee.
+\newblock A unified approach to interpreting model predictions.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~30, 2017.
+
+\bibitem{mandelbrot1997}
+Benoit~B. Mandelbrot.
+\newblock {\em Fractals and Scaling in Finance}.
+\newblock Springer, 1997.
+
+\bibitem{murphy1999}
+John~J. Murphy.
+\newblock {\em Technical Analysis of the Financial Markets}.
+\newblock New York Institute of Finance, 1999.
+
+\bibitem{nse2024}
+{National Stock Exchange of India}.
+\newblock Annual report 2023--24.
+\newblock Technical report, NSE India, 2024.
+
+\bibitem{ozbayoglu2020}
+Ahmet~Murat Ozbayoglu, Mehmet~Ugur Gudelek, and Omer~Berat Sezer.
+\newblock Deep learning for financial applications: A survey.
+\newblock {\em Applied Soft Computing}, 93:106384, 2020.
+
+\bibitem{pring2002}
+Martin~J. Pring.
+\newblock {\em Technical Analysis Explained}.
+\newblock McGraw-Hill, 4th edition, 2002.
+
+\bibitem{prokhorenkova2018}
+Liudmila Prokhorenkova, Gleb Gusev, Aleksandr Vorobev, Anna~Veronika Dorogush,
+  and Andrey Gulin.
+\newblock {CatBoost}: Unbiased boosting with categorical features.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~31, 2018.
+
+\bibitem{schumaker2009}
+Robert~P. Schumaker and Hsinchun Chen.
+\newblock Textual analysis of stock market prediction using breaking financial
+  news.
+\newblock {\em ACM Transactions on Information Systems}, 27(2):1--19, 2009.
+
+\bibitem{sezer2018}
+Omer~Berat Sezer, Mehmet~Ugur Gudelek, and Ahmet~Murat Ozbayoglu.
+\newblock Financial time series forecasting with deep learning: A systematic
+  literature review.
+\newblock {\em Applied Soft Computing}, 90:106181, 2020.
+
+\bibitem{taylor2018}
+Sean~J. Taylor and Benjamin Letham.
+\newblock Forecasting at scale.
+\newblock {\em The American Statistician}, 72(1):37--45, 2018.
+
+\bibitem{tetlock2007}
+Paul~C. Tetlock.
+\newblock Giving content to investor sentiment: The role of media in the stock
+  market.
+\newblock {\em The Journal of Finance}, 62(3):1139--1168, 2007.
+
+\bibitem{vaswani2017}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~30, 2017.
+
+\bibitem{white1988}
+Halbert White.
+\newblock Economic prediction using neural networks: The case of {IBM} daily
+  stock returns.
+\newblock {\em Proceedings of the IEEE International Conference on Neural
+  Networks}, 2:451--458, 1988.
+
+\bibitem{wilder1978}
+J.~Welles Wilder.
+\newblock New concepts in technical trading systems.
+\newblock {\em Trend Research}, 1978.
+
+\bibitem{williams1979}
+Larry Williams.
+\newblock {\em How I Made One Million Dollars Last Year Trading Commodities}.
+\newblock Windsor Books, 1979.
+
+\bibitem{zadrozny2002}
+Bianca Zadrozny and Charles Elkan.
+\newblock Transforming classifier scores into accurate multiclass probability
+  estimates.
+\newblock In {\em Proceedings of the 8th ACM SIGKDD International Conference on
+  Knowledge Discovery and Data Mining}, pages 694--699, 2002.
+
+\end{thebibliography}
