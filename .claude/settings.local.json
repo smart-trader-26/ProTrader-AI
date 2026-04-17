@@ -40,7 +40,8 @@
       "Bash(bibtex part3:*)",
       "Bash(grep -n \"algorithm\\\\|\\\\\\\\\\\\\\\\REQUIRE\\\\|\\\\\\\\\\\\\\\\ENSURE\\\\|\\\\\\\\\\\\\\\\STATE\" \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/part3.tex\")",
       "Bash(cp \"c:/Users/divya/Desktop/finance/research-paper-2/WileyDesign/Optimal-Design-layout/part3.tex\" /c/Users/divya/AppData/Local/Temp/paper_build/part3.tex)",
-      "Bash(mv \"/c/Users/divya/Desktop/Visual Studio Code.lnk\" \"/c/Users/divya/Desktop/Visual Studio Code.lnk.bak\")"
+      "Bash(mv \"/c/Users/divya/Desktop/Visual Studio Code.lnk\" \"/c/Users/divya/Desktop/Visual Studio Code.lnk.bak\")",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\divya\\Desktop",

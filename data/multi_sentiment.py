@@ -227,18 +227,21 @@ class MultiSourceSentiment:
 
     def analyze_text(self, text: str) -> Tuple[str, float]:
         """
-        Analyze sentiment of a single text.
-        
+        Analyze sentiment via FinBERT + bullish/bearish keyword overrides.
+
+        Delegates to data.news_sentiment.analyze_sentiment, which applies the
+        v2-derived high-precision overrides (e.g. clear "miss"/"beat"/"crash"
+        signals are upgraded to >=0.88 confidence when the model agrees).
+
         Returns:
             Tuple of (label: 'positive'|'negative'|'neutral', confidence: 0-1)
         """
         if not text or len(text.strip()) < 10:
             return "neutral", 0.5
-        
+
         try:
-            pipeline = self._get_sentiment_pipeline()
-            result = pipeline(text[:512])[0]
-            return result['label'].lower(), result['score']
+            from data.news_sentiment import analyze_sentiment as _enhanced
+            return _enhanced(text)
         except Exception:
             return "neutral", 0.5
     

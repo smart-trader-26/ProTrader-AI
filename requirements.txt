@@ -1,48 +1,53 @@
-# ProTrader AI - Dependencies
-# Python 3.9+ required
+# ProTrader AI - Streamlit Cloud Dependencies
+# Tested with Python 3.11 (set in Streamlit Cloud advanced settings)
 
-# Core Framework
-streamlit>=1.28.0
+# ── Core Framework ───────────────────────────────────
+streamlit>=1.30.0,<2.0.0
 
-# Data Sources
-yfinance>=0.2.28
-feedparser>=6.0.0
+# ── Data Sources ─────────────────────────────────────
+yfinance>=0.2.40
+feedparser>=6.0.10
 requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
 
-# Data Processing
-pandas>=2.0.0
-numpy>=1.24.0
+# ── Data Processing ──────────────────────────────────
+pandas>=2.1.0,<2.3.0
+numpy>=1.24.0,<2.0.0
 scipy>=1.11.0
 
-# Machine Learning
+# ── Machine Learning ─────────────────────────────────
 xgboost>=2.0.0
-lightgbm>=4.0.0
-tensorflow>=2.13.0
+lightgbm>=4.1.0
 scikit-learn>=1.3.0
 shap>=0.44.0
 
-# NLP / Sentiment
-transformers>=4.30.0
+# TensorFlow CPU build is smaller and more reliable on Streamlit Cloud
+# (the GPU wheel pulls 2GB+ of CUDA libs and breaks the deploy).
+tensorflow-cpu>=2.15.0,<2.17.0
 
-# Visualization
-plotly>=5.15.0
+# ── NLP / Sentiment ──────────────────────────────────
+transformers>=4.36.0,<5.0.0
+torch>=2.1.0
+sentencepiece>=0.1.99
+
+# ── Visualization ────────────────────────────────────
+plotly>=5.18.0
 matplotlib>=3.7.0
 
-# Configuration
+# ── Configuration ────────────────────────────────────
 python-dotenv>=1.0.0
 
-# Optional - AI Analysis (used conditionally, install if needed)
+# ── Optional: AI Analysis (Gemini, OpenAI / DeepSeek) ────────
 google-generativeai>=0.3.0
 openai>=1.0.0
 
-# Optional - Advanced Forecasting (used conditionally, install if needed)
-prophet>=1.1.0
+# ── Optional: Advanced Forecasting ──────────────────────
 statsmodels>=0.14.0
 
-# Optional - Hyperparameter Optimization (used conditionally, install if needed)
-optuna>=3.3.0
+# ── Optional: Hyperparameter Optimization ──────────────
+optuna>=3.5.0
 
-# Optional - Sentiment Sources (used conditionally, install if needed)
+# ── Optional: Sentiment Sources ─────────────────────────
 praw>=7.7.0
 pytrends>=4.9.0
-nselib>=2.4.0
