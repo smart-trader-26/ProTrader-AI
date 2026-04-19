@@ -30,6 +30,13 @@ tensorflow-cpu>=2.15.0,<2.17.0
 transformers>=4.36.0,<5.0.0
 torch>=2.1.0
 sentencepiece>=0.1.99
+# tf-keras is REQUIRED on top of tensorflow-cpu>=2.16 because Transformers
+# does not yet support Keras 3. Without this, importing any HuggingFace
+# model raises "No module named 'tf_keras'" at runtime.
+tf-keras>=2.15.0
+# huggingface_hub: download v2 ensemble (pkls + sentiment_model) from HF Hub
+huggingface_hub>=0.23.0
+joblib>=1.3.0
 
 # ── Visualization ────────────────────────────────────
 plotly>=5.18.0
@@ -37,6 +44,11 @@ matplotlib>=3.7.0
 
 # ── Configuration ────────────────────────────────────
 python-dotenv>=1.0.0
+pydantic>=2.5.0,<3.0.0
+
+# ── Dev / test (not required at runtime on Streamlit Cloud) ──
+pytest>=8.0.0
+ruff>=0.4.0
 
 # ── Optional: AI Analysis (Gemini, OpenAI / DeepSeek) ────────
 google-generativeai>=0.3.0
@@ -51,3 +63,39 @@ optuna>=3.5.0
 # ── Optional: Sentiment Sources ─────────────────────────
 praw>=7.7.0
 pytrends>=4.9.0
+
+# ── Optional: Intraday auto-refresh + Yahoo WebSocket ───
+# streamlit-autorefresh drives A3.2 (live refresh during NSE hours).
+# websocket-client powers A3.3 (Yahoo unofficial tick stream).
+streamlit-autorefresh>=1.0.1
+websocket-client>=1.7.0
+
+# ── Track B1: FastAPI backend ───────────────────────────
+# uvicorn[standard] pulls websockets + httptools + uvloop (where available)
+# so the /ws/prices endpoint and HTTP/1.1 keep-alive both perform well.
+# httpx is the test client for the FastAPI TestClient. python-multipart is
+# what FastAPI needs for form / file payloads even when we don't use them
+# directly (Swagger UI's "Try it out" button posts multipart).
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.27.0
+httpx>=0.27.0
+python-multipart>=0.0.9
+
+# ── Track B2: Celery + Redis (Upstash) ─────────────────
+# celery[redis] pulls the redis client transitively. kombu>=5.3 is required
+# for Redis-as-broker reliability fixes on Windows / forked workers.
+celery[redis]>=5.3.0,<6.0.0
+redis>=5.0.0
+
+# ── Track B3: Supabase (framework mode) + Auth + rate limit ──
+# supabase-py talks to Supabase over HTTPS (REST / PostgREST + GoTrue), so
+# the backend doesn't need direct IPv6 Postgres reachability. sqlalchemy
+# stays for the local SQLite ledger (`services/ledger_service.py`) only.
+# pyjwt verifies Supabase HS256 access tokens. slowapi handles per-user
+# request quotas via the SlowAPI middleware. respx mocks supabase-py's
+# httpx transport in tests so we never hit real Supabase in CI.
+supabase>=2.0.0
+sqlalchemy>=2.0.0,<3.0.0
+pyjwt>=2.8.0
+slowapi>=0.1.9
+respx>=0.21.0

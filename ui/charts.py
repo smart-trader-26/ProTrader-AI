@@ -368,6 +368,214 @@ def create_forecast_chart(historical_df: pd.DataFrame,
     return fig
 
 
+def create_calibration_chart(report: dict) -> go.Figure:
+    """
+    Reliability diagram for the calibrated directional classifier.
+
+    A well-calibrated model's markers fall on the y = x diagonal. Bubble
+    size encodes the number of test samples in each probability bin, so the
+    viewer can tell a tight 5-sample bin from a noisy 100-sample one.
+
+    Args:
+        report: Dict from hybrid_model._compute_calibration_report
+                (keys: bin_predicted, bin_actual, bin_counts, ece, brier_score, n_samples)
+
+    Returns:
+        Plotly Figure. Empty (with an annotation) when no test samples.
+    """
+    preds = report.get("bin_predicted") or []
+    acts = report.get("bin_actual") or []
+    counts = report.get("bin_counts") or []
+    n = int(report.get("n_samples", 0))
+    ece = float(report.get("ece", 0.0))
+    brier = float(report.get("brier_score", 0.0))
+
+    fig = go.Figure()
+    # Perfect calibration reference
+    fig.add_trace(go.Scatter(
+        x=[0, 1], y=[0, 1],
+        mode="lines",
+        line=dict(color="#888", dash="dash"),
+        name="Perfect calibration",
+        hoverinfo="skip",
+    ))
+
+    if preds and acts:
+        sizes = np.sqrt(np.array(counts, dtype=float))
+        sizes = 6 + 30 * (sizes / sizes.max()) if sizes.max() > 0 else sizes + 6
+        fig.add_trace(go.Scatter(
+            x=preds, y=acts,
+            mode="markers+lines",
+            marker=dict(size=sizes, color=UIConfig.COLOR_PRIMARY,
+                        line=dict(color="white", width=1)),
+            line=dict(color=UIConfig.COLOR_PRIMARY, width=2),
+            name="Observed",
+            text=[f"n={c}" for c in counts],
+            hovertemplate="predicted=%{x:.2f}<br>actual=%{y:.2f}<br>%{text}<extra></extra>",
+        ))
+    else:
+        fig.add_annotation(
+            xref="paper", yref="paper", x=0.5, y=0.5,
+            text="No test-set probabilities available",
+            showarrow=False, font=dict(color="#888"),
+        )
+
+    # Color ECE badge by quality (A1 target: ECE ≤ 0.05)
+    if ece <= 0.05:
+        ece_color = "#3ddc97"    # green — well-calibrated
+    elif ece <= 0.10:
+        ece_color = "#f4a261"    # amber — workable
+    else:
+        ece_color = "#e76f51"    # red — untrustworthy
+
+    fig.update_layout(
+        template="plotly_dark",
+        title=(
+            f"Calibration Reliability "
+            f"(<span style='color:{ece_color}'>ECE = {ece*100:.2f}%</span>, "
+            f"Brier = {brier:.3f}, n = {n})"
+        ),
+        xaxis=dict(title="Predicted P(up)", range=[0, 1], tickformat=".0%"),
+        yaxis=dict(title="Observed hit rate", range=[0, 1], tickformat=".0%"),
+        showlegend=True,
+        height=420,
+    )
+    return fig
+
+
+def create_accuracy_rollup_chart(rollups: dict) -> go.Figure:
+    """
+    Bar chart of rolling directional accuracy at 7d / 30d / 90d windows (A7.4).
+
+    Args:
+        rollups: {"7d": AccuracyWindow, "30d": ..., "90d": ...} — None/zero-row
+                 windows are rendered as empty bars with a tooltip.
+
+    Returns:
+        Plotly Figure. Empty annotation when no resolved predictions exist.
+    """
+    labels = list(rollups.keys())
+    values = []
+    counts = []
+    for label in labels:
+        w = rollups[label]
+        acc = (w.directional_accuracy or 0.0) * 100.0 if w else 0.0
+        values.append(acc)
+        counts.append(w.n_resolved if w else 0)
+
+    colors = []
+    for v in values:
+        if v >= 58:
+            colors.append(UIConfig.COLOR_BULLISH)
+        elif v >= 50:
+            colors.append(UIConfig.COLOR_NEUTRAL)
+        else:
+            colors.append(UIConfig.COLOR_BEARISH)
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=labels,
+        y=values,
+        marker_color=colors,
+        text=[f"{v:.1f}%<br>n={c}" for v, c in zip(values, counts)],
+        textposition="outside",
+        hovertemplate="window=%{x}<br>acc=%{y:.2f}%<br>n=%{text}<extra></extra>",
+    ))
+    fig.add_hline(
+        y=50, line_dash="dash", line_color="#888",
+        annotation_text="coin flip (50%)", annotation_position="right",
+    )
+    fig.add_hline(
+        y=58, line_dash="dot", line_color=UIConfig.COLOR_BULLISH,
+        annotation_text="target (58%)", annotation_position="right",
+    )
+    fig.update_layout(
+        template="plotly_dark",
+        title="Rolling Directional Accuracy",
+        xaxis_title="Window",
+        yaxis=dict(title="Directional accuracy (%)", range=[0, 100]),
+        height=360,
+    )
+    if sum(counts) == 0:
+        fig.add_annotation(
+            xref="paper", yref="paper", x=0.5, y=0.5,
+            text="No resolved predictions yet — run the ledger backfill after target dates pass",
+            showarrow=False, font=dict(color="#888"),
+        )
+    return fig
+
+
+def create_forecast_band_chart(
+    historical_df: pd.DataFrame,
+    future_df: pd.DataFrame,
+    stock_name: str,
+    forecast_days: int,
+) -> go.Figure:
+    """
+    Forecast chart with the P5–P95 (or conformal) band shaded (A6.4).
+
+    Args:
+        historical_df: Historical OHLCV (last ~60 days shown)
+        future_df:     DataFrame with index=future dates and columns
+                       'Predicted Price' + band columns ('P5'/'P95' or
+                       'ci_low'/'ci_high' — whichever the model produced).
+        stock_name:    Stock symbol (chart title)
+        forecast_days: Horizon (chart title)
+
+    Returns:
+        Plotly Figure. Falls back to a plain forecast line when no band
+        columns are present.
+    """
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=historical_df.index[-60:],
+        y=historical_df['Close'][-60:],
+        name="Historical",
+        line=dict(color=UIConfig.COLOR_PRIMARY, width=2),
+    ))
+
+    lo_col = "P5" if "P5" in future_df.columns else ("ci_low" if "ci_low" in future_df.columns else None)
+    hi_col = "P95" if "P95" in future_df.columns else ("ci_high" if "ci_high" in future_df.columns else None)
+
+    if lo_col and hi_col:
+        # Upper bound (no fill — reference line for the band)
+        fig.add_trace(go.Scatter(
+            x=future_df.index,
+            y=future_df[hi_col],
+            name="Upper band",
+            line=dict(color="rgba(0,255,136,0.35)", width=1),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+        # Lower bound — fills the region above it, up to the upper trace
+        fig.add_trace(go.Scatter(
+            x=future_df.index,
+            y=future_df[lo_col],
+            name="90% prediction band",
+            fill="tonexty",
+            line=dict(color="rgba(0,255,136,0.35)", width=1),
+            fillcolor="rgba(0, 255, 136, 0.15)",
+            hovertemplate="lo=%{y:.2f}<extra></extra>",
+        ))
+
+    fig.add_trace(go.Scatter(
+        x=future_df.index,
+        y=future_df['Predicted Price'],
+        name="AI Forecast (median)",
+        line=dict(dash='dot', color=UIConfig.COLOR_SECONDARY, width=2),
+    ))
+
+    fig.update_layout(
+        template="plotly_dark",
+        title=f"{stock_name} — {forecast_days} Day Forecast with 90% Band",
+        xaxis_title="Date",
+        yaxis_title="Price (₹)",
+        hovermode='x unified',
+    )
+    return fig
+
+
 def create_fii_dii_chart(fii_dii_data: pd.DataFrame) -> tuple:
     """
     Create FII/DII activity and cumulative charts.

@@ -170,10 +170,14 @@ class MultiSourceSentiment:
         self._dynamic_keywords: Dict[str, List[str]] = {}  # Session cache for dynamic keywords
         
     def _get_sentiment_pipeline(self):
-        """Lazy load sentiment pipeline."""
+        """Lazy load sentiment pipeline (PyTorch backend, avoids TF/Keras 3 conflict)."""
         if self._sentiment_pipeline is None:
             from transformers import pipeline
-            self._sentiment_pipeline = pipeline("sentiment-analysis", model=self.sentiment_model)
+            self._sentiment_pipeline = pipeline(
+                "sentiment-analysis",
+                model=self.sentiment_model,
+                framework="pt",
+            )
         return self._sentiment_pipeline
     
     def _get_reddit_client(self):

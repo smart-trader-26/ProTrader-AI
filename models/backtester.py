@@ -10,6 +10,7 @@ import pandas as pd
 from scipy import stats
 
 from config.settings import TradingConfig
+from models.nse_costs import DELIVERY, NSECosts, round_trip_cost_fraction
 
 
 def calculate_statistical_significance(predictions: np.ndarray, actuals: np.ndarray,
@@ -131,11 +132,18 @@ def _compute_metrics_from_returns(returns: np.ndarray, initial_capital: float = 
     """
     Helper: compute standard performance metrics from a returns array.
     Used internally to run metrics for any signal/strategy uniformly.
+
+    A8.2 additions: Sortino, Calmar, Expectancy — complement Sharpe so the
+    UI can show risk-adjusted performance from different angles.
+        Sortino     = mean(return) / std(downside_return)       × √252
+        Calmar      = CAGR / |max_drawdown|                     (annualised)
+        Expectancy  = win_rate × avg_win + (1-win_rate) × avg_loss
     """
     if len(returns) == 0:
         return {
             'total_return': 0, 'sharpe_ratio': 0, 'max_drawdown': 0,
             'win_rate': 0, 'avg_win': 0, 'avg_loss': 0, 'profit_factor': 0,
+            'sortino_ratio': 0, 'calmar_ratio': 0, 'expectancy': 0,
             'equity_curve': np.array([initial_capital])
         }
 
@@ -160,15 +168,105 @@ def _compute_metrics_from_returns(returns: np.ndarray, initial_capital: float = 
         else float('inf')
     )
 
+    # Sortino — Sharpe but only downside deviation in the denominator
+    downside = returns[returns < 0]
+    downside_std = float(np.std(downside)) if len(downside) > 0 else 0.0
+    sortino = (
+        float((np.mean(returns) / (downside_std + 1e-10)) * np.sqrt(252))
+        if downside_std > 0
+        else 0.0
+    )
+
+    # Calmar = annualised return / |max DD|. CAGR from equity endpoints.
+    years = len(returns) / 252.0
+    cagr = (equity[-1] / initial_capital) ** (1 / max(years, 1e-9)) - 1 if years > 0 else 0.0
+    if max_drawdown < 0:
+        calmar = float(cagr / abs(max_drawdown))
+    elif cagr > 0:
+        # Profitable strategy with no drawdown — mathematically ∞. Use a large
+        # sentinel so downstream UI code can render "∞" / NaN at its discretion.
+        calmar = float("inf")
+    else:
+        calmar = 0.0
+
+    # Expectancy = expected $ per trade in return-units
+    expectancy = float(win_rate * avg_win + (1 - win_rate) * avg_loss)
+
     return {
         'total_return': total_return,
         'sharpe_ratio': float(sharpe),
+        'sortino_ratio': sortino,
+        'calmar_ratio': calmar,
+        'expectancy': expectancy,
         'max_drawdown': max_drawdown,
         'win_rate': win_rate,
         'avg_win': avg_win,
         'avg_loss': avg_loss,
         'profit_factor': profit_factor,
         'equity_curve': equity
+    }
+
+
+def diebold_mariano_test(
+    errors_model: np.ndarray,
+    errors_benchmark: np.ndarray,
+    loss: str = "squared",
+    h: int = 1,
+) -> dict:
+    """
+    Diebold-Mariano test (A8.3) — statistical significance of predictive
+    accuracy difference vs. a benchmark. Null: the two forecasters have
+    equal accuracy.
+
+    Args:
+        errors_model:      forecast errors (`y - y_hat`) for our model
+        errors_benchmark:  forecast errors for the benchmark (e.g. buy&hold)
+        loss:              'squared' (L2) or 'absolute' (L1) loss differential
+        h:                 forecast horizon; `h=1` for next-day forecasts
+
+    Returns:
+        {'dm_stat', 'p_value', 'n', 'loss', 'reject_null_at_5pct'}
+
+    Interpretation: p < 0.05 with a **negative** DM stat means the model's
+    loss is *significantly lower* than the benchmark's (we win). Positive
+    DM stat + p < 0.05 means the benchmark beats us.
+    """
+    e_m = np.asarray(errors_model, dtype=float)
+    e_b = np.asarray(errors_benchmark, dtype=float)
+    n = min(len(e_m), len(e_b))
+    if n < 10:
+        return {"dm_stat": 0.0, "p_value": 1.0, "n": n, "loss": loss,
+                "reject_null_at_5pct": False}
+
+    e_m, e_b = e_m[-n:], e_b[-n:]
+    if loss == "absolute":
+        d = np.abs(e_m) - np.abs(e_b)
+    else:
+        d = e_m ** 2 - e_b ** 2
+
+    d_bar = float(np.mean(d))
+    # Newey-West long-run variance with lag h-1
+    gamma_0 = float(np.var(d, ddof=0))
+    lag_sum = 0.0
+    for k in range(1, h):
+        if k >= n:
+            break
+        gk = float(np.mean((d[:-k] - d_bar) * (d[k:] - d_bar)))
+        lag_sum += 2 * gk
+    long_run_var = max(gamma_0 + lag_sum, 1e-12)
+    dm_stat = d_bar / np.sqrt(long_run_var / n)
+
+    # Harvey et al. small-sample correction
+    correction = np.sqrt((n + 1 - 2 * h + h * (h - 1) / n) / n)
+    dm_stat *= correction
+
+    p_value = float(2 * (1 - stats.norm.cdf(abs(dm_stat))))
+    return {
+        "dm_stat": float(dm_stat),
+        "p_value": p_value,
+        "n": n,
+        "loss": loss,
+        "reject_null_at_5pct": bool(p_value < 0.05),
     }
 
 
@@ -230,12 +328,11 @@ class VectorizedBacktester:
     - Statistical significance testing (bootstrap, binomial, t-test)
     """
 
-    # NSE realistic round-trip transaction cost breakdown:
-    #   Brokerage:      ~0.05%
-    #   STT (sell):      0.025%
-    #   Exchange + GST: ~0.003%
-    #   Total round-trip: ~0.1% (applies once per trade, not per day)
-    NSE_ROUND_TRIP_COST = 0.001  # 0.1%
+    # Legacy flat cost retained for backwards compatibility — new code
+    # should pass `cost_model=NSECosts(...)` to use the line-item model
+    # in `models/nse_costs.py` (A8.1). Default `None` → auto-compute from
+    # NSE delivery schedule at `TradingConfig.DEFAULT_INITIAL_CAPITAL`.
+    NSE_ROUND_TRIP_COST = 0.001  # 0.1% — legacy fallback
 
     def __init__(self, data: pd.DataFrame, signals: pd.Series):
         """
@@ -250,7 +347,8 @@ class VectorizedBacktester:
 
     def run_backtest(self, initial_capital: float = None,
                      transaction_cost: float = None,
-                     include_costs: bool = True) -> dict:
+                     include_costs: bool = True,
+                     cost_model: NSECosts | None = None) -> dict:
         """
         Run vectorized backtest with realistic transaction costs.
 
@@ -268,7 +366,17 @@ class VectorizedBacktester:
             Dictionary with performance metrics, equity curve, and cost impact
         """
         initial_capital = initial_capital or TradingConfig.DEFAULT_INITIAL_CAPITAL
-        tc = (transaction_cost if transaction_cost is not None else self.NSE_ROUND_TRIP_COST)
+        # Cost resolution order:
+        #   1. explicit `transaction_cost` (legacy flat rate)
+        #   2. `cost_model` → NSE line-item breakdown scaled to notional
+        #   3. default: line-item DELIVERY model at initial_capital
+        if transaction_cost is not None:
+            tc = float(transaction_cost)
+        else:
+            tc = round_trip_cost_fraction(
+                notional=initial_capital,
+                costs=cost_model or DELIVERY,
+            )
 
         df = self.data.copy()
 

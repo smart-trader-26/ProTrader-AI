@@ -34,15 +34,22 @@ def get_indian_stocks() -> list:
         return DataConfig.DEFAULT_STOCKS
 
 
+@st.cache_data(ttl=900, show_spinner=False)
 def get_stock_data(ticker: str, start, end) -> pd.DataFrame:
     """
     Fetch historical stock data from Yahoo Finance.
-    
+
+    Cached by (ticker, start, end) for 15 minutes so Streamlit reruns
+    (chart toggles, sidebar edits) don't re-hit yfinance. The TTL is a
+    compromise: short enough that intraday refreshes see fresh EOD data,
+    long enough to absorb a normal user session. Intraday 1-min bars get
+    a separate shorter cache in A3.1.
+
     Args:
         ticker: Stock ticker symbol (e.g., "RELIANCE.NS")
         start: Start date
         end: End date
-    
+
     Returns:
         DataFrame with OHLCV data
     """
@@ -68,13 +75,14 @@ def get_stock_data(ticker: str, start, end) -> pd.DataFrame:
     return data
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
 def get_stock_info(ticker: str) -> dict:
     """
     Fetch basic stock information from Yahoo Finance.
-    
+
     Args:
         ticker: Stock ticker symbol
-    
+
     Returns:
         Dictionary with stock info
     """
@@ -100,10 +108,11 @@ def get_stock_info(ticker: str) -> dict:
     }
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
 def get_fundamental_data(ticker: str) -> dict:
     """
     Fetch fundamental data using yfinance.
-    
+
     Args:
         ticker: Stock ticker symbol
     

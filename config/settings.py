@@ -9,6 +9,7 @@ API keys are resolved with this priority chain:
 """
 
 import os
+
 from dotenv import load_dotenv
 
 # Load .env for local development (no-op on Streamlit Cloud)
@@ -51,6 +52,36 @@ REDDIT_USER_AGENT = _get_secret("REDDIT_USER_AGENT", "ProTraderAI/1.0")
 ROBOFLOW_API_KEY = _get_secret("ROBOFLOW_API_KEY", "9KHbf18pSI2tt8dqZeOL")
 ROBOFLOW_WORKSPACE = _get_secret("ROBOFLOW_WORKSPACE", "financeas")
 ROBOFLOW_WORKFLOW_ID = _get_secret("ROBOFLOW_WORKFLOW_ID", "custom-workflow")
+
+# HuggingFace Hub (v2 ensemble model: FinBERT + 4 base learners + LR stacker)
+HF_TOKEN = _get_secret("HF_TOKEN", "")
+HF_REPO_ID = _get_secret("HF_REPO_ID", "EnteiTiger3/protrader-sentiment-v2").strip().strip('"')
+
+# ==============================================
+# Track B2 / B3 — backend infrastructure (framework mode)
+# ==============================================
+# All optional. When unset, the API falls back to in-process job execution
+# (B2) and SQLite-only persistence with auth bypassed (B3 dev mode).
+#
+#   REDIS_URL                  — Upstash / local Redis. Activates Celery + beat.
+#   SUPABASE_URL               — https://<project>.supabase.co
+#   SUPABASE_ANON_KEY          — public anon key (shared with the FE)
+#   SUPABASE_SERVICE_ROLE_KEY  — bypasses RLS; used by the backend ledger
+#                                writer + alert-evaluator worker. NEVER ship
+#                                this to the browser.
+#   SUPABASE_JWT_SECRET        — HS256 secret used to verify access tokens.
+#                                When unset, every protected route runs in
+#                                "dev" mode and treats the caller as anonymous.
+#   DATABASE_URL               — DEPRECATED. Direct Postgres is unsupported
+#                                now — we use PostgREST over HTTPS. Kept for
+#                                backwards compat with `services.ledger_service`
+#                                (local SQLite), which ignores this value.
+REDIS_URL = _get_secret("REDIS_URL", "")
+DATABASE_URL = _get_secret("DATABASE_URL", "")
+SUPABASE_URL = _get_secret("SUPABASE_URL", "").rstrip("/")
+SUPABASE_ANON_KEY = _get_secret("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_ROLE_KEY = _get_secret("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_JWT_SECRET = _get_secret("SUPABASE_JWT_SECRET", "")
 
 
 # ==============================================

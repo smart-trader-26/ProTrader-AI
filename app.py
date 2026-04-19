@@ -37,8 +37,12 @@ from utils.risk_manager import RiskManager
 from ui.charts import (
     create_candlestick_chart,
     create_accuracy_comparison_chart,
-    create_fii_dii_chart
+    create_accuracy_rollup_chart,
+    create_calibration_chart,
+    create_fii_dii_chart,
+    create_forecast_band_chart,
 )
+from services import ledger_service
 from ui.ai_analysis import generate_ai_analysis
 
 
@@ -175,6 +179,23 @@ if st.sidebar.button("Launch Analysis", type="primary") or st.session_state['is_
         st.session_state['vix_data'] = vix_data
         progress_bar.progress(80)
 
+        # Step 5b: Macro factors + NSE option chain (A4 / A5)
+        status_text.text("🌍 Loading macro + option-chain features...")
+        _ts = _time.time()
+        try:
+            from data.macro import get_macro_features
+            macro_features = get_macro_features(start_date, end_date)
+        except Exception:
+            macro_features = None
+        try:
+            from data.option_chain import get_option_features
+            option_features = get_option_features(ticker)
+        except Exception:
+            option_features = None
+        _timings['Macro + Options'] = round(_time.time() - _ts, 2)
+        st.session_state['macro_features'] = macro_features
+        st.session_state['option_features'] = option_features
+
         # Step 6: Multi-Source Sentiment (90%)
         status_text.text("🧠 Analyzing multi-source sentiment...")
         _ts = _time.time()
@@ -293,19 +314,51 @@ elif st.session_state.get('analysis_done') and st.session_state.get('df_stock') 
     end_date = st.session_state.get('end_date', end_date)
     show_analysis = True
 
+# ──────────────────────────────────────────────
+# A3.2 · Auto-refresh during NSE market hours
+# ──────────────────────────────────────────────
+# When an analysis is active *and* NSE is open (Mon–Fri 09:15–15:30 IST),
+# trigger a silent rerun every N seconds so intraday features (A3.5) and
+# the live-price displays stay fresh. Outside market hours the widget is
+# a no-op so cloud quota isn't burned overnight.
+if st.session_state.get('analysis_done'):
+    try:
+        from streamlit_autorefresh import st_autorefresh
+
+        from data.intraday import is_nse_market_open
+
+        with st.sidebar:
+            enable_live = st.checkbox(
+                "🔴 Live refresh during market hours",
+                value=False,
+                help="Refreshes prices + intraday features every 60s between 09:15–15:30 IST.",
+            )
+            refresh_interval = st.select_slider(
+                "Refresh interval (seconds)",
+                options=[30, 60, 120, 300],
+                value=60,
+                disabled=not enable_live,
+            )
+        if enable_live and is_nse_market_open():
+            st_autorefresh(interval=refresh_interval * 1000, key="nse_hours_refresh")
+    except ImportError:
+        # streamlit-autorefresh not installed — silently skip
+        pass
+
 # ==============================================
 # MAIN CONTENT TABS
 # ==============================================
 if show_analysis and df_stock is not None and not df_stock.empty:
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
-        "📊 Dashboard", 
-        "🔬 Dynamic Fusion", 
-        "📈 Technicals & Risk", 
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+        "📊 Dashboard",
+        "🔬 Dynamic Fusion",
+        "📈 Technicals & Risk",
         "🏛️ Fundamentals",
         "💼 FII/DII Analysis",
         "📰 Multi-Source Sentiment",
         "🛠️ Backtest",
-        "📐 Pattern Analysis"
+        "📐 Pattern Analysis",
+        "🎯 Accuracy"
     ])
 
     # ==========================================
@@ -386,7 +439,9 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                 daily_sentiment if daily_sentiment else {},
                 fii_dii_data=fii_dii_data,
                 vix_data=vix_data,
-                multi_source_sentiment=multi_source_sentiment
+                multi_source_sentiment=multi_source_sentiment,
+                option_features=st.session_state.get('option_features'),
+                macro_features=st.session_state.get('macro_features'),
             )
             _model_elapsed = round(_time.time() - _model_t0, 2)
             _pt = st.session_state.get('pipeline_timings', {})
@@ -440,8 +495,20 @@ if show_analysis and df_stock is not None and not df_stock.empty:
             cr1, cr2, cr3, cr4 = st.columns(4)
             with cr1:
                 dir_prob = metrics.get('last_directional_prob', None)
+                tuning   = metrics.get('threshold_tuning', {}) or {}
+                tau_pct  = float(tuning.get('optimal_threshold', 0.5)) * 100
+                tau_auc  = float(tuning.get('auc', 0.5))
                 if dir_prob is not None:
-                    prob_delta = "Bullish" if dir_prob > 55 else ("Bearish" if dir_prob < 45 else "Neutral")
+                    # Use the per-ticker learned threshold (A1.5) instead of fixed 55/45.
+                    # Neutral band is τ ± 3%; widen/shrink with conviction later.
+                    upper = tau_pct + 3.0
+                    lower = max(0.0, tau_pct - 3.0)
+                    if dir_prob >= upper:
+                        prob_delta = f"Bullish (τ={tau_pct:.0f}%, AUC={tau_auc:.2f})"
+                    elif dir_prob <= lower:
+                        prob_delta = f"Bearish (τ={tau_pct:.0f}%, AUC={tau_auc:.2f})"
+                    else:
+                        prob_delta = f"Neutral (τ={tau_pct:.0f}%, AUC={tau_auc:.2f})"
                     st.metric("Bullish Probability", f"{dir_prob:.1f}%", delta=prob_delta)
                 else:
                     st.metric("Bullish Probability", "N/A")
@@ -488,6 +555,32 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                         "relying on momentum and volume flow — which is economically sensible."
                     )
 
+            # Calibration Reliability (A1.2)
+            calibration = metrics.get('calibration')
+            if calibration and calibration.get('n_samples', 0) > 0:
+                ece_pct = calibration['ece'] * 100
+                expander_title = (
+                    f"🎯 Calibration — ECE {ece_pct:.2f}% "
+                    f"({'trustworthy ≤5%' if ece_pct <= 5 else 'needs tuning'})"
+                )
+                with st.expander(expander_title, expanded=False):
+                    _hint("How to read the calibration curve", {
+                        "What ECE means":
+                            "Expected Calibration Error — the weighted average gap between "
+                            "predicted probability and actual hit rate. 0% means perfectly honest; "
+                            "5% or below is the trustworthy threshold for a forecasting model.",
+                        "Reading the dots":
+                            "Each dot is one probability bucket on the test set. Dot size = how many "
+                            "samples fell in that bucket. Dots on the dashed y = x line mean the "
+                            "model's stated confidence matches reality.",
+                        "Brier score":
+                            "Mean squared error of probability vs. outcome. Lower is better. "
+                            "0.25 is the coin-flip baseline; good models land between 0.15 and 0.20.",
+                    })
+                    st.plotly_chart(
+                        create_calibration_chart(calibration), use_container_width=True
+                    )
+
             # Predicted vs Actual Returns
             _hint("How to read this chart", {
                 "Blue line (Actual Returns)":
@@ -530,6 +623,45 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                 n_paths=200,
             )
             st.session_state['future_prices'] = future_prices
+
+            # A7.2 — append this forecast to the accuracy ledger so we can
+            # measure real directional accuracy after target dates pass.
+            try:
+                ledger_service.log_from_future_df(
+                    ticker=selected_stock,
+                    future_df=future_prices,
+                    anchor_price=float(current_price),
+                    prob_up=metrics.get('last_directional_prob', 50.0) / 100.0,
+                    model_version='hybrid-v1',
+                )
+            except Exception as _ledger_err:
+                st.caption(f"(accuracy ledger skipped: {_ledger_err})")
+
+            # A7.5 — inline historical accuracy badge. Shows the real,
+            # forward-tested hit rate so users can compare "model says 62%
+            # bullish" against "model was right 58% of the time last 30d".
+            try:
+                acc30 = ledger_service.accuracy_window(selected_stock, days=30)
+                if acc30.n_resolved > 0 and acc30.directional_accuracy is not None:
+                    badge_pct = acc30.directional_accuracy * 100
+                    badge_color = (
+                        UIConfig.COLOR_BULLISH if badge_pct >= 58
+                        else UIConfig.COLOR_NEUTRAL if badge_pct >= 50
+                        else UIConfig.COLOR_BEARISH
+                    )
+                    st.markdown(
+                        f"<div style='padding:8px 12px;border-left:4px solid {badge_color};"
+                        f"background:rgba(255,255,255,0.03);margin-top:8px;border-radius:4px;"
+                        f"font-size:13px;'>"
+                        f"📊 <b>Historical accuracy (30d):</b> "
+                        f"<span style='color:{badge_color};font-weight:600;'>{badge_pct:.1f}%</span> "
+                        f"on {acc30.n_resolved} resolved predictions for {selected_stock}. "
+                        f"Open the 🎯 Accuracy tab for 7/30/90 day rollups."
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+            except Exception:
+                pass
             
             # AI Expert Analysis
             st.markdown("---")
@@ -695,6 +827,42 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                 "Median path uses the model's directional signal as drift. "
                 "Band width grows with time, reflecting genuine forecast uncertainty."
             )
+
+            # A6 — quantile regression + split-conformal band (distribution-free,
+            # ±halfwidth around the point estimator). Rendered as a separate
+            # one-step indicator so users can sanity-check the MC fan above.
+            conformal_hw = metrics.get('conformal_halfwidth', 0.0)
+            quantile_ready = metrics.get('quantile_available', False)
+            if conformal_hw and conformal_hw > 0:
+                hw_pct = float(conformal_hw) * 100  # log-return → ≈ pct
+                day1_low = current_price * np.exp(-conformal_hw)
+                day1_high = current_price * np.exp(conformal_hw)
+                with st.expander(
+                    f"📐 1-step 90% Interval — Conformal ±{hw_pct:.2f}%"
+                    f"{' + Quantile XGB' if quantile_ready else ''}",
+                    expanded=False,
+                ):
+                    _hint("What are these intervals?", {
+                        "Conformal half-width":
+                            "A distribution-free 90% interval built by taking the 90th percentile "
+                            "of |actual − predicted| residuals on the holdout. By exchangeability, "
+                            "the true next-day return lands in [pred − halfwidth, pred + halfwidth] "
+                            "with ~90% probability — regardless of whether residuals are normal.",
+                        "Quantile XGB":
+                            "A second opinion: three XGBoost models trained directly on the 10th, "
+                            "50th, and 90th percentiles of the return distribution. No Gaussian "
+                            "assumption, and the band is asymmetric when the return distribution is "
+                            "skewed.",
+                        "Why two methods":
+                            "Conformal guarantees coverage; quantile regression captures asymmetry. "
+                            "When they disagree, the market is in a regime where skew matters.",
+                    })
+                    ci1, ci2, ci3 = st.columns(3)
+                    ci1.metric("Low (10%)",  f"₹{day1_low:,.2f}",
+                               delta=f"-{(1 - day1_low/current_price)*100:.2f}%")
+                    ci2.metric("Median",     f"₹{current_price:,.2f}")
+                    ci3.metric("High (90%)", f"₹{day1_high:,.2f}",
+                               delta=f"+{(day1_high/current_price - 1)*100:.2f}%")
 
             # Accuracy Comparison Chart
             st.subheader("🎯 Model Accuracy: Actual vs Predicted Prices")
@@ -982,6 +1150,97 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                 )
                 fig_ev.update_layout(template="plotly_dark", height=300)
                 st.plotly_chart(fig_ev, use_container_width=True)
+
+            # ── v2 Sentiment Ensemble (HuggingFace) ───────────────────────────
+            _hint("What is the v2 Sentiment Ensemble?", {
+                "Sentiment Ensemble (v2)": "A 4-model stack (LogReg + RandomForest + XGBoost + LightGBM) trained on Indian equity news, meta-blended by a LogisticRegression stacker. Returns a single bullish probability.",
+                "Stacked Consensus": "The stacker's output after combining all 4 base learners' votes. Above 50% = bullish signal; below = bearish. The closer to 50%, the less certain.",
+                "Model Breakdown": "Each base learner's standalone bullish probability. If all 4 agree (e.g. all > 55%), the signal is more reliable. Wide disagreement = noisy news day.",
+                "Top Category": "Which type of news dominated today — Earnings, Analyst Ratings, Market Action, Deals, or Macro/Policy. Earnings-dominated days tend to be more tradeable.",
+                "Weighted Sentiment": "Confidence-weighted mean of per-headline sentiment in [-1, +1]. +1 = all headlines bullish with high confidence.",
+            })
+            with st.expander("🤖 Sentiment Ensemble (v2) — 4-model stack on HuggingFace", expanded=False):
+                from services.v2_ensemble_service import is_configured, predict_v2
+                if not is_configured():
+                    st.info(
+                        "Add `HF_TOKEN` to your `.env` to enable the v2 ensemble. "
+                        "The model lives at `EnteiTiger3/protrader-sentiment-v2` (~340 MB, downloaded once)."
+                    )
+                else:
+                    items = result.get('all_items') or []
+                    v2_titles = [{"title": it.get('Text') or it.get('text') or ""} for it in items]
+                    v2_titles = [h for h in v2_titles if h["title"].strip()]
+                    if not v2_titles:
+                        st.warning("No headlines available for v2 analysis.")
+                    else:
+                        if st.button(f"▶ Run v2 ensemble on {len(v2_titles)} headlines",
+                                     key="run_v2_ensemble"):
+                            with st.spinner("Loading v2 from HuggingFace (first call only)…"):
+                                try:
+                                    v2_out = predict_v2(selected_stock, v2_titles)
+                                except Exception as e:
+                                    st.error(f"v2 ensemble failed: {e}")
+                                    v2_out = None
+                            if v2_out is not None:
+                                st.session_state['v2_ensemble_result'] = v2_out
+
+                        v2_out = st.session_state.get('v2_ensemble_result')
+                        if v2_out is not None and v2_out.ticker == selected_stock:
+                            prob_pct = v2_out.prob_up * 100
+                            bullish = v2_out.prob_up > 0.5
+                            v2_color = UIConfig.COLOR_BULLISH if bullish else UIConfig.COLOR_BEARISH
+                            v2_label = "BULLISH 🟢" if bullish else "BEARISH 🔴"
+
+                            mc1, mc2, mc3, mc4 = st.columns(4)
+                            mc1.metric("Stacked Consensus", f"{prob_pct:.1f}%",
+                                       delta=v2_label)
+                            mc2.metric("Top Category", v2_out.top_category)
+                            mc3.metric("Weighted Sentiment", f"{v2_out.weighted_sentiment:+.3f}")
+                            mc4.metric("Headlines Scored", v2_out.n_headlines)
+
+                            if not v2_out.stacker_available:
+                                st.caption("⚠️ Stacker pkl missing — consensus computed from weighted-average fallback.")
+
+                            # Model breakdown bar chart
+                            bd = v2_out.model_breakdown
+                            names  = ["LogReg", "RandomForest", "XGBoost", "LightGBM"]
+                            probs  = [bd.logreg, bd.random_forest, bd.xgboost, bd.lightgbm]
+                            colors = [UIConfig.COLOR_BULLISH if p > 0.5 else UIConfig.COLOR_BEARISH for p in probs]
+                            fig_v2 = go.Figure()
+                            fig_v2.add_bar(x=names, y=[p*100 for p in probs],
+                                           marker_color=colors,
+                                           text=[f"{p*100:.1f}%" for p in probs],
+                                           textposition="outside")
+                            fig_v2.add_hline(y=50, line_dash="dash", line_color="#888",
+                                             annotation_text="Baseline (50%)")
+                            fig_v2.add_hline(y=prob_pct, line_color=v2_color,
+                                             annotation_text=f"Consensus ({prob_pct:.1f}%)")
+                            fig_v2.update_layout(
+                                title="Base-learner Bullish Probability",
+                                yaxis=dict(title="Bullish %", range=[0, 110]),
+                                template="plotly_dark", height=320, showlegend=False,
+                            )
+                            st.plotly_chart(fig_v2, use_container_width=True)
+
+                            # Category distribution
+                            cc = v2_out.category_counts
+                            cat_df = pd.DataFrame({"Category": list(cc.keys()),
+                                                   "Count": list(cc.values())})
+                            cat_df = cat_df.sort_values("Count", ascending=True)
+                            fig_cat = go.Figure()
+                            fig_cat.add_bar(
+                                x=cat_df["Count"], y=cat_df["Category"], orientation="h",
+                                marker_color=["#f39c12" if c == v2_out.top_category else "#3498db"
+                                              for c in cat_df["Category"]],
+                            )
+                            fig_cat.update_layout(
+                                title=f"Category Distribution — dominant: {v2_out.top_category}",
+                                template="plotly_dark", height=260, xaxis_title="Headline Count",
+                            )
+                            st.plotly_chart(fig_cat, use_container_width=True)
+
+                            st.caption(f"Model: `{v2_out.model_version}` · "
+                                       f"Stacker: {'active' if v2_out.stacker_available else 'fallback'}")
 
             # ── Full News Table (all articles analysed) ───────────────────────
             if 'all_items' in result and result['all_items']:
@@ -1774,6 +2033,94 @@ if show_analysis and df_stock is not None and not df_stock.empty:
             
             **Confidence Score:** Higher = more aligned peaks/troughs. Target = measured move.
             """)
+
+    # ==========================================
+    # TAB 9: Accuracy Ledger (A7.4)
+    # ==========================================
+    with tab9:
+        st.subheader("🎯 Model Accuracy — Rolling Windows")
+        _hint("How the accuracy ledger works", {
+            "Where the numbers come from":
+                "Every forecast the model makes is written to a local SQLite ledger at "
+                "`data/ledger/predictions.sqlite`. Once a forecast's target date passes, "
+                "a backfill job fills in the actual close price and marks the row as a hit or miss.",
+            "What 'hit' means":
+                "A prediction is a hit when the direction (up / down) matches the actual move "
+                "from the day the forecast was made to the target date. Flat predictions don't count.",
+            "Reading the bars":
+                "Each bar shows directional accuracy on the last 7 / 30 / 90 days of resolved rows. "
+                "The dashed line at 50% is a coin flip; the dotted line at 58% is the research-grade target.",
+            "Run the backfill":
+                "From a terminal: `python -m services.ledger_backfill`. Or click the button below.",
+        })
+
+        ticker_for_ledger = st.text_input(
+            "Ticker (leave blank for all tickers)",
+            value=selected_stock,
+            help="Filter the accuracy rollups and recent predictions table to one ticker.",
+        ).strip()
+
+        ledger_ticker = ticker_for_ledger or None
+
+        col_a, col_b = st.columns([1, 3])
+        with col_a:
+            if st.button("🔄 Resolve pending rows (yfinance)"):
+                with st.spinner("Fetching close prices & resolving predictions…"):
+                    n = ledger_service.backfill_actuals()
+                st.success(f"Resolved {n} row(s).")
+                st.rerun()
+
+        rollups = {
+            "7d":  ledger_service.accuracy_window(ledger_ticker, days=7),
+            "30d": ledger_service.accuracy_window(ledger_ticker, days=30),
+            "90d": ledger_service.accuracy_window(ledger_ticker, days=90),
+        }
+
+        mcol1, mcol2, mcol3, mcol4 = st.columns(4)
+        w30 = rollups["30d"]
+        with mcol1:
+            acc = (w30.directional_accuracy or 0.0) * 100.0
+            if w30.n_resolved == 0:
+                st.metric("30-day Accuracy", "N/A")
+            else:
+                tag = "Above target" if acc >= 58 else ("Above coin flip" if acc >= 50 else "Below coin flip")
+                st.metric("30-day Accuracy", f"{acc:.1f}%", delta=f"n={w30.n_resolved} · {tag}")
+        with mcol2:
+            st.metric("30-day Brier", f"{w30.brier_score:.3f}" if w30.brier_score is not None else "N/A")
+        with mcol3:
+            st.metric("30-day ECE", f"{(w30.ece or 0)*100:.1f}%" if w30.ece is not None else "N/A")
+        with mcol4:
+            st.metric("Total predictions logged", f"{w30.n_predictions}")
+
+        st.plotly_chart(create_accuracy_rollup_chart(rollups), use_container_width=True)
+
+        # Recent predictions table
+        st.subheader("📋 Recent predictions")
+        recent = ledger_service.recent_rows(ticker=ledger_ticker, limit=50)
+        if recent:
+            recent_df = pd.DataFrame(
+                [
+                    {
+                        "Ticker": r.ticker,
+                        "Made (UTC)": r.made_at.strftime("%Y-%m-%d %H:%M"),
+                        "Target": r.target_date.isoformat(),
+                        "Dir": r.pred_dir,
+                        "Pred ₹": f"{r.pred_price:,.2f}",
+                        "Anchor ₹": f"{r.anchor_price:,.2f}" if r.anchor_price else "—",
+                        "P(up)": f"{r.prob_up*100:.1f}%" if r.prob_up is not None else "—",
+                        "Actual ₹": f"{r.actual_price:,.2f}" if r.actual_price else "pending",
+                        "Hit": "✅" if r.hit is True else ("❌" if r.hit is False else "—"),
+                        "Model": r.model_version,
+                    }
+                    for r in recent
+                ]
+            )
+            st.dataframe(recent_df, use_container_width=True, hide_index=True)
+        else:
+            st.info(
+                "No predictions logged yet for this filter. Run the Dashboard analysis — "
+                "every `create_hybrid_model` call now logs its forecast horizon points to the ledger."
+            )
 
 else:
     # Welcome screen when no analysis has been run yet

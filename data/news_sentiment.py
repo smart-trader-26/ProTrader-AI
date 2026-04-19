@@ -23,9 +23,6 @@ from config.settings import NEWS_API_KEY, DataConfig
 # ==============================================
 SENTIMENT_MODEL = "ProsusAI/finbert"
 
-# Lazy-loaded sentiment pipeline
-_sentiment_pipeline = None
-
 
 # ==============================================
 # v2-DERIVED FINANCIAL CATEGORIES + KEYWORDS
@@ -83,12 +80,26 @@ BEARISH_KEYWORDS = [
 ]
 
 
+@st.cache_resource(show_spinner="Loading FinBERT (first call only)…")
 def _get_sentiment_pipeline():
-    """Get or initialize the FinBERT sentiment pipeline (lazy, cached)."""
-    global _sentiment_pipeline
-    if _sentiment_pipeline is None:
-        _sentiment_pipeline = pipeline("sentiment-analysis", model=SENTIMENT_MODEL)
-    return _sentiment_pipeline
+    """
+    Load the FinBERT sentiment pipeline once per Streamlit session.
+
+    `@st.cache_resource` keeps the ~500 MB model resident across reruns and
+    shares it with every module that imports this function (previously both
+    news_sentiment and multi_sentiment loaded their own copy → 2× RAM).
+    Outside Streamlit (pytest, FastAPI) the decorator degrades to a no-op
+    and the function still loads on first call.
+
+    `framework="pt"` forces PyTorch (hard invariant CLAUDE.md §2.1). Without
+    it, transformers loads the TF head and crashes on Streamlit Cloud where
+    tensorflow-cpu>=2.16 ships with Keras 3 (incompatible with HF).
+    """
+    return pipeline(
+        "sentiment-analysis",
+        model=SENTIMENT_MODEL,
+        framework="pt",
+    )
 
 
 # ==============================================

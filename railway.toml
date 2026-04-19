@@ -1,0 +1,15 @@
+# Railway deployment config (B1.7).
+#
+# The Streamlit app keeps deploying to Streamlit Cloud (see docs/DEPLOYMENT.md).
+# This file only governs the FastAPI service — host them side-by-side until the
+# Next.js frontend (B4) replaces the Streamlit UI.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "uvicorn api.main:app --host 0.0.0.0 --port $PORT --workers 2"
+healthcheckPath = "/api/v1/healthz"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

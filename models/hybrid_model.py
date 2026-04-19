@@ -338,6 +338,70 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
 # LightGBM Helper
 # ============================================================
 
+def _train_quantile_xgb(X_train: np.ndarray, y_train: np.ndarray,
+                        X_test: np.ndarray,
+                        alphas: tuple = (0.1, 0.9)) -> dict:
+    """
+    Train XGB quantile regressors (A6.1) — one model per alpha.
+
+    Uses `reg:quantileerror` (XGBoost ≥ 2.0). Returns:
+        {
+          'models':  {0.1: xgb, 0.9: xgb},
+          'test_preds': {0.1: np.array, 0.9: np.array},
+        }
+
+    These quantile predictions live alongside the hybrid point estimator
+    and feed the prediction-interval band. They are NOT fed into the meta
+    stacker — that would overfit on the same OOF residuals twice.
+    """
+    models: dict = {}
+    preds: dict = {}
+    for alpha in alphas:
+        try:
+            m = xgb.XGBRegressor(
+                objective="reg:quantileerror",
+                quantile_alpha=alpha,
+                n_estimators=150,
+                max_depth=4,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                n_jobs=-1,
+                verbosity=0,
+            )
+            m.fit(X_train, y_train)
+            models[alpha] = m
+            preds[alpha] = m.predict(X_test)
+        except Exception:
+            # Graceful fallback — quantile XGB isn't available in xgboost < 2.0.
+            continue
+    return {"models": models, "test_preds": preds}
+
+
+def _conformal_halfwidth(y_true: np.ndarray, y_pred: np.ndarray,
+                          alpha: float = 0.10) -> float:
+    """
+    Split-conformal half-width on holdout residuals (A6.2).
+
+    Returns the (1-alpha) quantile of |y - y_hat|. The 90% prediction
+    interval is `y_hat ± halfwidth`, distribution-free, assuming
+    exchangeability of the holdout residuals with future residuals.
+
+    For log-return predictions the halfwidth is in log-return units —
+    converted to a price band at inference time.
+    """
+    if len(y_true) == 0:
+        return 0.0
+    residuals = np.abs(np.asarray(y_true) - np.asarray(y_pred))
+    residuals = residuals[~np.isnan(residuals)]
+    if len(residuals) == 0:
+        return 0.0
+    # +1 correction for finite-sample validity (Angelopoulos & Bates, 2023)
+    n = len(residuals)
+    q_level = min(1.0, np.ceil((n + 1) * (1 - alpha)) / n)
+    return float(np.quantile(residuals, q_level))
+
+
 def _train_lightgbm(X_train: np.ndarray, y_train: np.ndarray,
                     X_test: np.ndarray) -> tuple:
     """
@@ -535,29 +599,40 @@ def _calibrate_direction_probability(oof_preds: np.ndarray, y_train: np.ndarray,
     """
     Convert return predictions to calibrated P(direction up) in [0, 1].
 
+    Calibration invariant (A1.1, audited):
+        isotonic is fit on `oof_preds` (out-of-fold predictions for rows the
+        base model NEVER saw during its own training) and applied to
+        `test_preds` (out-of-sample predictions for the held-out tail).
+        Fitting on in-sample training preds would over-flatten the isotone
+        curve; fitting on test preds would leak labels. OOF is the correct
+        middle path — same approach sklearn's CalibratedClassifierCV uses
+        with method='isotonic', cv=5.
+
     Uses isotonic regression (non-parametric monotone mapping) rather than
     logistic regression because:
-    - Financial returns have fat tails and are non-Gaussian
-    - Isotonic makes no distributional assumptions
-    - It is fitted on OOF predictions only → no test set leakage
-
-    Data leakage prevention:
-    - oof_preds come only from X_train OOF folds (see _generate_oof_predictions)
-    - test_preds are the final model's out-of-sample predictions
-    - The isotonic model is fitted on training OOF → applied to test
+      - Financial returns have fat tails and are non-Gaussian
+      - Isotonic makes no distributional assumptions
 
     Args:
-        oof_preds: OOF predicted returns (same length as y_train)
-        y_train: Actual training returns
-        test_preds: Final model predictions on test set
+        oof_preds: OOF predicted returns (same length as y_train), typically
+                   the average of XGB+LGBM+CatBoost OOFs from
+                   `_generate_oof_predictions`.
+        y_train:   Actual training returns (aligned to oof_preds)
+        test_preds: Final model predictions on held-out test set
 
     Returns:
-        Array of probabilities (0–1) for each test prediction
+        Array of probabilities (0.02–0.98) for each test prediction.
     """
+    assert oof_preds.shape == y_train.shape, (
+        f"oof_preds ({oof_preds.shape}) and y_train ({y_train.shape}) must align — "
+        "isotonic calibration requires paired OOF pred ↔ actual label rows"
+    )
+
     # Binary label: 1 = up day, 0 = down day
     y_dir = (y_train > 0).astype(float)
 
-    # Only use folds where OOF prediction is non-zero
+    # Only use folds where OOF prediction is non-zero (pre-min_train rows are
+    # left as 0 by _generate_oof_predictions and would corrupt the fit)
     valid = np.abs(oof_preds) > 1e-12
     if valid.sum() < 10:
         # Not enough OOF data — use simple sign-based heuristic
@@ -569,6 +644,104 @@ def _calibrate_direction_probability(oof_preds: np.ndarray, y_train: np.ndarray,
 
     prob = iso.predict(test_preds)
     return np.clip(prob, 0.02, 0.98)
+
+
+def _compute_threshold_tuning(probs: np.ndarray, y_true: np.ndarray) -> dict:
+    """
+    Learn the per-ticker optimal decision threshold for the directional call.
+
+    Different tickers have different noise profiles — a high-beta midcap needs
+    stronger conviction (τ ≈ 0.65) before "buy" pays off, while a slow-moving
+    largecap may signal reliably at τ ≈ 0.55. We pick the threshold τ* that
+    maximizes Youden's J = TPR(τ) − FPR(τ) on the held-out test probabilities.
+    Youden's J is standard when the cost of FP and FN are symmetric; once A8
+    has realistic brokerage+STT costs, this becomes a cost-weighted optimum.
+
+    Returns dict with:
+        optimal_threshold : τ* in [0, 1] (fraction, not %)
+        auc               : ROC-AUC on the holdout (1.0 perfect, 0.5 coin flip)
+        accuracy_at_opt   : directional accuracy when classifying at τ*
+        n_samples         : holdout size
+    Falls back to τ = 0.5 when the holdout is too small or single-class.
+    """
+    probs = np.asarray(probs, dtype=float)
+    y_dir = (np.asarray(y_true, dtype=float) > 0).astype(int)
+    n = len(probs)
+    fallback = {
+        "optimal_threshold": 0.5, "auc": 0.5, "accuracy_at_opt": 0.5, "n_samples": n,
+    }
+    if n < 20 or len(np.unique(y_dir)) < 2:
+        return fallback
+
+    try:
+        from sklearn.metrics import roc_auc_score, roc_curve
+        fpr, tpr, thresholds = roc_curve(y_dir, probs)
+        j_scores = tpr - fpr
+        best = int(np.argmax(j_scores))
+        tau = float(np.clip(thresholds[best], 0.0, 1.0))
+        preds_at_tau = (probs >= tau).astype(int)
+        acc = float((preds_at_tau == y_dir).mean())
+        auc = float(roc_auc_score(y_dir, probs))
+        return {
+            "optimal_threshold": tau,
+            "auc": auc,
+            "accuracy_at_opt": acc,
+            "n_samples": n,
+        }
+    except Exception:
+        return fallback
+
+
+def _compute_calibration_report(probs: np.ndarray, y_true: np.ndarray,
+                                n_bins: int = 10) -> dict:
+    """
+    Bin predicted probabilities and compare to actual hit rates.
+
+    Returns a dict matching `schemas.prediction.CalibrationReport`:
+      - ece          : weighted mean |predicted - actual| across bins (A1 target ≤ 0.05)
+      - brier_score  : mean squared error of probability vs. binary outcome
+      - bin_edges, bin_predicted, bin_actual, bin_counts
+
+    Empty bins are dropped from the returned vectors so the chart doesn't draw
+    spurious points at 50%.
+    """
+    probs = np.asarray(probs, dtype=float)
+    y_dir = (np.asarray(y_true, dtype=float) > 0).astype(float)
+    n = len(probs)
+    if n == 0 or n != len(y_dir):
+        return {
+            "n_samples": 0, "ece": 0.0, "brier_score": 0.0,
+            "bin_edges": [], "bin_predicted": [], "bin_actual": [], "bin_counts": [],
+        }
+
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    ece = 0.0
+    bin_pred: list[float] = []
+    bin_act: list[float] = []
+    bin_cnt: list[int] = []
+    for i in range(n_bins):
+        lo, hi = edges[i], edges[i + 1]
+        mask = (probs >= lo) & (probs < hi) if i < n_bins - 1 else (probs >= lo) & (probs <= hi)
+        cnt = int(mask.sum())
+        if cnt == 0:
+            continue
+        p_mean = float(probs[mask].mean())
+        a_mean = float(y_dir[mask].mean())
+        ece += (cnt / n) * abs(p_mean - a_mean)
+        bin_pred.append(p_mean)
+        bin_act.append(a_mean)
+        bin_cnt.append(cnt)
+
+    brier = float(np.mean((probs - y_dir) ** 2))
+    return {
+        "n_samples": n,
+        "ece": float(np.clip(ece, 0.0, 1.0)),
+        "brier_score": float(np.clip(brier, 0.0, 1.0)),
+        "bin_edges": edges.tolist(),
+        "bin_predicted": bin_pred,
+        "bin_actual": bin_act,
+        "bin_counts": bin_cnt,
+    }
 
 
 # ============================================================
@@ -632,7 +805,9 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                         fii_dii_data: pd.DataFrame = None,
                         vix_data: pd.DataFrame = None,
                         multi_source_sentiment: dict = None,
-                        enable_automl: bool = False) -> tuple:
+                        enable_automl: bool = False,
+                        option_features: dict = None,
+                        macro_features: pd.DataFrame = None) -> tuple:
     """
     Create and train a research-grade hybrid model ensemble.
 
@@ -705,6 +880,35 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         for col in ['FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg']:
             df_proc[col] = 0.0
 
+    # Merge Macro Features (A5.2) — time-indexed USD/INR, crude, US10Y, gold,
+    # S&P, US VIX returns. Join forward-filled so non-trading macro days
+    # (US holidays) carry the last observation.
+    _macro_cols: list[str] = []
+    if macro_features is not None and not macro_features.empty:
+        macro_df = macro_features.copy()
+        if macro_df.index.tz is not None:
+            macro_df.index = macro_df.index.tz_localize(None)
+        if df_proc.index.tz is not None:
+            df_proc.index = df_proc.index.tz_localize(None)
+        df_proc = df_proc.join(macro_df, how="left")
+        for col in macro_df.columns:
+            if col in df_proc.columns:
+                df_proc[col] = df_proc[col].ffill().fillna(0.0)
+                _macro_cols.append(col)
+
+    # Merge Option-Chain Features (A4.3). NSE publishes a live snapshot only,
+    # so we broadcast the same scalar across every training row — meaningful
+    # only for the most recent bars at inference time. The stacker will learn
+    # a near-zero weight on training, but the feature lets the model factor
+    # PCR / max-pain / IV-skew into the live prediction without a separate
+    # inference path.
+    _option_cols: list[str] = []
+    if option_features:
+        for key, val in option_features.items():
+            col = f"opt_{key}"
+            df_proc[col] = float(val) if val is not None else 0.0
+            _option_cols.append(col)
+
     # Merge VIX Data
     if vix_data is not None and not vix_data.empty:
         vix_df = vix_data.copy()
@@ -736,7 +940,7 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     df_proc['Target_Return'] = df_proc['Log_Ret'].shift(-1)
     df_proc.dropna(inplace=True)
 
-    # FULL FEATURE SET: 27 features
+    # FULL FEATURE SET: 27 core + optional macro + optional options
     features = [
         # Core Technical (5)
         'Log_Ret', 'Volatility_5D', 'RSI_Norm', 'Vol_Ratio', 'MA_Div',
@@ -750,8 +954,12 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         # Institutional (4)
         'FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg',
         # Market Fear/VIX (2)
-        'VIX_Norm', 'VIX_Change'
+        'VIX_Norm', 'VIX_Change',
     ]
+    # A5.2 — macro factors (USD/INR, crude, US10Y, gold, S&P, US VIX returns)
+    features.extend(_macro_cols)
+    # A4.3 — option-chain snapshot features (PCR, max-pain, IV-skew, OI walls)
+    features.extend(_option_cols)
 
     X = df_proc[features].values
     y = df_proc['Target_Return'].values
@@ -978,6 +1186,11 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     # Blend: 60% tree isotonic calibration + 40% GRU direction head
     directional_prob = 0.60 * tree_dir_prob + 0.40 * rnn_dir_prob
 
+    # Calibration diagnostic on the held-out test set. Length of
+    # directional_prob equals len(y_test) (both come from the test fold).
+    calibration_report = _compute_calibration_report(directional_prob, y_test, n_bins=10)
+    threshold_tuning = _compute_threshold_tuning(directional_prob, y_test)
+
     # ============================================================
     # ARIMA / Prophet Statistical Models
     # ============================================================
@@ -1130,6 +1343,21 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     hybrid_pred = np.clip(hybrid_pred, -max_pred, max_pred)
 
     # ============================================================
+    # Quantile Regression + Conformal Intervals (A6.1 / A6.2)
+    #
+    # Two complementary sources of a 90% return-space band:
+    #   1. XGB quantile heads at α=0.1 / α=0.9 — direct quantile regression
+    #   2. Split-conformal ±halfwidth around the hybrid point estimator,
+    #      distribution-free guarantee from holdout residuals
+    #
+    # The Monte Carlo fan (P5/P95 inside `hybrid_predict_prices`) remains the
+    # default UI band because it's horizon-aware; these two quantities give
+    # the *1-step* uncertainty the UI can display alongside as sanity checks.
+    # ============================================================
+    quantile_bundle = _train_quantile_xgb(X_train_scaled, y_train, X_test_scaled)
+    conformal_hw = _conformal_halfwidth(y_test, hybrid_pred, alpha=0.10)
+
+    # ============================================================
     # SHAP Feature Importance
     # ============================================================
     shap_info = _compute_shap_importance(xgb_model, X_test_scaled, features)
@@ -1222,6 +1450,10 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         # Calibrated directional probability (blended: isotonic + GRU head)
         'avg_directional_prob':  float(np.mean(directional_prob) * 100),
         'last_directional_prob': float(directional_prob[-1] * 100) if len(directional_prob) > 0 else 50.0,
+        # Calibration diagnostic (A1.2) — ECE + bin vectors for the reliability plot
+        'calibration':           calibration_report,
+        # Per-ticker threshold tuning (A1.5) — τ*, AUC, accuracy_at_τ*
+        'threshold_tuning':      threshold_tuning,
         # Multi-task GRU extra outputs
         'last_rnn_dir_prob':     float(rnn_dir_prob[-1] * 100)  if len(rnn_dir_prob)  > 0 else 50.0,
         'last_rnn_vol_pred':     float(rnn_vol_pred[-1])        if len(rnn_vol_pred)  > 0 else 0.0,
@@ -1230,12 +1462,19 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'shap_importance':      shap_info['importance'],
         'shap_top_features':    shap_info['top_features'],
         'shap_method':          shap_info['method'],
+        # A6 — quantile + conformal uncertainty
+        'quantile_alphas':      list(quantile_bundle['test_preds'].keys()),
+        'quantile_available':   len(quantile_bundle['models']) > 0,
+        'conformal_halfwidth':  float(conformal_hw),
+        'conformal_alpha':      0.10,
     }
 
     return (df_proc, results_df,
             {
                 'xgb': xgb_model, 'rnn': model_rnn,
-                'lgbm': lgbm_model, 'catboost': catboost_model, 'meta': meta
+                'lgbm': lgbm_model, 'catboost': catboost_model, 'meta': meta,
+                'xgb_q10': quantile_bundle['models'].get(0.1),
+                'xgb_q90': quantile_bundle['models'].get(0.9),
             },
             scaler, features, metrics)
 

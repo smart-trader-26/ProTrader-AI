@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Keep the set small so CI is enforceable without a big mechanical cleanup.
+# E/W = pycodestyle, F = pyflakes, I = isort, UP = pyupgrade.
+select = ["E", "W", "F", "I", "UP"]
+ignore = [
+    "E501",  # line-too-long — many docstrings in schemas/services legitimately exceed 100
+    "UP006", # `list[...]` requires `from __future__ import annotations` which is present
+    "UP007",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F401"]  # unused imports in fixtures are fine
