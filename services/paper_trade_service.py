@@ -80,7 +80,7 @@ class PaperTradeService:
     ):
         self.db_path = Path(db_path) if db_path else DEFAULT_DB_PATH
         self.starting_cash = starting_cash
-        self.fill_source = fill_source or _yf_fill
+        self.fill_source = fill_source or default_fill_source
         self._ensure_schema()
 
     # ─────────────────── public API ───────────────────
@@ -297,14 +297,23 @@ def _yf_fill(ticker: str) -> float | None:
     return float(hist["Close"].iloc[-1])
 
 
-# When Upstox KYC completes, implement this and pass it via `fill_source=`:
-#
-# def _upstox_sandbox_fill(ticker: str) -> float | None:
-#     from config.settings import _get_secret
-#     import requests
-#     token = _get_secret("UPSTOX_ACCESS_TOKEN")
-#     if not token: return None
-#     ...
+def default_fill_source(ticker: str) -> float | None:
+    """
+    Auto-pick fill source at call time.
+
+    Upstox → LTP when UPSTOX_ACCESS_TOKEN + a mapped instrument key exist;
+    yfinance otherwise. Every miss falls through to the next source so a
+    half-configured Upstox install still returns a price.
+    """
+    try:
+        from data.upstox_client import get_ltp
+
+        price = get_ltp(ticker)
+        if price is not None and price > 0:
+            return price
+    except Exception:
+        pass
+    return _yf_fill(ticker)
 
 
 # ─────────────────── row adapters ───────────────────

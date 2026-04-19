@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import type { Alert, AlertKind } from "@/lib/types";
 import { useState } from "react";
+import TickerPicker from "@/components/TickerPicker";
 
 const KINDS: { value: AlertKind; label: string }[] = [
   { value: "price_above", label: "Price above" },
@@ -81,13 +82,7 @@ export default function AlertsPanel({ initial }: { initial: Alert[] }) {
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">Alerts</h2>
       <form onSubmit={create} className="panel grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
-        <input
-          className="input"
-          placeholder="Ticker"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
-          required
-        />
+        <TickerPicker value={ticker} onChange={setTicker} placeholder="Ticker" />
         <select
           className="input"
           value={kind}

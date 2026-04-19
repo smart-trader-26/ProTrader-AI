@@ -15,14 +15,16 @@
 - An ensemble (LR + RF + XGB + LGBM + meta) for direction & price
 - Plotly for charts
 
-The end goal (per the user): turn this into a real product with a Next.js
-frontend + FastAPI backend, while progressively raising prediction accuracy
-to ≥58% directional with ECE ≤5% and Sharpe ≥1.2 on paper trading.
+The end goal (per the user): turn this into a **personal-use** product for
+live trading on the user's own brokerage account, with a Next.js frontend
++ FastAPI backend, while progressively raising prediction accuracy to ≥58%
+directional with ECE ≤5% and Sharpe ≥1.2 on paper trading. **No billing,
+no multi-tenant, no public signup** — single-user private deployment.
 
 The two parallel tracks for getting there are documented in
 [docs/TASKS.md](docs/TASKS.md):
 - **Track A — Improvements** (A1 calibration → A9 paper trading)
-- **Track B — Migration** (B1 FastAPI → B7 observability + payments)
+- **Track B — Migration** (B1 FastAPI → B7 observability; personal-use, no billing)
 
 ---
 
@@ -240,25 +242,73 @@ finance/
       (429 after quota exhausted), `test_watchlists.py` + `test_alerts.py`
       (CRUD + cross-user isolation, SQLite in-memory via `StaticPool` so the
       models render without Postgres). 107 total tests across the repo.
+- [x] **B4** — Next.js 15 App Router scaffold in [frontend/](frontend/).
+      `@supabase/ssr` cookies + middleware for session refresh. Dashboard
+      (watchlists + alerts) talks direct to Supabase via RLS; stock detail
+      + accuracy pages forward the JWT to FastAPI for predict / sentiment /
+      ledger reads. [frontend/components/TickerPicker.tsx](frontend/components/TickerPicker.tsx)
+      is a debounced typeahead over `/api/v1/stocks?q=` — no free-text ticker
+      inputs anywhere, so invalid symbols can't leak through to yfinance.
+      `npm run codegen` regenerates `lib/api-types.ts` from `/openapi.json`.
+- [x] **B5.1 / B5.2 / B5.3** — Redis Pub/Sub tick pipeline.
+      [workers/tick_broker.py](workers/tick_broker.py): `publish(Tick)` +
+      async `subscribe(symbols)` over `ticks:{SYMBOL}` channels.
+      [workers/tick_publisher.py](workers/tick_publisher.py): long-running
+      producer; pulls symbols from CLI → env → `watchlist_tickers` → default
+      universe, polls yfinance, publishes. [api/routers/ws.py](api/routers/ws.py)
+      auto-subscribes when `REDIS_URL` is set, otherwise falls back to the
+      original in-process polling loop. Procfile gets a `ticks:` process
+      type. When Upstox KYC clears, swap `_last_close` for an Upstox WS
+      listener — wire format stays the same.
+- [x] **B6.1 / B6.2 / B6.3** — Pluggable model registry at
+      [models/registry.py](models/registry.py). `Registry` Protocol with
+      `LocalFileRegistry` + `S3Registry` backends. Picks via
+      `MODEL_REGISTRY_URI` (file://, s3://, or bare path); defaults to the
+      bootstrap [models-registry/](models-registry/) directory that ships
+      with the repo. `S3Registry` lazy-imports boto3 and honours
+      `S3_ENDPOINT_URL` so Cloudflare R2 works as a drop-in. Caches
+      downloaded artifacts under `~/.cache/protrader/models/<version>/`.
+      Router now surfaces `/models/active` + `/models/versions`.
+- [x] **Tests (B5/B6)** — 19 new: `tests/models/test_registry.py`
+      (local round-trip, `publish_version`, URI factory covering file:// /
+      bare / s3:// / default), `tests/workers/test_tick_broker.py`
+      (channel naming, JSON payload contract, availability gating),
+      `tests/workers/test_tick_publisher.py` (symbol resolution precedence,
+      poll loop skips missing prices). **126 total tests.**
+- [x] **A2.4 / A2.5 (late-blend variant)** — `services/prediction_service.predict()`
+      now calls `predict_v2` after the stacker finishes and returns the
+      convex combination `(1-w)·stacker + w·v2_prob`. Weight defaults to
+      `V2_BLEND_WEIGHT=0.3` (configurable via env / call arg). Falls back
+      to stacker-only on any failure (HF missing, no headlines, v2 raises).
+      Diagnostics surfaced as `PredictionBundle.v2_blend` (`V2BlendInfo`).
+      GNews-backed retrain (learned weight) deferred — the ledger will
+      either validate or kill this fixed weight over 30 days.
+- [x] **Upstox KYC-ready wiring (2026-04-19)** — [data/upstox_client.py](data/upstox_client.py)
+      REST LTP fetcher keyed on `UPSTOX_ACCESS_TOKEN` + a ticker →
+      instrument_key map at [config/upstox_instruments.json](config/upstox_instruments.json)
+      (ships empty — populate post-KYC). `PaperTradeService` + `tick_publisher`
+      now route through `default_fill_source` / `_fetch_quote`, which try
+      Upstox first and fall back to yfinance. **The only gap between now
+      and live ticks is the KYC + OAuth step.**
+- [x] **Scope: no billing** — B7 rewritten in [docs/TASKS.md](docs/TASKS.md)
+      as observability-only (Sentry + structlog + OTLP traces + CI). No
+      Stripe, no tiers. Single-user personal deployment.
 
 ### In progress
-- [ ] _(none — B2 + B3 landed. Track A remainder still gated on Upstox KYC;
-      Track B continues with B4 — Next.js frontend.)_
+- [ ] _(none — backend is feature-complete for the current scope. UI
+      parity with Streamlit is the next user-facing gap.)_
 
-### Up next (per TASKS.md, in order)
-- [ ] **B4** — Next.js frontend. OpenAPI schema at `/openapi.json` is ready;
-      run `npx openapi-typescript` to generate the typed client.
-- [ ] **B5.1 / B5.2** — Single Celery worker maintains the Upstox WS, fans
-      ticks via Redis Pub/Sub `ticks:{symbol}`. Replaces the polling stub in
-      [api/routers/ws.py](api/routers/ws.py).
-- [ ] **B6.1 / B6.2** — Decide in-process vs BentoML/Triton; versioned model
-      registry on R2 / S3. `/models/active` then reads blob metadata.
-- [ ] **A2.4 / A2.5** — Track A remainder. Wire v2 `prob_up` into the Ridge
-      meta-stacker. **Blocked by data:** historical per-day news backfill.
-      Options: (1) GNews scrape, (2) inference-time late-blend (skips retrain).
-- [ ] **A3.4 / A9.1 / A9.3** — Upstox tick stream + 30-day paper-trade run.
-      Blocked on KYC (verification in progress 2026-04-18). Implementation
-      ready: `PaperTradeService(fill_source=_upstox_sandbox_fill)`.
+### Up next
+- [ ] **UI parity** — the Next.js frontend currently covers ~4 of the 9
+      Streamlit tabs. See the audit in the latest conversation for the
+      tab-by-tab gap and scope proposal.
+- [ ] **B7** — Observability (Sentry + structlog + OTLP). **Billing dropped.**
+- [ ] **Promote first binary model bundle** — replace the bootstrap
+      `models-registry/active.json` with a real v1 via
+      `models.registry.publish_version()`.
+- [ ] **A3.4 / A9.3** — Flip the fill source to Upstox live once
+      `UPSTOX_ACCESS_TOKEN` lands + run 30-day paper-trade reality check.
+      Blocked on KYC only.
 
 When you finish a task, **move it from "In progress" / "Up next" to "Done"**
 with a one-line note (commit SHA if applicable). Don't let this drift.

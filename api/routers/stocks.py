@@ -17,7 +17,8 @@ from functools import lru_cache
 from fastapi import APIRouter, HTTPException, Query
 
 from schemas.stock import Fundamentals, StockHistory
-from services import stock_service
+from schemas.technicals import FiiDiiBundle, PatternBundle, TechnicalSnapshot
+from services import stock_service, technicals_service
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
 
@@ -89,5 +90,49 @@ def get_fundamentals(ticker: str) -> Fundamentals:
 def get_info(ticker: str) -> dict:
     try:
         return stock_service.get_info(ticker)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"upstream error: {e}") from e
+
+
+@router.get(
+    "/{ticker}/technicals",
+    response_model=TechnicalSnapshot,
+    summary="Latest-bar technical indicators",
+)
+def get_technicals(
+    ticker: str,
+    lookback_days: int = Query(default=180, ge=30, le=1825),
+) -> TechnicalSnapshot:
+    try:
+        return technicals_service.get_technicals(ticker, lookback_days=lookback_days)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"upstream error: {e}") from e
+
+
+@router.get(
+    "/{ticker}/patterns",
+    response_model=PatternBundle,
+    summary="Detected chart patterns + support/resistance",
+)
+def get_patterns(
+    ticker: str,
+    lookback_days: int = Query(default=365, ge=90, le=1825),
+) -> PatternBundle:
+    try:
+        return technicals_service.get_patterns(ticker, lookback_days=lookback_days)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"upstream error: {e}") from e
+
+
+@router.get(
+    "/fii-dii",
+    response_model=FiiDiiBundle,
+    summary="Recent FII / DII flows (market-wide, not per-ticker)",
+)
+def get_fii_dii(
+    lookback_days: int = Query(default=30, ge=5, le=365),
+) -> FiiDiiBundle:
+    try:
+        return technicals_service.get_fii_dii(lookback_days=lookback_days)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"upstream error: {e}") from e

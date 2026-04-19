@@ -81,7 +81,19 @@
       "Bash(python -c \"from api.main import app; print\\('APP_OK'\\); print\\('routes:', len\\([r for r in app.routes if hasattr\\(r, 'path'\\)]\\)\\)\")",
       "Bash(python -m pytest tests/api -x -q)",
       "Bash(python -m pytest tests/api -q)",
-      "Bash(python -m pytest -q)"
+      "Bash(python -m pytest -q)",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npx --no tsc --noEmit)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=dummy ./node_modules/.bin/next build)",
+      "Bash(python -m pytest tests/ -x -q --tb=short)",
+      "Bash(python -m pytest tests/ -q --tb=short)",
+      "Bash(python -m pytest tests/services/test_prediction_blend.py tests/data/test_upstox_client.py -q)",
+      "Bash(python -m pytest -q -m \"not network\" --no-header)",
+      "Bash(python -c \"from schemas.prediction import PredictionBundle; from services.prediction_service import _to_shap, _to_calibration, _to_rmse, _to_walkforward, _to_threshold_tuning; print\\('ok'\\)\")",
+      "Bash(python -c \"from api.main import app; print\\('routes:'\\); [print\\(r.path\\) for r in app.routes if 'stocks' in str\\(r.path\\) or 'technicals' in str\\(r.path\\) or 'fii' in str\\(r.path\\)]\")",
+      "Bash(python -m pytest tests/api/ -q)"
     ],
     "additionalDirectories": [
       "C:\\Users\\divya\\Desktop",

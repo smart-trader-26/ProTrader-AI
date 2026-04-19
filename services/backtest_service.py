@@ -9,6 +9,9 @@ fractional values (0.05 = 5%). This service converts to the snake_case,
 percent-denominated `BacktestMetrics` schema so the UI / FastAPI both get the
 same shape. CAGR / Sortino / Calmar / Expectancy are left `None` until A8.2
 extends the backtester.
+
+Equity + benchmark curves are downsampled to at most 300 points so multi-year
+horizons don't bloat the API payload.
 """
 
 from __future__ import annotations
@@ -20,8 +23,10 @@ import pandas as pd
 
 from config.settings import TradingConfig
 from models.backtester import VectorizedBacktester, ma_crossover_signals, momentum_signals
-from schemas.backtest import BacktestMetrics, BacktestResult
+from schemas.backtest import BacktestEquityPoint, BacktestMetrics, BacktestResult
 from services.stock_service import get_history_df
+
+_MAX_CURVE_POINTS = 300
 
 
 def run_backtest(
@@ -50,6 +55,9 @@ def run_backtest(
     raw = bt.run_backtest(initial_capital=initial_capital, include_costs=include_costs)
 
     capital = float(initial_capital or TradingConfig.DEFAULT_INITIAL_CAPITAL)
+    equity_curve = _equity_to_points(raw.get("Equity Curve"))
+    benchmark = _buy_and_hold_benchmark(data["Close"], capital)
+
     return BacktestResult(
         ticker=ticker,
         start=pd.to_datetime(start or df.index[0]).date(),
@@ -58,6 +66,8 @@ def run_backtest(
         initial_capital=capital,
         final_equity=_final_equity(raw, capital),
         metrics=_to_metrics(raw),
+        equity_curve=equity_curve,
+        benchmark_equity_curve=benchmark,
     )
 
 
@@ -68,6 +78,45 @@ def _final_equity(raw: dict, capital: float) -> float:
         if len(arr):
             return float(arr[-1])
     return capital
+
+
+def _equity_to_points(series) -> list[BacktestEquityPoint]:
+    if series is None:
+        return []
+    ser = pd.Series(series).dropna()
+    if ser.empty:
+        return []
+    ser = _downsample(ser, _MAX_CURVE_POINTS)
+    out: list[BacktestEquityPoint] = []
+    for idx, val in ser.items():
+        try:
+            d = pd.to_datetime(idx).date()
+            v = float(val)
+        except (TypeError, ValueError):
+            continue
+        if v != v:  # NaN guard
+            continue
+        out.append(BacktestEquityPoint(date=d, equity=v))
+    return out
+
+
+def _buy_and_hold_benchmark(close: pd.Series, capital: float) -> list[BacktestEquityPoint]:
+    px = pd.Series(close).dropna()
+    if px.empty:
+        return []
+    equity = capital * (px / float(px.iloc[0]))
+    return _equity_to_points(equity)
+
+
+def _downsample(series: pd.Series, max_points: int) -> pd.Series:
+    n = len(series)
+    if n <= max_points:
+        return series
+    step = max(1, n // max_points)
+    idx = list(range(0, n, step))
+    if idx[-1] != n - 1:
+        idx.append(n - 1)
+    return series.iloc[idx]
 
 
 def _to_metrics(raw: dict) -> BacktestMetrics:

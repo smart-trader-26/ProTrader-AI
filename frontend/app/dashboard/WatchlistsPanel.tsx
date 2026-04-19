@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/client";
 import type { Watchlist } from "@/lib/types";
 import Link from "next/link";
 import { useState } from "react";
+import TickerPicker from "@/components/TickerPicker";
 
 export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
   const [watchlists, setWatchlists] = useState<Watchlist[]>(initial);
@@ -167,18 +168,19 @@ function WatchlistCard({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onAdd(t);
-          setT("");
+          // No-op: `onCommit` from TickerPicker handles validated picks.
         }}
         className="flex gap-2"
       >
-        <input
-          className="input"
-          placeholder="Add ticker (e.g. RELIANCE)"
+        <TickerPicker
           value={t}
-          onChange={(e) => setT(e.target.value)}
+          onChange={setT}
+          onCommit={(sym) => {
+            onAdd(sym);
+            setT("");
+          }}
+          placeholder="Add ticker (e.g. RELIANCE)"
         />
-        <button className="btn">Add</button>
       </form>
     </div>
   );

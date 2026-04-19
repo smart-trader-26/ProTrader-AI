@@ -90,4 +90,4 @@ type Bundle = paths["/api/v1/jobs/{job_id}"]["get"]["responses"]["200"]["content
 | Next.js frontend | B4 | OpenAPI schema is ready for codegen. |
 | Real-time tick layer | B5 | `/ws/prices` polls yfinance every 15s. |
 | Model registry on R2 / S3 | B6 | `/models/active` reports in-process version. |
-| Sentry / PostHog / Stripe | B7 | Not wired. |
+| Sentry + structlog + OTLP traces | B7 | Not wired. Billing intentionally removed (personal-use). |

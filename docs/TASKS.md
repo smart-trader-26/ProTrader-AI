@@ -198,13 +198,17 @@ Each task lists: **scope · effort · dependency · acceptance criterion.**
 | B6.3 | Add `/api/v1/models/active` endpoint returning current model version + train date so the UI can display "Model v3, trained 2026-04-12". | 0.5 day | B6.2 |
 | B6.4 | (Optional) MLflow for experiment tracking once you train more than 1×/month. | 1 day | B6.2 |
 
-### B7 · Observability + payments (1 week)
+### B7 · Observability (personal-use mode — 2-3 days)
+
+> **Scope change (2026-04-19):** billing / Stripe dropped. This is a
+> single-user product running against the user's own brokerage account;
+> no checkout, no tiers, no customer portal. Keep logs + traces + CI only.
 
 | # | Task | Effort | Dep |
 |---|------|--------|-----|
 | B7.1 | **Sentry** for FE + BE error tracking (free tier 5K events/mo). | 0.5 day | B1.7, B4.9 |
-| B7.2 | **PostHog** for product analytics (free tier 1M events/mo). | 0.5 day | B4.9 |
-| B7.3 | **Stripe** Checkout + customer portal. Free tier = 3 stocks, Pro ₹499/mo = unlimited + alerts + API access. | 2 days | B3.4 |
+| B7.2 | **Structured logs** — `structlog` on FastAPI + Celery with request-id correlation; stdout only (Railway / Render ingest it natively). | 0.5 day | B1.7 |
+| B7.3 | **OpenTelemetry traces** spanning FastAPI → Celery → Supabase so one request-id threads through the whole chain. Export to any free OTLP endpoint (Grafana Cloud / Honeycomb free tier). | 1 day | B7.2 |
 | B7.4 | GitHub Actions: build + deploy on merge to main (Vercel auto-deploys; Railway needs a webhook). | 0.5 day | — |
 
 ---
@@ -221,7 +225,7 @@ Each task lists: **scope · effort · dependency · acceptance criterion.**
 | 6 | B3 (Postgres + auth) + B6 (model registry) |
 | 7-9 | B4 (Next.js frontend) |
 | 10 | B5 (real-time tick layer) + A9 (paper-trading loop start) |
-| 11 | B7 (observability + payments) |
+| 11 | B7 (observability — personal-use mode, no billing) |
 | 12 | A9 ongoing — 30-day paper-trade verdict |
 
 **Hard rule:** do not skip A7 (accuracy ledger). Without it the entire
@@ -238,4 +242,5 @@ has a real, measurable, per-ticker accuracy delta to point to.
 > buy-and-hold.*
 
 If that's true, the product is real. If not, every claim is
-hand-waving — keep iterating before adding payments.
+hand-waving — keep iterating until it hits the bar. (Personal use only —
+no billing / multi-tenant mode.)

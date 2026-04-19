@@ -25,6 +25,13 @@ class BacktestMetrics(BaseModel):
     )
 
 
+class BacktestEquityPoint(BaseModel):
+    """One sampled point on an equity curve."""
+
+    date: date
+    equity: float
+
+
 class BacktestResult(BaseModel):
     ticker: str
     start: date
@@ -33,3 +40,6 @@ class BacktestResult(BaseModel):
     initial_capital: float
     final_equity: float
     metrics: BacktestMetrics
+    # Downsampled so payloads stay sane over multi-year horizons.
+    equity_curve: list[BacktestEquityPoint] = Field(default_factory=list)
+    benchmark_equity_curve: list[BacktestEquityPoint] = Field(default_factory=list)

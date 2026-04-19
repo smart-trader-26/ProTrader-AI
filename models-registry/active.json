@@ -1,0 +1,10 @@
+{
+  "artifacts": [],
+  "backend": "local",
+  "name": "hybrid",
+  "notes": "Bootstrap pointer to the in-process hybrid model. Replace this file (and add v<N>/ directory alongside it) when you start publishing binary artifacts via models.registry.publish_version().",
+  "sha256": null,
+  "source": "in-process",
+  "trained_at": null,
+  "version": "v0"
+}

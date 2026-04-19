@@ -1,50 +1,41 @@
 """
 Model registry router (B6.3).
 
-  GET /api/v1/models/active   → current model version + train date
+  GET /api/v1/models/active    → active model spec (from registry)
+  GET /api/v1/models/versions  → versions available in the registry
 
-Today this is hard-coded to the in-process hybrid model — when B6.2 lands
-(R2/S3 versioned `models/v{n}/master_xgb.pkl`), this endpoint reads the
-loaded version from disk metadata.
+Reads from `models.registry.get_registry()`, whose backend is selected by
+the `MODEL_REGISTRY_URI` env var (file:// for local dev, s3:// for prod).
+A bootstrap `models-registry/active.json` ships with the repo so fresh
+installs return a sane spec without any extra setup.
 """
 
 from __future__ import annotations
 
-import os
-from datetime import UTC, datetime
+import logging
 
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
 
-from services.prediction_service import MODEL_VERSION
+from models.registry import ActiveModelSpec, get_registry
 
+log = logging.getLogger(__name__)
 router = APIRouter(prefix="/models", tags=["models"])
 
 
-class ActiveModel(BaseModel):
-    name: str
-    version: str
-    trained_at: str | None = None
-    source: str
-    notes: str | None = None
-
-
-@router.get("/active", response_model=ActiveModel, summary="Currently-served model")
-def active_model() -> ActiveModel:
-    # Best-effort train-date proxy: mtime of hybrid_model.py. Real value will
-    # come from the model registry blob metadata in B6.2.
-    trained_at: str | None = None
+@router.get("/active", response_model=ActiveModelSpec, summary="Currently-served model")
+def active_model() -> ActiveModelSpec:
     try:
-        path = "models/hybrid_model.py"
-        if os.path.exists(path):
-            trained_at = datetime.fromtimestamp(os.path.getmtime(path), UTC).isoformat()
-    except OSError:
-        pass
+        return get_registry().read_active()
+    except Exception as e:  # noqa: BLE001
+        log.warning("registry read failed: %s", e)
+        raise HTTPException(status_code=503, detail=f"registry unavailable: {e}") from e
 
-    return ActiveModel(
-        name="hybrid",
-        version=MODEL_VERSION,
-        trained_at=trained_at,
-        source="in-process",
-        notes="Switches to R2/S3 registry in B6.2.",
-    )
+
+@router.get("/versions", summary="List known model versions in the registry")
+def list_versions() -> dict[str, list[str] | str]:
+    try:
+        reg = get_registry()
+        return {"backend": reg.backend, "versions": reg.list_versions()}
+    except Exception as e:  # noqa: BLE001
+        log.warning("registry list failed: %s", e)
+        raise HTTPException(status_code=503, detail=f"registry unavailable: {e}") from e

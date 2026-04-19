@@ -57,6 +57,15 @@ ROBOFLOW_WORKFLOW_ID = _get_secret("ROBOFLOW_WORKFLOW_ID", "custom-workflow")
 HF_TOKEN = _get_secret("HF_TOKEN", "")
 HF_REPO_ID = _get_secret("HF_REPO_ID", "EnteiTiger3/protrader-sentiment-v2").strip().strip('"')
 
+# A2.4/A2.5 — late-blend weight applied to v2's prob_up at predict time.
+# Stacker gets (1 - weight). Default 0.3 is conservative; the accuracy
+# ledger (A7) will surface whether this weight is helping or hurting.
+try:
+    V2_BLEND_WEIGHT = float(_get_secret("V2_BLEND_WEIGHT", "0.3") or 0.3)
+except (TypeError, ValueError):
+    V2_BLEND_WEIGHT = 0.3
+V2_BLEND_WEIGHT = max(0.0, min(1.0, V2_BLEND_WEIGHT))
+
 # ==============================================
 # Track B2 / B3 — backend infrastructure (framework mode)
 # ==============================================
@@ -82,6 +91,35 @@ SUPABASE_URL = _get_secret("SUPABASE_URL", "").rstrip("/")
 SUPABASE_ANON_KEY = _get_secret("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_ROLE_KEY = _get_secret("SUPABASE_SERVICE_ROLE_KEY", "")
 SUPABASE_JWT_SECRET = _get_secret("SUPABASE_JWT_SECRET", "")
+
+# ==============================================
+# Track B6 — model registry
+# ==============================================
+#   MODEL_REGISTRY_URI — where versioned model artifacts live.
+#     • file:///absolute/path  or  ./relative/path  → local filesystem backend
+#     • s3://bucket/prefix                          → boto3-backed backend (R2 or S3)
+#   Unset: defaults to `<repo>/models-registry`, which ships with a bootstrap
+#   `active.json` pointing at the in-process hybrid model.
+#
+#   AWS_* / R2_* credentials only needed when MODEL_REGISTRY_URI is `s3://`.
+MODEL_REGISTRY_URI = _get_secret("MODEL_REGISTRY_URI", "")
+
+# ==============================================
+# Track A3.4 / A9.1 — Upstox live-tick + paper-trade fill source
+# ==============================================
+# All optional. Callers treat empty values as "not configured" and fall
+# back to yfinance (15-min-delayed polling).
+#
+#   UPSTOX_API_KEY           — developer portal app key (used only when
+#                              automating the daily OAuth refresh).
+#   UPSTOX_ACCESS_TOKEN      — bearer token from the OAuth exchange; good
+#                              for the current trading day.
+#   UPSTOX_INSTRUMENTS_JSON  — optional path override for the ticker →
+#                              instrument_key map. Defaults to
+#                              config/upstox_instruments.json.
+UPSTOX_API_KEY = _get_secret("UPSTOX_API_KEY", "")
+UPSTOX_ACCESS_TOKEN = _get_secret("UPSTOX_ACCESS_TOKEN", "")
+UPSTOX_INSTRUMENTS_JSON = _get_secret("UPSTOX_INSTRUMENTS_JSON", "")
 
 
 # ==============================================

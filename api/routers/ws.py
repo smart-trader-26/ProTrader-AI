@@ -1,24 +1,32 @@
 """
-WebSocket prices stub (B5.3 stub — full pipeline lands with B5.1 / B5.2).
+WebSocket prices (B5.3).
 
   WS /api/v1/ws/prices?tickers=RELIANCE.NS,TCS.NS
 
-Today: polls yfinance every 15s and pushes a snapshot per ticker. Latency
-is bad (~30s end-to-end with the polling delay); good enough to validate
-the wire format end-to-end before swapping in the Redis Pub/Sub bridge in
-B5.3 proper.
+Redis-backed when `REDIS_URL` is set: subscribes to `ticks:{SYMBOL}` and
+relays frames as the tick publisher emits them. That lets multiple API
+replicas share one upstream feed and decouples polling cadence from the
+HTTP layer. See [workers/tick_broker.py](../../workers/tick_broker.py) +
+[workers/tick_publisher.py](../../workers/tick_publisher.py).
 
-Wire format (one frame per ticker, JSON):
-  { "ticker": "RELIANCE.NS", "ts": "2026-04-18T09:42:00Z", "price": 2954.6 }
+Falls back to in-process yfinance polling when Redis is not configured —
+handy for local dev without running the full worker stack.
+
+Wire format (one frame per tick, JSON):
+  {"ticker": "RELIANCE.NS", "ts": "2026-04-19T09:42:00Z", "price": 2954.6, "source": "yfinance"}
 """
 
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
+from workers import tick_broker
+
+log = logging.getLogger(__name__)
 router = APIRouter(tags=["websocket"])
 
 POLL_INTERVAL_SECONDS = 15.0
@@ -31,30 +39,54 @@ async def ws_prices(
     tickers: str = Query(default="", description="Comma-separated tickers"),
 ) -> None:
     await websocket.accept()
-    symbols = [t.strip() for t in tickers.split(",") if t.strip()][:MAX_TICKERS]
+    symbols = [t.strip().upper() for t in tickers.split(",") if t.strip()][:MAX_TICKERS]
     if not symbols:
         await websocket.send_json({"error": "no tickers — add ?tickers=RELIANCE.NS,TCS.NS"})
         await websocket.close(code=1003)
         return
 
-    await websocket.send_json({"event": "subscribed", "tickers": symbols})
+    source = "redis" if tick_broker.is_available() else "poll"
+    await websocket.send_json({"event": "subscribed", "tickers": symbols, "source": source})
 
     try:
-        while True:
-            for sym in symbols:
-                price = _last_close(sym)
-                if price is None:
-                    continue
-                await websocket.send_json(
-                    {
-                        "ticker": sym,
-                        "ts": datetime.now(UTC).isoformat(),
-                        "price": price,
-                    }
-                )
-            await asyncio.sleep(POLL_INTERVAL_SECONDS)
+        if source == "redis":
+            await _relay_from_broker(websocket, symbols)
+        else:
+            await _relay_from_poll(websocket, symbols)
     except WebSocketDisconnect:
         return
+    except Exception as e:  # noqa: BLE001
+        log.warning("ws_prices aborted: %s", e)
+        try:
+            await websocket.close(code=1011)
+        except Exception:
+            pass
+
+
+async def _relay_from_broker(websocket: WebSocket, symbols: list[str]) -> None:
+    """Stream ticks from Redis Pub/Sub to the client until disconnect."""
+    async for tick in tick_broker.subscribe(symbols):
+        await websocket.send_json(
+            {"ticker": tick.ticker, "ts": tick.ts, "price": tick.price, "source": tick.source}
+        )
+
+
+async def _relay_from_poll(websocket: WebSocket, symbols: list[str]) -> None:
+    """In-process fallback: yfinance poll loop, same wire format."""
+    while True:
+        for sym in symbols:
+            price = _last_close(sym)
+            if price is None:
+                continue
+            await websocket.send_json(
+                {
+                    "ticker": sym,
+                    "ts": datetime.now(UTC).isoformat(),
+                    "price": price,
+                    "source": "yfinance",
+                }
+            )
+        await asyncio.sleep(POLL_INTERVAL_SECONDS)
 
 
 def _last_close(ticker: str) -> float | None:

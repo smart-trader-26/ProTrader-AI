@@ -214,7 +214,12 @@ Tailwind, fully owned) over Chakra / MUI for performance + customisation.
 TradingView themselves) for price + indicators. Plotly only where you
 need 3D / SHAP / heatmap.
 
-### Phase 4 — Auth, multi-tenancy, payments (1-2 weeks)
+### Phase 4 — Auth + single-user persistence (1 week)
+
+> **Scope change (2026-04-19):** personal-use only. Single Supabase
+> account, no multi-tenant, no payments. Auth exists so the FastAPI
+> backend stays lockable when exposed to the internet — not to segment
+> customers.
 
 - **Auth:** Clerk (fastest) or Auth.js + Supabase Auth (more control).
   JWT sent as `Authorization: Bearer …` to FastAPI; FastAPI verifies
@@ -237,8 +242,7 @@ need 3D / SHAP / heatmap.
   Celery worker. Queries against this table give you live, real,
   per-ticker, per-regime accuracy.
 
-- **Payments:** Stripe Checkout + customer portal. Free tier = 3 stocks,
-  Pro = unlimited + alerts + API access.
+- **Payments:** dropped. Single-user product; no checkout surface.
 
 ### Phase 5 — Real-time data layer (1 week)
 
@@ -369,7 +373,7 @@ This is what makes the product *credible* vs. another "AI says BUY" toy.
 
 **Month 2:**
 - Phase 3: Next.js frontend, ship MVP with auth.
-- Phase 4: payments.
+- Phase 4: auth + single-user persistence.
 
 **Month 3:**
 - Phase 5: real-time prices.
