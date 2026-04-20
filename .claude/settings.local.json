@@ -93,11 +93,19 @@
       "Bash(python -m pytest -q -m \"not network\" --no-header)",
       "Bash(python -c \"from schemas.prediction import PredictionBundle; from services.prediction_service import _to_shap, _to_calibration, _to_rmse, _to_walkforward, _to_threshold_tuning; print\\('ok'\\)\")",
       "Bash(python -c \"from api.main import app; print\\('routes:'\\); [print\\(r.path\\) for r in app.routes if 'stocks' in str\\(r.path\\) or 'technicals' in str\\(r.path\\) or 'fii' in str\\(r.path\\)]\")",
-      "Bash(python -m pytest tests/api/ -q)"
+      "Bash(python -m pytest tests/api/ -q)",
+      "Bash(npm run *)",
+      "Read(//c/Users/divya/**)",
+      "Bash(npm config *)",
+      "Bash(python -c \"from schemas.prediction import PredictionBundle, TestSeriesPoint; from schemas.sentiment import SentimentAggregate, SourceBreakdown, EventBreakdownItem; print\\('schemas OK'\\)\")",
+      "Bash(python -c \"from services.sentiment_service import _agreement_score, _per_source_breakdown, _event_breakdown; print\\('sentiment_service OK'\\)\")",
+      "Bash(python -m pytest tests/ -x -q --no-header -m \"not network\")",
+      "Bash(xargs grep *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\divya\\Desktop",
-      "C:\\Users\\divya\\AppData\\Local\\Temp\\paper_build"
+      "C:\\Users\\divya\\AppData\\Local\\Temp\\paper_build",
+      "c:\\Users\\divya\\Desktop\\finance\\frontend\\app\\stock\\[ticker]"
     ]
   }
 }

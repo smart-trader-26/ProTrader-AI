@@ -3,6 +3,7 @@ import "./globals.css";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import SignOutButton from "@/components/SignOutButton";
+import HeaderSearch from "@/components/HeaderSearch";
 
 export const metadata: Metadata = {
   title: "ProTrader AI",
@@ -20,23 +21,24 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <header className="sticky top-0 z-10 border-b border-border bg-bg/80 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <Link href="/" className="font-semibold tracking-tight">
               ProTrader <span className="text-accent">AI</span>
             </Link>
-            <nav className="flex items-center gap-4 text-sm">
+            <nav className="flex items-center gap-3 text-sm">
               {user ? (
                 <>
+                  <HeaderSearch />
                   <Link href="/dashboard" className="text-muted hover:text-fg">
                     Dashboard
                   </Link>
                   <Link href="/accuracy" className="text-muted hover:text-fg">
                     Accuracy
                   </Link>
-                  <span className="chip">{user.email}</span>
+                  <span className="chip hidden md:inline-flex">{user.email}</span>
                   <SignOutButton />
                 </>
               ) : (

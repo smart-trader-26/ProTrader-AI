@@ -30,6 +30,7 @@ from schemas.prediction import (
     PredictionBundle,
     PredictionPoint,
     ShapFeature,
+    TestSeriesPoint,
     ThresholdTuning,
     V2BlendInfo,
     WalkforwardSummary,
@@ -70,7 +71,7 @@ def predict(
             f"Insufficient history for {ticker}: {0 if df is None else len(df)} bars"
         )
 
-    df_proc, _results_df, models, scaler, features, metrics = create_hybrid_model(
+    df_proc, results_df, models, scaler, features, metrics = create_hybrid_model(
         df,
         sentiment_features or {},
         fii_dii_data=fii_dii_data,
@@ -122,6 +123,7 @@ def predict(
         rmse_breakdown=_to_rmse(metrics),
         walkforward=_to_walkforward(metrics),
         v2_blend=blend_info if blend_info.used else None,
+        test_predictions=_to_test_series(results_df, df),
     )
 
     # A7.2 — append to the ledger so actuals can be resolved later.
@@ -166,12 +168,16 @@ def _to_points(future, last_close: float, prob_up: float) -> list[PredictionPoin
         ci_hi_col = "P95" if "P95" in future.columns else "ci_high"
         ci_lo = future[ci_lo_col].tolist() if ci_lo_col in future.columns else [None] * len(prices)
         ci_hi = future[ci_hi_col].tolist() if ci_hi_col in future.columns else [None] * len(prices)
+        p25 = future["P25"].tolist() if "P25" in future.columns else [None] * len(prices)
+        p75 = future["P75"].tolist() if "P75" in future.columns else [None] * len(prices)
     else:
         prices = list(future)
         today = date.today()
         dates = [today + timedelta(days=i + 1) for i in range(len(prices))]
         ci_lo = [None] * len(prices)
         ci_hi = [None] * len(prices)
+        p25 = [None] * len(prices)
+        p75 = [None] * len(prices)
 
     out: list[PredictionPoint] = []
     prev = last_close
@@ -187,12 +193,63 @@ def _to_points(future, last_close: float, prob_up: float) -> list[PredictionPoin
                 pred_price=float(p),
                 ci_low=_opt(ci_lo[i]),
                 ci_high=_opt(ci_hi[i]),
+                p25_price=_opt(p25[i]),
+                p75_price=_opt(p75[i]),
                 direction=direction,
                 prob_up=max(0.0, min(1.0, prob_up)),
             )
         )
         prev = p
     return out
+
+
+def _to_test_series(results_df, df) -> list[TestSeriesPoint]:
+    """Pull (date, actual_return, predicted_return, actual_price, predicted_price)
+    rows from the held-out test fold so the UI can render the Streamlit-style
+    'Predicted vs Actual Returns' and 'Model Accuracy' charts.
+
+    Anchors predicted price to the previous *actual* close (same approach as
+    `ui/charts.create_accuracy_comparison_chart`) — keeps the dotted line from
+    drifting on cumulative-return error.
+    """
+    if results_df is None or len(results_df) == 0:
+        return []
+    try:
+        import math
+
+        actual_ret = results_df.get("Actual_Return")
+        pred_ret = results_df.get("Predicted_Return")
+        if actual_ret is None or pred_ret is None:
+            return []
+
+        # Resolve actual close prices for each test date from the source df.
+        close_series = df["Close"] if "Close" in df.columns else None
+        out: list[TestSeriesPoint] = []
+        for i, idx in enumerate(results_df.index):
+            d_obj = idx.date() if hasattr(idx, "date") else idx
+            ar = float(actual_ret.iloc[i])
+            pr = float(pred_ret.iloc[i])
+            actual_price: float | None = None
+            predicted_price: float | None = None
+            if close_series is not None and idx in close_series.index:
+                actual_price = float(close_series.loc[idx])
+                # Anchor on previous actual close to avoid cumulative drift.
+                pos = close_series.index.get_loc(idx)
+                if isinstance(pos, int) and pos > 0:
+                    prev_actual = float(close_series.iloc[pos - 1])
+                    predicted_price = prev_actual * math.exp(pr)
+            out.append(
+                TestSeriesPoint(
+                    date=d_obj if isinstance(d_obj, date) else pd.to_datetime(d_obj).date(),
+                    actual_return=ar,
+                    predicted_return=pr,
+                    actual_price=actual_price,
+                    predicted_price=predicted_price,
+                )
+            )
+        return out
+    except Exception:
+        return []
 
 
 def _maybe_blend_v2(

@@ -293,22 +293,45 @@ finance/
 - [x] **Scope: no billing** — B7 rewritten in [docs/TASKS.md](docs/TASKS.md)
       as observability-only (Sentry + structlog + OTLP traces + CI). No
       Stripe, no tiers. Single-user personal deployment.
+- [x] **UI parity (2026-04-19)** — Next.js frontend now covers all nine
+      Streamlit surfaces through an 8-tab stock dashboard at
+      [frontend/app/stock/[ticker]/page.tsx](frontend/app/stock/[ticker]/page.tsx):
+      Overview (candlestick + SHAP + calibration + conformal band +
+      **BUY/SELL/HOLD verdict pill driven by τ\***), Technicals (RSI/MACD/BB/
+      ATR + MAs + pivots + Fib levels), Sentiment (6-category breakdown +
+      headlines-by-source + on-demand v2 ensemble panel), Fundamentals
+      (ratios + company info), FII/DII (custom SVG flow bars + cumulative
+      lines), Patterns (detections + support/resistance), Backtest (run form
+      → equity curve vs. buy-and-hold + 12 metrics + DM p-value), Accuracy
+      (7/30/90d rolling windows + ledger rows). Homepage hero + search at
+      [app/page.tsx](frontend/app/page.tsx), header ticker search in
+      [layout.tsx](frontend/app/layout.tsx), polished global accuracy at
+      [app/accuracy/page.tsx](frontend/app/accuracy/page.tsx). Client/server
+      boundary gotcha resolved: `TABS` moved to a plain
+      [tabs.ts](frontend/app/stock/[ticker]/tabs.ts) module so server
+      components can import the array directly. `npm run typecheck` +
+      `npm run build` both green — all 8 routes render.
 
 ### In progress
-- [ ] _(none — backend is feature-complete for the current scope. UI
-      parity with Streamlit is the next user-facing gap.)_
+- [ ] _(none — frontend UI parity + backend are both feature-complete for
+      the current scope.)_
 
 ### Up next
-- [ ] **UI parity** — the Next.js frontend currently covers ~4 of the 9
-      Streamlit tabs. See the audit in the latest conversation for the
-      tab-by-tab gap and scope proposal.
 - [ ] **B7** — Observability (Sentry + structlog + OTLP). **Billing dropped.**
+- [ ] **B4.6 / B4.7 / B5.4** — SSE progress hook (currently polls via
+      `waitForJob`) + frontend WebSocket consumer for `/ws/prices` (backend
+      stream is live; frontend doesn't subscribe yet).
+- [ ] **B4.9** — Deploy Next.js frontend to Vercel pointing at the Railway
+      FastAPI URL + Supabase project.
 - [ ] **Promote first binary model bundle** — replace the bootstrap
       `models-registry/active.json` with a real v1 via
       `models.registry.publish_version()`.
-- [ ] **A3.4 / A9.3** — Flip the fill source to Upstox live once
+- [ ] **A3.4 / A9.1 / A9.3** — Flip the fill source to Upstox live once
       `UPSTOX_ACCESS_TOKEN` lands + run 30-day paper-trade reality check.
       Blocked on KYC only.
+- [ ] **Acceptance criterion** — drive the paper-trade loop until the
+      90-day rolling window hits ≥58% directional / ECE ≤5% / Sharpe ≥1.2
+      with DM p<0.05 vs. buy-and-hold (see TASKS.md bottom of file).
 
 When you finish a task, **move it from "In progress" / "Up next" to "Done"**
 with a one-line note (commit SHA if applicable). Don't let this drift.

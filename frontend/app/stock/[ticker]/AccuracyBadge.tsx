@@ -1,4 +1,4 @@
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import type { AccuracyWindow } from "@/lib/types";
 
 export default async function AccuracyBadge({ ticker }: { ticker: string }) {
@@ -7,8 +7,8 @@ export default async function AccuracyBadge({ ticker }: { ticker: string }) {
     win = await apiFetch<AccuracyWindow>(
       `/api/v1/accuracy?ticker=${encodeURIComponent(ticker)}&days=30`,
     );
-  } catch (e) {
-    if (!(e instanceof ApiError)) throw e;
+  } catch {
+    // API down / 4xx — degrade silently so the page still renders.
   }
   if (!win || win.n_resolved === 0 || win.directional_accuracy == null) {
     return <span className="chip">30d accuracy: n/a</span>;

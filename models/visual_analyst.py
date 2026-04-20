@@ -349,7 +349,17 @@ class PatternAnalyst:
             
             confirmed = current_price < trough_price
             target = trough_price - pattern_height
-            
+
+            # Keypoint dates for chart overlay
+            try:
+                kp = [
+                    {'date': str(df_analysis.index[p1_idx].date()), 'price': round(float(p1_price), 2), 'label': 'Peak 1'},
+                    {'date': str(df_analysis.index[troughs_between[0]].date()), 'price': round(float(trough_price), 2), 'label': 'Neckline'},
+                    {'date': str(df_analysis.index[p2_idx].date()), 'price': round(float(p2_price), 2), 'label': 'Peak 2'},
+                ]
+            except Exception:
+                kp = []
+
             patterns.append({
                 'Pattern': 'Double Top',
                 'Type': 'Bearish Reversal',
@@ -357,7 +367,8 @@ class PatternAnalyst:
                 'Target': round(target, 2),
                 'Confidence': round(confidence, 1),
                 'Status': 'CONFIRMED' if confirmed else 'Forming',
-                'Peak_Price': round(avg_peak, 2)
+                'Peak_Price': round(avg_peak, 2),
+                'keypoints': kp,
             })
         
         # Return best patterns
@@ -404,7 +415,16 @@ class PatternAnalyst:
             
             confirmed = current_price > peak_price
             target = peak_price + pattern_height
-            
+
+            try:
+                kp = [
+                    {'date': str(df_analysis.index[t1_idx].date()), 'price': round(float(t1_price), 2), 'label': 'Bottom 1'},
+                    {'date': str(df_analysis.index[peaks_between[0]].date()), 'price': round(float(peak_price), 2), 'label': 'Neckline'},
+                    {'date': str(df_analysis.index[t2_idx].date()), 'price': round(float(t2_price), 2), 'label': 'Bottom 2'},
+                ]
+            except Exception:
+                kp = []
+
             patterns.append({
                 'Pattern': 'Double Bottom',
                 'Type': 'Bullish Reversal',
@@ -412,7 +432,8 @@ class PatternAnalyst:
                 'Target': round(target, 2),
                 'Confidence': round(confidence, 1),
                 'Status': 'CONFIRMED' if confirmed else 'Forming',
-                'Trough_Price': round(avg_trough, 2)
+                'Trough_Price': round(avg_trough, 2),
+                'keypoints': kp,
             })
         
         patterns.sort(key=lambda x: x['Confidence'], reverse=True)
@@ -468,7 +489,18 @@ class PatternAnalyst:
             
             confirmed = current_price < neckline
             target = neckline - pattern_height
-            
+
+            try:
+                kp = [
+                    {'date': str(df_analysis.index[ls_idx].date()), 'price': round(float(ls_price), 2), 'label': 'Left Shoulder'},
+                    {'date': str(df_analysis.index[h_idx].date()), 'price': round(float(h_price), 2), 'label': 'Head'},
+                    {'date': str(df_analysis.index[rs_idx].date()), 'price': round(float(rs_price), 2), 'label': 'Right Shoulder'},
+                    {'date': str(df_analysis.index[troughs_1[0]].date()), 'price': round(float(neckline), 2), 'label': 'Neckline L'},
+                    {'date': str(df_analysis.index[troughs_2[0]].date()), 'price': round(float(neckline), 2), 'label': 'Neckline R'},
+                ]
+            except Exception:
+                kp = []
+
             patterns.append({
                 'Pattern': 'Head & Shoulders',
                 'Type': 'Bearish Reversal',
@@ -476,7 +508,8 @@ class PatternAnalyst:
                 'Target': round(target, 2),
                 'Confidence': round(confidence, 1),
                 'Status': 'CONFIRMED' if confirmed else 'Forming',
-                'Head_Price': round(h_price, 2)
+                'Head_Price': round(h_price, 2),
+                'keypoints': kp,
             })
         
         patterns.sort(key=lambda x: x['Confidence'], reverse=True)
@@ -532,7 +565,18 @@ class PatternAnalyst:
             
             confirmed = current_price > neckline
             target = neckline + pattern_height
-            
+
+            try:
+                kp = [
+                    {'date': str(df_analysis.index[ls_idx].date()), 'price': round(float(ls_price), 2), 'label': 'Left Shoulder'},
+                    {'date': str(df_analysis.index[h_idx].date()), 'price': round(float(h_price), 2), 'label': 'Head'},
+                    {'date': str(df_analysis.index[rs_idx].date()), 'price': round(float(rs_price), 2), 'label': 'Right Shoulder'},
+                    {'date': str(df_analysis.index[peaks_1[0]].date()), 'price': round(float(neckline), 2), 'label': 'Neckline L'},
+                    {'date': str(df_analysis.index[peaks_2[0]].date()), 'price': round(float(neckline), 2), 'label': 'Neckline R'},
+                ]
+            except Exception:
+                kp = []
+
             patterns.append({
                 'Pattern': 'Inverse H&S',
                 'Type': 'Bullish Reversal',
@@ -540,7 +584,8 @@ class PatternAnalyst:
                 'Target': round(target, 2),
                 'Confidence': round(confidence, 1),
                 'Status': 'CONFIRMED' if confirmed else 'Forming',
-                'Head_Price': round(h_price, 2)
+                'Head_Price': round(h_price, 2),
+                'keypoints': kp,
             })
         
         patterns.sort(key=lambda x: x['Confidence'], reverse=True)

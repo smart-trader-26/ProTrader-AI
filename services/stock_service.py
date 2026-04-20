@@ -60,6 +60,8 @@ def get_fundamentals(ticker: str) -> Fundamentals:
     raw = _raw_fundamentals(ticker) or {}
     return Fundamentals(
         ticker=ticker,
+        market_cap=_coerce(raw.get("Market Cap")),
+        pe_ratio=_coerce(raw.get("P/E Ratio")),
         forward_pe=_coerce(raw.get("Forward P/E")),
         peg_ratio=_coerce(raw.get("PEG Ratio")),
         price_to_book=_coerce(raw.get("Price/Book")),
@@ -69,6 +71,7 @@ def get_fundamentals(ticker: str) -> Fundamentals:
         revenue_growth=_coerce(raw.get("Revenue Growth")),
         free_cashflow=_coerce(raw.get("Free Cashflow")),
         target_price=_coerce(raw.get("Target Price (Analyst)")),
+        dividend_yield=_coerce(raw.get("Dividend Yield")),
     )
 
 

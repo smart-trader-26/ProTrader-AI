@@ -125,6 +125,8 @@ def get_fundamental_data(ticker: str) -> dict:
         
         # Safe extraction with default values
         fundamentals = {
+            "Market Cap": info.get("marketCap", np.nan),
+            "P/E Ratio": info.get("trailingPE", np.nan),
             "Forward P/E": info.get("forwardPE", np.nan),
             "PEG Ratio": info.get("pegRatio", np.nan),
             "Price/Book": info.get("priceToBook", np.nan),
@@ -133,7 +135,14 @@ def get_fundamental_data(ticker: str) -> dict:
             "Profit Margins": info.get("profitMargins", np.nan),
             "Revenue Growth": info.get("revenueGrowth", np.nan),
             "Free Cashflow": info.get("freeCashflow", np.nan),
-            "Target Price (Analyst)": info.get("targetMeanPrice", np.nan)
+            "Target Price (Analyst)": info.get("targetMeanPrice", np.nan),
+            "Dividend Yield": info.get("dividendYield", np.nan),
+            "52W High": info.get("fiftyTwoWeekHigh", np.nan),
+            "52W Low": info.get("fiftyTwoWeekLow", np.nan),
+            "Beta": info.get("beta", np.nan),
+            "EPS (TTM)": info.get("trailingEps", np.nan),
+            "Book Value": info.get("bookValue", np.nan),
+            "Current Price": info.get("currentPrice", np.nan),
         }
         return fundamentals
     except Exception as e:

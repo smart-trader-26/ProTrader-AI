@@ -17,6 +17,7 @@ from schemas.technicals import (
     FiiDiiBundle,
     FiiDiiRow,
     PatternBundle,
+    PatternKeypoint,
     SupportResistance,
     TechnicalSnapshot,
 )
@@ -82,6 +83,17 @@ def get_patterns(ticker: str, lookback_days: int = 365) -> PatternBundle:
         if not isinstance(p, dict):
             continue
         try:
+            raw_kp = p.get("keypoints") or []
+            keypoints = []
+            for kp in raw_kp:
+                try:
+                    keypoints.append(PatternKeypoint(
+                        date=str(kp["date"]),
+                        price=float(kp["price"]),
+                        label=str(kp["label"]),
+                    ))
+                except Exception:
+                    pass
             detected.append(
                 DetectedPattern(
                     name=str(p.get("Pattern") or "Unknown"),
@@ -91,6 +103,7 @@ def get_patterns(ticker: str, lookback_days: int = 365) -> PatternBundle:
                     timeframe_confluence=bool(p.get("timeframe_confluence", False)),
                     neckline=_f(p.get("Neckline")),
                     target=_f(p.get("Target")),
+                    keypoints=keypoints,
                 )
             )
         except (TypeError, ValueError):
@@ -107,10 +120,10 @@ def get_patterns(ticker: str, lookback_days: int = 365) -> PatternBundle:
     trend = result.get("trend") or {}
     return PatternBundle(
         ticker=ticker,
-        trend=_s(trend.get("direction") if isinstance(trend, dict) else trend),
+        trend=_s(trend.get("Trend") if isinstance(trend, dict) else trend),
         market_character=_s(result.get("market_character")),
         hurst_exponent=_f(result.get("hurst_exponent")),
-        bias=_s(result.get("bias")),
+        bias=_s(result.get("overall_bias")),
         patterns=detected,
         support_resistance=sr,
     )

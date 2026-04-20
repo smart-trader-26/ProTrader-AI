@@ -12,7 +12,7 @@ export default function SignOutButton() {
     router.refresh();
   }
   return (
-    <button onClick={handle} className="btn">
+    <button onClick={handle} className="btn" suppressHydrationWarning>
       Sign out
     </button>
   );

@@ -25,13 +25,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-2xl font-semibold mb-4">Dashboard</h1>
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-muted text-sm">
           Signed in as <span className="text-fg">{user.email}</span>. Watchlists
-          and alerts live in Supabase, gated by row-level security.
+          and alerts are scoped to your account via Supabase row-level security.
         </p>
-      </section>
+      </header>
 
       <WatchlistsPanel initial={watchlists} />
       <AlertsPanel initial={alerts} />

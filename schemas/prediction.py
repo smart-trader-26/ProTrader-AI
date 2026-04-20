@@ -15,9 +15,21 @@ class PredictionPoint(BaseModel):
     pred_price: float
     ci_low: float | None = None
     ci_high: float | None = None
+    p25_price: float | None = None
+    p75_price: float | None = None
     confidence_level: float = 0.90
     direction: Direction
     prob_up: float = Field(ge=0.0, le=1.0)
+
+
+class TestSeriesPoint(BaseModel):
+    """One row from the held-out test fold — actual vs predicted (returns + prices)."""
+
+    date: date
+    actual_return: float
+    predicted_return: float
+    actual_price: float | None = None
+    predicted_price: float | None = None
 
 
 class CalibrationReport(BaseModel):
@@ -125,3 +137,5 @@ class PredictionBundle(BaseModel):
     accuracy_30d: AccuracyBadge | None = None
     # A2.4/A2.5 — v2 ensemble late-blend diagnostics (None when v2 wasn't consulted).
     v2_blend: V2BlendInfo | None = None
+    # Test-fold series for "Predicted vs Actual" / "Model Accuracy" charts.
+    test_predictions: list[TestSeriesPoint] = Field(default_factory=list)

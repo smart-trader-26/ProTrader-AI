@@ -32,6 +32,13 @@ class TechnicalSnapshot(BaseModel):
     price_vs_ma50: float | None = None
 
 
+class PatternKeypoint(BaseModel):
+    """A labelled price/date point used to draw pattern shapes on a chart."""
+    date: str  # ISO date string "YYYY-MM-DD"
+    price: float
+    label: str  # "Peak 1", "Bottom 2", "Head", "Left Shoulder", …
+
+
 class DetectedPattern(BaseModel):
     """One chart pattern picked up by `PatternAnalyst`."""
 
@@ -42,6 +49,7 @@ class DetectedPattern(BaseModel):
     timeframe_confluence: bool = False
     neckline: float | None = None
     target: float | None = None
+    keypoints: list[PatternKeypoint] = Field(default_factory=list)
 
 
 class SupportResistance(BaseModel):

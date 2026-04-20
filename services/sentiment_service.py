@@ -9,6 +9,7 @@ lazy pipeline in `news_sentiment._get_sentiment_pipeline`, which enforces
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import UTC, datetime
 
 from data.news_sentiment import (
@@ -23,7 +24,13 @@ from data.news_sentiment import (
 from data.news_sentiment import (
     get_news as _get_news_raw,
 )
-from schemas.sentiment import HeadlineSentiment, SentimentAggregate, SentimentScore
+from schemas.sentiment import (
+    EventBreakdownItem,
+    HeadlineSentiment,
+    SentimentAggregate,
+    SentimentScore,
+    SourceBreakdown,
+)
 
 
 def score_text(text: str) -> SentimentScore:
@@ -43,6 +50,7 @@ def analyze_ticker(
     scored: list[HeadlineSentiment] = []
     pos = neg = neu = 0
     signed_total = 0.0
+    conf_total = 0.0
 
     for art in relevant:
         title = art.get("title") or ""
@@ -60,6 +68,7 @@ def analyze_ticker(
                 score=score,
             )
         )
+        conf_total += score.confidence
         if score.label == "positive":
             pos += 1
             signed_total += score.confidence
@@ -71,6 +80,13 @@ def analyze_ticker(
 
     n = len(scored)
     mean = (signed_total / n) if n else 0.0
+    mean_conf = (conf_total / n) if n else 0.0
+    overall_label = "positive" if mean > 0.1 else "negative" if mean < -0.1 else "neutral"
+
+    breakdown = _per_source_breakdown(scored)
+    agreement, agree_label = _agreement_score(breakdown)
+    events = _event_breakdown(scored)
+
     now = datetime.now(UTC)
     return SentimentAggregate(
         ticker=ticker,
@@ -78,11 +94,84 @@ def analyze_ticker(
         window_end=now,
         n_headlines=n,
         mean_score=mean,
+        confidence=mean_conf,
+        overall_label=overall_label,
         pos_count=pos,
         neg_count=neg,
         neu_count=neu,
         headlines=scored,
+        source_breakdown=breakdown,
+        source_agreement=agreement,
+        source_agreement_label=agree_label,
+        event_breakdown=events,
     )
+
+
+def _per_source_breakdown(headlines: list[HeadlineSentiment]) -> list[SourceBreakdown]:
+    """Group headlines by source, compute signed mean per source."""
+    buckets: dict[str, list[float]] = defaultdict(list)
+    for h in headlines:
+        s = h.source or "unknown"
+        if h.score.label == "positive":
+            buckets[s].append(h.score.confidence)
+        elif h.score.label == "negative":
+            buckets[s].append(-h.score.confidence)
+        else:
+            buckets[s].append(0.0)
+    out: list[SourceBreakdown] = []
+    for src, vals in buckets.items():
+        if not vals:
+            continue
+        m = sum(vals) / len(vals)
+        lbl = "positive" if m > 0.1 else "negative" if m < -0.1 else "neutral"
+        out.append(
+            SourceBreakdown(source=src, n_headlines=len(vals), mean_score=m, label=lbl)
+        )
+    out.sort(key=lambda x: x.n_headlines, reverse=True)
+    return out
+
+
+def _agreement_score(breakdown: list[SourceBreakdown]) -> tuple[float | None, str | None]:
+    """1.0 = all sources agree on direction, 0.0 = perfectly split.
+
+    Score is the maximum share of sources sharing the dominant label, mapped
+    onto [0, 1]. With only one source the agreement is trivially 1.0 — we
+    return None in that case so the UI can label it "single source".
+    """
+    if not breakdown:
+        return None, None
+    if len(breakdown) == 1:
+        return None, "Single source"
+    counts: dict[str, int] = defaultdict(int)
+    for s in breakdown:
+        counts[s.label] += 1
+    top = max(counts.values())
+    score = top / len(breakdown)
+    if score >= 0.8:
+        label = "Sources Agree"
+    elif score >= 0.6:
+        label = "Mostly Agree"
+    elif score >= 0.4:
+        label = "Split View"
+    else:
+        label = "Sources Disagree"
+    return float(score), label
+
+
+def _event_breakdown(headlines: list[HeadlineSentiment]) -> list[EventBreakdownItem]:
+    """Tally per-category counts + share for the news-event pie chart."""
+    if not headlines:
+        return []
+    counts: dict[str, int] = defaultdict(int)
+    for h in headlines:
+        counts[(h.category or "Other").lower()] += 1
+    total = sum(counts.values()) or 1
+    out = [
+        EventBreakdownItem(category=cat, count=n, share=n / total)
+        for cat, n in counts.items()
+    ]
+    out.sort(key=lambda x: x.count, reverse=True)
+    return out
 
 
 def _parse_dt(val) -> datetime | None:

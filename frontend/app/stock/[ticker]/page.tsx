@@ -1,18 +1,31 @@
 import { createClient } from "@/utils/supabase/server";
 import { apiFetch, ApiError } from "@/lib/api";
-import type { StockHistory, SentimentAggregate } from "@/lib/types";
+import type { StockHistory } from "@/lib/types";
 import { redirect } from "next/navigation";
-import PriceSparkline from "./PriceSparkline";
-import PredictPanel from "./PredictPanel";
 import AccuracyBadge from "./AccuracyBadge";
+import StockTabs from "./StockTabs";
+import { TAB_KEYS, DEFAULT_TAB } from "./tabs";
+import OverviewTab from "./tabs/OverviewTab";
+import TechnicalsTab from "./tabs/TechnicalsTab";
+import SentimentTab from "./tabs/SentimentTab";
+import FundamentalsTab from "./tabs/FundamentalsTab";
+import FiiDiiTab from "./tabs/FiiDiiTab";
+import PatternsTab from "./tabs/PatternsTab";
+import BacktestTab from "./tabs/BacktestTab";
+import AccuracyTab from "./tabs/AccuracyTab";
+import { formatINR, formatPercent, toneFor } from "@/lib/format";
 
 export default async function StockPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ ticker: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { ticker: raw } = await params;
   const ticker = raw.toUpperCase();
+  const sp = await searchParams;
+  const tab = TAB_KEYS.has(sp.tab ?? "") ? (sp.tab as string) : DEFAULT_TAB;
 
   const supabase = await createClient();
   const {
@@ -21,42 +34,63 @@ export default async function StockPage({
   if (!user) redirect(`/login?next=/stock/${ticker}`);
 
   const ohlcv = await safe<StockHistory>(`/api/v1/stocks/${ticker}/ohlcv`);
-  const sentiment = await safe<SentimentAggregate>(
-    `/api/v1/stocks/${ticker}/sentiment`,
-  );
+
+  const lastClose = ohlcv?.bars.length ? ohlcv.bars[ohlcv.bars.length - 1].close : null;
+  const firstClose = ohlcv?.bars.length ? ohlcv.bars[0].close : null;
+  const windowChange =
+    lastClose != null && firstClose != null && firstClose !== 0
+      ? ((lastClose - firstClose) / firstClose) * 100
+      : null;
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{ticker}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{ticker}</h1>
           <p className="text-sm text-muted">
             {ohlcv
               ? `${ohlcv.bars.length} bars · ${ohlcv.start} → ${ohlcv.end}`
-              : "OHLCV unavailable"}
+              : "OHLCV unavailable — upstream may be rate-limited."}
           </p>
         </div>
-        <AccuracyBadge ticker={ticker} />
+        <div className="flex items-center gap-3">
+          {lastClose != null && (
+            <div className="text-right">
+              <p className="text-xs uppercase text-muted tracking-wide">Last close</p>
+              <p className="text-xl font-semibold tabular-nums">
+                {formatINR(lastClose)}
+              </p>
+              {windowChange != null && (
+                <p
+                  className={`text-xs ${
+                    toneFor(windowChange) === "bull"
+                      ? "text-bull"
+                      : toneFor(windowChange) === "bear"
+                      ? "text-bear"
+                      : "text-muted"
+                  }`}
+                >
+                  {formatPercent(windowChange)} over window
+                </p>
+              )}
+            </div>
+          )}
+          <AccuracyBadge ticker={ticker} />
+        </div>
       </header>
 
-      {ohlcv && ohlcv.bars.length > 0 ? (
-        <section className="panel">
-          <PriceSparkline bars={ohlcv.bars} />
-        </section>
-      ) : (
-        <section className="panel text-sm text-muted">
-          No OHLCV returned — the upstream may be rate-limited.
-        </section>
-      )}
+      <StockTabs ticker={ticker} active={tab} />
 
-      <PredictPanel ticker={ticker} />
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Sentiment</h2>
-        {sentiment ? <SentimentBlock s={sentiment} /> : (
-          <p className="panel text-sm text-muted">No headline sentiment available.</p>
-        )}
-      </section>
+      <div className="pt-2">
+        {tab === "overview" && <OverviewTab ticker={ticker} ohlcv={ohlcv} />}
+        {tab === "technicals" && <TechnicalsTab ticker={ticker} />}
+        {tab === "sentiment" && <SentimentTab ticker={ticker} />}
+        {tab === "fundamentals" && <FundamentalsTab ticker={ticker} />}
+        {tab === "fii-dii" && <FiiDiiTab />}
+        {tab === "patterns" && <PatternsTab ticker={ticker} />}
+        {tab === "backtest" && <BacktestTab ticker={ticker} />}
+        {tab === "accuracy" && <AccuracyTab ticker={ticker} />}
+      </div>
     </div>
   );
 }
@@ -68,54 +102,4 @@ async function safe<T>(path: string): Promise<T | null> {
     if (e instanceof ApiError) return null;
     return null;
   }
-}
-
-function SentimentBlock({ s }: { s: SentimentAggregate }) {
-  const tone = s.mean_score > 0.1 ? "bull" : s.mean_score < -0.1 ? "bear" : "muted";
-  return (
-    <div className="space-y-3">
-      <div className="panel flex items-center gap-6">
-        <div>
-          <p className="text-xs uppercase text-muted">Mean score</p>
-          <p className={`text-2xl font-semibold text-${tone}`}>
-            {s.mean_score.toFixed(3)}
-          </p>
-        </div>
-        <div className="text-sm text-muted">
-          {s.n_headlines} headlines · +{s.pos_count} / -{s.neg_count} / ={s.neu_count}
-        </div>
-      </div>
-      <ul className="space-y-2">
-        {s.headlines.slice(0, 8).map((h, i) => (
-          <li key={i} className="panel text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <a
-                href={h.url ?? "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-accent line-clamp-2"
-              >
-                {h.title}
-              </a>
-              <span
-                className={`chip ${
-                  h.score.label === "positive"
-                    ? "text-bull"
-                    : h.score.label === "negative"
-                    ? "text-bear"
-                    : ""
-                }`}
-              >
-                {h.score.label} · {(h.score.confidence * 100).toFixed(0)}%
-              </span>
-            </div>
-            <div className="text-xs text-muted mt-1">
-              {h.source}
-              {h.published_at && ` · ${new Date(h.published_at).toLocaleString()}`}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }

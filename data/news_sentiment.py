@@ -140,6 +140,74 @@ def _fetch_google_news_rss(stock_symbol: str, company_name: str = None) -> list:
     return articles
 
 
+def _fetch_google_news_hindi(stock_symbol: str, company_name: str = None) -> list:
+    """Hindi-language Google News RSS — broadens domestic coverage that the
+    English feed misses (mirrors the multi-locale fetch in
+    `sentiment_analysis_v2.py`). Failures degrade silently to an empty list.
+    """
+    articles = []
+    search_term = company_name or stock_symbol
+    rss_url = (
+        f"https://news.google.com/rss/search?q={search_term}&hl=hi-IN&gl=IN&ceid=IN:hi"
+    )
+    try:
+        feed = feedparser.parse(rss_url)
+        for entry in feed.entries[:20]:
+            try:
+                pub_date = entry.get("published", "")
+                if pub_date:
+                    try:
+                        parsed_date = datetime(*entry.published_parsed[:6])
+                        pub_date = parsed_date.isoformat()
+                    except Exception:
+                        pub_date = datetime.now().isoformat()
+                articles.append(
+                    {
+                        "title": entry.get("title", ""),
+                        "description": entry.get("summary", ""),
+                        "publishedAt": pub_date,
+                        "source": {"name": "Google News (Hindi)"},
+                        "url": entry.get("link", ""),
+                        "language": "hi",
+                    }
+                )
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return articles
+
+
+def _fetch_gnews_lib(stock_symbol: str, company_name: str = None) -> list:
+    """Use the `gnews` PyPI client when installed — broader query coverage
+    (period=7d, language toggling) than the bare RSS endpoint. Skipped
+    silently when the dependency isn't available so the install stays
+    free-tier (zero-key)."""
+    try:
+        from gnews import GNews  # type: ignore[import-not-found]
+    except Exception:
+        return []
+    out: list = []
+    search_term = company_name or stock_symbol
+    for lang, country, label in (("en", "IN", "GNews EN"), ("hi", "IN", "GNews HI")):
+        try:
+            client = GNews(language=lang, country=country, period="7d", max_results=15)
+            for art in client.get_news(f"{search_term} stock") or []:
+                out.append(
+                    {
+                        "title": art.get("title", ""),
+                        "description": art.get("description", ""),
+                        "publishedAt": art.get("published date", ""),
+                        "source": {"name": (art.get("publisher") or {}).get("title", label)},
+                        "url": art.get("url", ""),
+                        "language": lang,
+                    }
+                )
+        except Exception:
+            continue
+    return out
+
+
 def _fetch_economic_times_rss(stock_symbol: str) -> list:
     """Fetch news from Economic Times RSS feeds."""
     articles = []
@@ -202,9 +270,17 @@ def get_news(stock_symbol: str) -> list:
         except Exception:
             pass
 
-    # Source 2: Google News RSS
+    # Source 2: Google News RSS (English-IN)
     google_articles = _fetch_google_news_rss(stock_symbol, company_name)
     all_articles.extend(google_articles)
+
+    # Source 2b: Google News RSS (Hindi-IN) — broadens domestic coverage.
+    hindi_articles = _fetch_google_news_hindi(stock_symbol, company_name)
+    all_articles.extend(hindi_articles)
+
+    # Source 2c: gnews PyPI client (if installed) — period=7d EN+HI.
+    gnews_articles = _fetch_gnews_lib(stock_symbol, company_name)
+    all_articles.extend(gnews_articles)
 
     # Source 3: Economic Times RSS
     et_articles = _fetch_economic_times_rss(stock_symbol)

@@ -114,6 +114,7 @@ export default function TickerPicker({
         onFocus={() => value && setOpen(true)}
         onKeyDown={onKeyDown}
         autoComplete="off"
+        suppressHydrationWarning
       />
       {open && (results.length > 0 || loading) && (
         <ul className="absolute z-10 mt-1 max-h-64 w-full overflow-auto rounded-md border border-border bg-panel shadow-lg">
