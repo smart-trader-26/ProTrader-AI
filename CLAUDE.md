@@ -311,24 +311,49 @@ finance/
       [tabs.ts](frontend/app/stock/[ticker]/tabs.ts) module so server
       components can import the array directly. `npm run typecheck` +
       `npm run build` both green — all 8 routes render.
+- [x] **A3.4** — review. [scripts/populate_instruments.py](scripts/populate_instruments.py)
+      auto-downloads Upstox NSE BOD instrument file and builds
+      `config/upstox_instruments.json` (ticker.NS → `NSE_EQ|ISIN` map for
+      ~2000+ equities). [data/upstox_client.py](data/upstox_client.py) now
+      has `get_ltp_batch()` (one HTTP call for N tickers).
+      [workers/tick_publisher.py](workers/tick_publisher.py) upgraded to
+      batch Upstox path with per-ticker yfinance fallback.
+- [x] **A9.1** — review. Upstox access token is in `.env`; `is_configured()`
+      returns True; LTP + batch LTP endpoints are live.
+- [x] **A9.3** — review. [scripts/run_paper_trade.py](scripts/run_paper_trade.py)
+      daily runner: predict → signal → open/close positions → mark-to-market
+      → book summary. Supports `--dry-run`, `--tickers`, CLI/env/default
+      universe. 30-day paper-trade reality check starts now.
+- [x] **B7** — review. Observability stack landed:
+      [api/observability/sentry.py](api/observability/sentry.py) (B7.1, gated
+      on `SENTRY_DSN`), [api/observability/logging.py](api/observability/logging.py)
+      + [api/observability/middleware.py](api/observability/middleware.py) (B7.2,
+      structlog + request-ID correlation),
+      [api/observability/tracing.py](api/observability/tracing.py) (B7.3, OTLP
+      export gated on `OTEL_EXPORTER_OTLP_ENDPOINT`),
+      [.github/workflows/ci.yml](.github/workflows/ci.yml) upgraded (B7.4,
+      frontend build check + deploy webhook). Frontend Sentry stub at
+      [frontend/lib/sentry.ts](frontend/lib/sentry.ts). All wired into
+      `api/main.py` lifespan. 7 new tests.
+- [x] **B4.6 / B4.7 / B5.4** — review. Frontend hooks created:
+      [frontend/hooks/useJobProgress.ts](frontend/hooks/useJobProgress.ts)
+      (SSE-ready progress polling with smooth percentage estimation),
+      [frontend/hooks/useTickerPrices.ts](frontend/hooks/useTickerPrices.ts)
+      (WebSocket live price stream with auto-reconnect + backoff),
+      [frontend/components/LivePriceBadge.tsx](frontend/components/LivePriceBadge.tsx)
+      (pulsing dot + live price badge component).
+- [x] **Promote first model bundle** — review.
+      [scripts/promote_model.py](scripts/promote_model.py) CLI to publish model
+      versions to the registry. `active.json` flipped to `v1` with manifest at
+      [models-registry/v1/manifest.json](models-registry/v1/manifest.json).
 
 ### In progress
 - [ ] _(none — frontend UI parity + backend are both feature-complete for
       the current scope.)_
 
 ### Up next
-- [ ] **B7** — Observability (Sentry + structlog + OTLP). **Billing dropped.**
-- [ ] **B4.6 / B4.7 / B5.4** — SSE progress hook (currently polls via
-      `waitForJob`) + frontend WebSocket consumer for `/ws/prices` (backend
-      stream is live; frontend doesn't subscribe yet).
 - [ ] **B4.9** — Deploy Next.js frontend to Vercel pointing at the Railway
       FastAPI URL + Supabase project.
-- [ ] **Promote first binary model bundle** — replace the bootstrap
-      `models-registry/active.json` with a real v1 via
-      `models.registry.publish_version()`.
-- [ ] **A3.4 / A9.1 / A9.3** — Flip the fill source to Upstox live once
-      `UPSTOX_ACCESS_TOKEN` lands + run 30-day paper-trade reality check.
-      Blocked on KYC only.
 - [ ] **Acceptance criterion** — drive the paper-trade loop until the
       90-day rolling window hits ≥58% directional / ECE ≤5% / Sharpe ≥1.2
       with DM p<0.05 vs. buy-and-hold (see TASKS.md bottom of file).

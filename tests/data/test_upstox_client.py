@@ -155,3 +155,85 @@ def test_default_fill_source_prefers_upstox_when_available(monkeypatch):
     monkeypatch.setattr(pts, "_yf_fill", _should_not_run)
     assert pts.default_fill_source("RELIANCE.NS") == 2840.0
     assert called["yf"] == 0
+
+
+# ─── Batch LTP tests ───────────────────────────────────────────
+
+
+def test_get_ltp_batch_returns_prices(monkeypatch, tmp_path):
+    from data import upstox_client as uc
+
+    map_path = tmp_path / "instruments.json"
+    import json
+    map_path.write_text(
+        json.dumps({
+            "RELIANCE.NS": "NSE_EQ|INE002A01018",
+            "TCS.NS": "NSE_EQ|INE467B01029",
+        }),
+        encoding="utf-8",
+    )
+
+    def secret(k, d=""):
+        if k == "UPSTOX_ACCESS_TOKEN":
+            return "tok_abc"
+        if k == "UPSTOX_INSTRUMENTS_JSON":
+            return str(map_path)
+        return d
+
+    monkeypatch.setattr(uc, "_get_secret", secret)
+
+    class Resp:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "data": {
+                    "NSE_EQ:INE002A01018": {"last_price": 2841.5},
+                    "NSE_EQ:INE467B01029": {"last_price": 3920.0},
+                }
+            }
+
+    class OKSession:
+        def get(self, *a, **k):
+            return Resp()
+
+    monkeypatch.setattr(uc, "_session", lambda: OKSession())
+    result = uc.get_ltp_batch(["RELIANCE.NS", "TCS.NS"])
+    assert result["RELIANCE.NS"] == pytest.approx(2841.5)
+    assert result["TCS.NS"] == pytest.approx(3920.0)
+
+
+def test_get_ltp_batch_returns_empty_when_no_token(monkeypatch):
+    from data import upstox_client as uc
+    monkeypatch.setattr(uc, "_get_secret", lambda k, d="": "")
+    assert uc.get_ltp_batch(["RELIANCE.NS"]) == {}
+
+
+def test_get_ltp_batch_swallows_network_errors(monkeypatch, tmp_path):
+    from data import upstox_client as uc
+    import json
+
+    map_path = tmp_path / "instruments.json"
+    map_path.write_text(
+        json.dumps({"RELIANCE.NS": "NSE_EQ|INE002A01018"}),
+        encoding="utf-8",
+    )
+
+    def secret(k, d=""):
+        if k == "UPSTOX_ACCESS_TOKEN":
+            return "tok_abc"
+        if k == "UPSTOX_INSTRUMENTS_JSON":
+            return str(map_path)
+        return d
+
+    monkeypatch.setattr(uc, "_get_secret", secret)
+
+    class BadSession:
+        def get(self, *a, **k):
+            raise RuntimeError("network exploded")
+
+    monkeypatch.setattr(uc, "_session", lambda: BadSession())
+    assert uc.get_ltp_batch(["RELIANCE.NS"]) == {}

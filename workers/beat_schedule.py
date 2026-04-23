@@ -17,11 +17,18 @@ from typing import Any
 
 def build_beat_schedule(crontab) -> dict[str, dict[str, Any]]:
     return {
+        # Generate predictions and enter paper trades every morning.
+        # 03:30 UTC = 09:00 IST (15 minutes before NSE opens). Mon-Fri only.
+        "paper-trade-daily": {
+            "task": "protrader.paper_trade",
+            "schedule": crontab(hour=3, minute=30, day_of_week="mon-fri"),
+            "kwargs": {"dry_run": False},
+        },
         # Resolve actuals for any prediction whose target_date has passed.
-        # 11:00 UTC = 16:30 IST = ~30 min after NSE close.
+        # 11:00 UTC = 16:30 IST = ~30 min after NSE close. Mon-Fri only.
         "ledger-backfill-daily": {
             "task": "protrader.ledger_backfill",
-            "schedule": crontab(hour=11, minute=0),
+            "schedule": crontab(hour=11, minute=0, day_of_week="mon-fri"),
             "kwargs": {},
         },
         # Refresh top-of-watchlist sentiment every 5 min during NSE hours

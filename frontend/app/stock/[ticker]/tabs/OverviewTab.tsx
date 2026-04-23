@@ -512,7 +512,7 @@ function VerdictBanner({
     : `Hurst exponent ${bundle.hurst_exponent.toFixed(3)} is near 0.5 (random walk) — no strong directional bias from regime.`;
 
   const tauExpl = bundle.threshold_tuning
-    ? `τ* = ${(tau * 100).toFixed(1)}% was learned from the holdout set (Youden's J on ${bundle.threshold_tuning.n_holdout ?? "?"} samples, AUC = ${bundle.threshold_tuning.auc != null ? bundle.threshold_tuning.auc.toFixed(3) : "?"}).`
+    ? `τ* = ${(tau * 100).toFixed(1)}% was learned from the holdout set (Youden's J, AUC = ${bundle.threshold_tuning.auc != null ? bundle.threshold_tuning.auc.toFixed(3) : "?"}).`
     : null;
 
   const v2Expl = bundle.v2_blend?.used

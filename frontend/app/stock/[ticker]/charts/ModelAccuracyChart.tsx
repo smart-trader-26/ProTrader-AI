@@ -155,6 +155,7 @@ export default function ModelAccuracyChart({
         <Legend color="#ef4444" label="Model Prediction (Test Period)" dashed />
         <Legend color="#22c55e" label="Future Forecast" />
       </div>
+      </ZoomableChart>
     </div>
   );
 }

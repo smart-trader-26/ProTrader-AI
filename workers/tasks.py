@@ -127,6 +127,25 @@ def alert_eval_task(**kwargs):
     return _alert_eval_sync(**kwargs)
 
 
+# ───────────────────────── paper trading ───────────────────────────
+
+def _paper_trade_sync(**kwargs):
+    """
+    Run the daily paper-trade loop across the universe.
+    """
+    from scripts.run_paper_trade import run_cycle, _default_tickers
+    
+    tickers = kwargs.get("tickers") or _default_tickers()
+    dry_run = kwargs.get("dry_run", False)
+    
+    return run_cycle(tickers, dry_run=dry_run)
+
+
+@app.task(name="protrader.paper_trade")
+def paper_trade_task(**kwargs):
+    return _to_json(_paper_trade_sync(**kwargs))
+
+
 # ───────────────────────── registry ──────────────────────────────────
 
 TASK_REGISTRY: dict[str, TaskPair] = {
@@ -135,8 +154,8 @@ TASK_REGISTRY: dict[str, TaskPair] = {
     "ledger_backfill": TaskPair(sync_fn=_ledger_backfill_sync, celery_task=ledger_backfill_task),
     "news_refresh":    TaskPair(sync_fn=_news_refresh_sync,    celery_task=news_refresh_task),
     "alert_eval":      TaskPair(sync_fn=_alert_eval_sync,      celery_task=alert_eval_task),
+    "paper_trade":     TaskPair(sync_fn=_paper_trade_sync,     celery_task=paper_trade_task),
 }
-
 
 def _to_json(result):
     if hasattr(result, "model_dump"):

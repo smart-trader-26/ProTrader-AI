@@ -155,6 +155,15 @@ _ALLOWED_ORIGINS = _env_origins or _default_origins
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # ── B7: Observability bootstrap (all gated on env vars) ──
+    from api.observability.logging import setup_logging
+    from api.observability.sentry import init_sentry
+    from api.observability.tracing import init_tracing
+
+    setup_logging()    # B7.2 — structlog (always; JSON in prod, console in dev)
+    init_sentry()      # B7.1 — Sentry (only when SENTRY_DSN is set)
+    init_tracing()     # B7.3 — OTLP traces (only when OTEL_EXPORTER_OTLP_ENDPOINT is set)
+
     yield
     # Drain in-process job workers cleanly so SIGTERM doesn't lose jobs
     # in flight. With Celery (B2) this is a no-op.
@@ -194,6 +203,10 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
     app.add_middleware(SlowAPIMiddleware)
+
+    # B7.2 — request-id correlation (binds to structlog contextvars)
+    from api.observability.middleware import RequestIdMiddleware
+    app.add_middleware(RequestIdMiddleware)
 
     app.add_middleware(
         CORSMiddleware,

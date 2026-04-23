@@ -93,8 +93,24 @@ def _fetch_quote(ticker: str) -> tuple[float | None, str]:
 def _poll_once(symbols: list[str]) -> int:
     published = 0
     now = datetime.now(UTC).isoformat()
+
+    # ── Batch path: try Upstox for all symbols in one HTTP call ──
+    upstox_prices: dict[str, float] = {}
+    try:
+        from data.upstox_client import get_ltp_batch, is_configured
+
+        if is_configured():
+            upstox_prices = get_ltp_batch(symbols)
+    except Exception as e:  # noqa: BLE001
+        log.debug("upstox batch LTP unavailable: %s", e)
+
     for sym in symbols:
-        price, source = _fetch_quote(sym)
+        price = upstox_prices.get(sym)
+        source = "upstox"
+        # Fall back to yfinance for symbols missing from the batch result
+        if price is None or price <= 0:
+            price = _last_close(sym)
+            source = "yfinance"
         if price is None:
             continue
         publish(Tick(ticker=sym, ts=now, price=price, source=source))

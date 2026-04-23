@@ -99,3 +99,15 @@ sqlalchemy>=2.0.0,<3.0.0
 pyjwt>=2.8.0
 slowapi>=0.1.9
 respx>=0.21.0
+
+# ── Track B7: Observability ─────────────────────────────
+# structlog always active (JSON in prod, console in dev).
+# sentry-sdk + OTLP packages are only active when their DSN / endpoint
+# env vars are set — safe to install without configuration.
+structlog>=24.1.0
+sentry-sdk[fastapi]>=2.0.0
+opentelemetry-api>=1.23.0
+opentelemetry-sdk>=1.23.0
+opentelemetry-exporter-otlp-proto-http>=1.23.0
+opentelemetry-instrumentation-fastapi>=0.44b0
+

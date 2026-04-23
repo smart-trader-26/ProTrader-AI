@@ -28,18 +28,15 @@ jobs:
         # opt in with `pip install -r requirements.txt`.
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ruff pytest pydantic pandas numpy
+          python -m pip install ruff pytest pydantic pandas numpy structlog
 
       - name: Lint (ruff)
-        run: ruff check schemas services tests
+        run: ruff check schemas services tests api scripts
 
       - name: Test (fast schema suite)
         run: pytest tests/schemas -q
 
       - name: Import check for services
-        # Services import the full ML stack — skip if heavy deps aren't installed
-        # rather than failing. Once requirements.txt is the CI baseline, this
-        # becomes a hard check.
         run: |
           python - <<'PY'
           try:
@@ -48,3 +45,55 @@ jobs:
           except Exception as e:
               raise SystemExit(f"schema import failed: {e}")
           PY
+
+  # ── B7.4: Frontend build check ────────────────────────
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Type check
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  # ── B7.4: Deploy webhook on merge to main ─────────────
+  deploy:
+    needs: [lint-and-test, frontend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # Railway auto-deploys from GitHub — this step is a webhook trigger
+      # for services that don't have GitHub integration (e.g. self-hosted).
+      # When RAILWAY_DEPLOY_WEBHOOK is unset, this step is a no-op.
+      - name: Trigger Railway deploy
+        if: env.RAILWAY_DEPLOY_WEBHOOK != ''
+        env:
+          RAILWAY_DEPLOY_WEBHOOK: ${{ secrets.RAILWAY_DEPLOY_WEBHOOK }}
+        run: |
+          curl -fsS -X POST "$RAILWAY_DEPLOY_WEBHOOK" || echo "Railway webhook failed (non-fatal)"
+
+      # Vercel auto-deploys from GitHub by default — no webhook needed.
+      # This step is kept as documentation / placeholder for manual triggers.
+      - name: Deploy summary
+        run: echo "Backend deploys via Railway. Frontend deploys via Vercel. Both watch main."

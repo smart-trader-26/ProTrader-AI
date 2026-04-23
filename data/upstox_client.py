@@ -137,6 +137,80 @@ def get_ltp(ticker: str) -> float | None:
         return None
 
 
+def get_ltp_batch(tickers: list[str]) -> dict[str, float]:
+    """
+    Batch LTP fetch — one HTTP call for up to ~50 tickers.
+
+    Returns ``{ticker: price}`` for every ticker that resolved to an
+    instrument key AND returned a valid price. Tickers that fail silently
+    are omitted from the result.
+
+    Upstox accepts a comma-separated ``instrument_key`` query param.
+    The response nests data under the colon-separated variant
+    (``NSE_EQ:INE...`` instead of ``NSE_EQ|INE...``).
+    """
+    token = _get_secret("UPSTOX_ACCESS_TOKEN", "")
+    if not token:
+        return {}
+
+    # Build instrument_key → ticker reverse map for result lookup
+    key_to_ticker: dict[str, str] = {}
+    for t in tickers:
+        k = resolve_instrument_key(t)
+        if k:
+            key_to_ticker[k] = t
+
+    if not key_to_ticker:
+        return {}
+
+    try:
+        keys_csv = ",".join(key_to_ticker.keys())
+        resp = _session().get(
+            _LTP_URL,
+            params={"instrument_key": keys_csv},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=_REQUEST_TIMEOUT + 5,  # slightly longer for batch
+        )
+        resp.raise_for_status()
+        payload = resp.json() or {}
+        data = payload.get("data") or {}
+    except Exception as e:  # noqa: BLE001
+        log.debug("upstox batch LTP failed: %s", e)
+        return {}
+
+    result: dict[str, float] = {}
+    for ikey, ticker in key_to_ticker.items():
+        # Try both separator variants
+        candidate = data.get(ikey) or data.get(ikey.replace("|", ":"))
+        if not candidate:
+            continue
+        price = candidate.get("last_price")
+        if price is not None:
+            result[ticker] = float(price)
+    return result
+
+
+def auto_populate_instruments() -> int:
+    """
+    Download the NSE BOD file and populate config/upstox_instruments.json.
+
+    Returns the number of instruments written. Safe to call repeatedly —
+    overwrites the file each time.
+    """
+    try:
+        from scripts.populate_instruments import populate
+
+        mapping = populate()
+        # Reset the cached map so the new entries take effect immediately
+        global _instrument_map
+        with _load_lock:
+            _instrument_map = None
+        return len(mapping)
+    except Exception as e:  # noqa: BLE001
+        log.warning("auto-populate instruments failed: %s", e)
+        return 0
+
+
 def upstox_fill_source(ticker: str) -> float | None:
     """Matches the `PaperTradeService(fill_source=...)` signature."""
     return get_ltp(ticker)

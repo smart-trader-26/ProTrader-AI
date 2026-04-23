@@ -1,0 +1,13 @@
+{
+  "model_type": "hybrid-v1-blend",
+  "notes": "In-process hybrid model (trains on demand). This manifest records the training configuration for reproducibility. Binary pkl artifacts will be added when the model supports serialisation of fitted weights.",
+  "tickers": [
+    "RELIANCE.NS",
+    "TCS.NS",
+    "INFY.NS",
+    "HDFCBANK.NS",
+    "ICICIBANK.NS"
+  ],
+  "trained_at": "2026-04-22T01:03:22.010001+00:00",
+  "version": "v1"
+}
