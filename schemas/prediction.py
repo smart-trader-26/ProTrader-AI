@@ -19,7 +19,7 @@ class PredictionPoint(BaseModel):
     p75_price: float | None = None
     confidence_level: float = 0.90
     direction: Direction
-    prob_up: float = Field(ge=0.0, le=1.0)
+    prob_up: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class TestSeriesPoint(BaseModel):
@@ -100,6 +100,17 @@ class WalkforwardSummary(BaseModel):
     n_windows: int | None = None
 
 
+class ConvictionPrecision(BaseModel):
+    """Precision restricted to high-conviction calls (Phase 3B)."""
+
+    threshold: float = 0.60
+    n_high_bull: int = 0
+    n_high_bear: int = 0
+    bull_precision: float | None = None
+    bear_precision: float | None = None
+    conviction_rate: float = 0.0
+
+
 class PredictionBundle(BaseModel):
     ticker: str
     made_at: datetime
@@ -125,7 +136,8 @@ class PredictionBundle(BaseModel):
 
     # Interval metadata (A6)
     confidence_level: float = 0.90
-    conformal_halfwidth: float | None = None  # ± log-return half-width (None if not fit)
+    conformal_halfwidth: float | None = None  # ±INR price half-width (None if not fit)
+    conformal_halfwidth_return: float | None = None  # raw log-return halfwidth (diagnostic)
 
     # Explainability + per-learner diagnostics
     shap_top_features: list[ShapFeature] = Field(default_factory=list)
@@ -139,3 +151,10 @@ class PredictionBundle(BaseModel):
     v2_blend: V2BlendInfo | None = None
     # Test-fold series for "Predicted vs Actual" / "Model Accuracy" charts.
     test_predictions: list[TestSeriesPoint] = Field(default_factory=list)
+    # 3A — naive baselines (model must beat these)
+    naive_up_rate: float | None = None
+    naive_accuracy: float | None = None
+    naive_brier: float | None = None
+    # 3B — conviction-precision gate
+    conviction_precision: ConvictionPrecision | None = None
+

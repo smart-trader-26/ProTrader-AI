@@ -1,0 +1,91 @@
+
+\newcommand{\subparagraph}{}
+
+\usepackage{emptypage,titling,titlesec,widetext,textcomp,relsize,parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=10pt,font=footnotesize,labelsep=period]{caption}
+\usepackage{tabulary,longtable,makecell,multirow,color,colortbl}
+\usepackage[colorlinks=false,linkcolor=black,urlcolor=gray,citecolor=black]{hyperref}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{authblk,lipsum,float,morefloats,graphicx,setspace,fancyhdr,bibunits,booktabs,array,marvosym,xhfill}
+\usepackage{txfonts}
+%% txfonts pre-defines \iint etc.; let amsmath redefine cleanly
+\let\iint\relax\let\iiint\relax\let\iiiint\relax\let\idotsint\relax
+\usepackage[normalem]{ulem}
+\usepackage[export]{adjustbox}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds,calc}
+
+%% for letter paper size
+\usepackage[includeheadfoot,paperwidth=8.5in,paperheight=11in,top=1cm,bottom=2cm,left=2cm,right=2cm,footskip=.25in,headheight=40pt,headsep=12pt,heightrounded]{geometry}
+
+\setlength{\parindent}{5mm}
+\setlength{\parskip}{3mm}
+\belowcaptionskip 0.0pt
+
+\newcommand{\tm}{{\fontfamily{cmss}\selectfont\texttrademark}~}
+\newcommand{\cpyrt}{\fontfamily{cmss}\selectfont\textcopyright}
+\newcommand{\regtm}{\textsuperscript{\fontfamily{cmss}\selectfont\textregistered}~}
+
+\newcommand{\etal}{et~al.}
+\newcommand{\ie}{i.e.,}
+\newcommand{\eg}{e.g.,}
+\newcommand{\squeezeup}{\vspace{-3.5mm}}
+\newcommand{\xfill}[2][1ex]{{\dimen0=#2\advance\dimen0 by #1\leaders\hrule height \dimen0 depth -#1\hfill}}
+\newcommand{\xfilll}[2][1ex]{\dimen0=#2\advance\dimen0 by #1\leaders\hrule height \dimen0 depth -#1\hfill}
+
+\renewcommand\Authfont{\fontsize{11}{13.2}\selectfont}
+\renewcommand\Affilfont{\fontsize{9}{10.8}\itshape}
+\renewcommand{\figurename}{Figure}
+\renewcommand{\headrulewidth}{.5pt}
+\renewcommand{\footrulewidth}{.5pt}
+\renewcommand\Authands{ and }
+
+\titlespacing\section{0pt}{8pt plus 4pt minus 2pt}{2pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{8pt plus 4pt minus 2pt}{2pt plus 2pt minus 2pt}
+\titlespacing\subsubsection{0pt}{8pt plus 4pt minus 2pt}{2pt plus 2pt minus 2pt}
+
+\newcommand{\subtitle}[1]{\posttitle{\par\end{center}\begin{center}\bfseries\Large #1\end{center}\vskip1.2em}}
+\newcommand\myabstract[2][.8]{\renewcommand\maketitlehookd{\mbox{}\medskip\par\centering\begin{minipage}{#1\textwidth}\small#2\end{minipage}}}
+
+\definecolor{myred}{RGB}{189, 3, 34}
+\raggedbottom
+\setcounter{page}{1}
+\setcounter{secnumdepth}{4}
+\date{}
+
+\title{\vspace{-1cm}{\includegraphics[height=0.5in,keepaspectratio=true]{ub_logo}\hfill\parbox{15cm}{\raggedleft\sublargesize{\color{myred}\bfseries{International Journal of Computing and Digital Systems\\}}\sublargesize{ 2025, VOL. 18, NO. 1, 1--13\\\vspace{3mm} \url{http://dx.doi.org/10.12785/ijcds/XXXXXX}}}\\\vspace{1cm}{\bfseries{\fontsize{15}{18}ProTrader AI: A Multi-Source Hybrid Ensemble with LLM-Augmented\\Sentiment, Conformal Uncertainty, and Explainable AI\\for Indian Equity Market Prediction and Cross-Market Transfer}}}}
+
+\subtitle{}
+
+\author[1]{\bfseries Anandkumar Pardeshi}
+\author[2]{\bfseries Sujata Deshmukh}
+
+\affil[1]{\normalfont\textit{Department of Computer Science and Engineering, Fr.\ C.\ Rodrigues Institute of Technology, Vashi, India}}
+\affil[2]{\normalfont\textit{Department of Computer Engineering, Fr.\ C.\ Rodrigues College of Engineering, Bandra, India}}
+\affil[ ]{\vspace{0pt}}
+\affil[ ]{Received 15 January 2025, Revised 20 March 2025, Accepted 25 April 2025}
+\affil[ ]{\vspace{0pt}}
+
+\fancypagestyle{firstpage}{%
+    \fancyhf{}
+    \fancyhead[RO]{{\normalfont{International Journal of Computing and Digital Systems\hspace{4mm}}}\includegraphics[height=0.5in, keepaspectratio=true]{ub_logo}\hspace{3mm}\bfseries{\thepage}}
+    \fancyhead[LE]{\bfseries{\thepage}\hspace{3mm}\includegraphics[height=0.5in,keepaspectratio=true]{ub_logo}\hspace{3mm}\normalfont\textit{Pardeshi and Deshmukh}}
+    \fancyfoot[L]{\vspace{0mm}{\small\textit{E-mail address: anand.pardeshi@fcrit.ac.in}}}
+    \fancyfoot[R]{\vspace{5mm}\textsl{\color{gray}{\textsf{\url{}}}}}
+}
+
+\pagestyle{firstpage}
+
+\fancypagestyle{plain}{%
+    \fancyhf{}
+    \fancyhead[LR]{\vspace{2.5cm}}
+    \fancyfoot[L]{\vspace{0mm}{\small\textit{E-mail address: anand.pardeshi@fcrit.ac.in}}}
+    \fancyfoot[R]{\vspace{5mm}\textsl{\color{gray}{\textsf{\url{}}}}}
+}

@@ -172,11 +172,14 @@ class MultiSourceSentiment:
     def _get_sentiment_pipeline(self):
         """Lazy load sentiment pipeline (PyTorch backend, avoids TF/Keras 3 conflict)."""
         if self._sentiment_pipeline is None:
+            import torch
             from transformers import pipeline
+            device = 0 if torch.cuda.is_available() else -1
             self._sentiment_pipeline = pipeline(
                 "sentiment-analysis",
                 model=self.sentiment_model,
                 framework="pt",
+                device=device,
             )
         return self._sentiment_pipeline
     

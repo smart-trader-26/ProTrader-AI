@@ -2,6 +2,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import Stat from "@/components/Stat";
 import type { AccuracyWindow, LedgerRow } from "@/lib/types";
 import { formatINR, formatPercent, formatRatio } from "@/lib/format";
+import ResolveNowButton from "./ResolveNowButton";
 
 const WINDOWS = [7, 30, 90] as const;
 
@@ -19,23 +20,39 @@ export default async function AccuracyTab({ ticker }: { ticker: string }) {
 
   if (!hasAny) {
     return (
-      <div className="panel text-sm text-muted space-y-2">
-        <p>No resolved predictions yet for {ticker}.</p>
-        <p className="text-xs">
-          Run a prediction on the Overview tab. Once its target date passes, the
-          ledger will start scoring directional accuracy and Brier.
-        </p>
+      <div className="panel text-sm text-muted space-y-4">
+        <div className="space-y-2">
+          <p>No resolved predictions yet for {ticker}.</p>
+          <p className="text-xs">
+            Run a prediction on the Overview tab. Once its target date passes, the
+            ledger will start scoring directional accuracy and Brier.
+          </p>
+          <p className="text-xs text-muted/70">
+            If you have already run predictions and their target dates have passed,
+            click below to resolve them now:
+          </p>
+        </div>
+        <ResolveNowButton />
       </div>
     );
   }
 
+
   return (
     <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted">
+          Accuracy data is scored once per day. Click to force a refresh:
+        </p>
+        <ResolveNowButton />
+      </div>
+
       <section className="grid gap-4 md:grid-cols-3">
         {WINDOWS.map((days, i) => (
           <WindowCard key={days} days={days} win={wins[i]} />
         ))}
       </section>
+
 
       {recent && recent.length > 0 && (
         <section className="panel overflow-x-auto">

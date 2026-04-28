@@ -423,6 +423,13 @@ class VectorizedBacktester:
         n_trades = int(df['Transaction_Cost'].gt(0).sum())
         total_cost_drag = float(df['Transaction_Cost'].sum())
 
+        MIN_TRADES_REQUIRED = 50
+        validity_warning = (
+            f"Only {n_trades} trades in backtest period — need ≥{MIN_TRADES_REQUIRED} "
+            f"for Sharpe/return numbers to be statistically meaningful. "
+            f"Extend the lookback window or use a more active strategy."
+        ) if n_trades < MIN_TRADES_REQUIRED else None
+
         return {
             # After-cost metrics (primary)
             "Total Return": core['total_return'],
@@ -443,7 +450,9 @@ class VectorizedBacktester:
             "Cost Drag": total_cost_drag,
             "Transaction Cost Rate": tc,
             # Statistical significance
-            "Statistical Significance": stat_sig
+            "Statistical Significance": stat_sig,
+            # 3C — trade count validity gate (None when n_trades >= 50)
+            "Validity Warning": validity_warning,
         }
 
     def run_benchmark_comparison(self, close_prices: pd.Series = None,

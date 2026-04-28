@@ -100,13 +100,18 @@ def log_from_future_df(
     hi = future_df["P95"].tolist() if "P95" in future_df.columns else [None] * len(prices)
 
     points: list[PredictionPoint] = []
-    prev = anchor_price
     for i, (d, p) in enumerate(zip(dates, prices)):
-        direction = "flat"
-        if p > prev * 1.001:
+        # Compare every day vs the ORIGINAL anchor, not rolling prev.
+        # Mirrors the fix applied to pg_ledger.log_from_future_df.
+        if p > anchor_price * 1.001:
             direction = "up"
-        elif p < prev * 0.999:
+        elif p < anchor_price * 0.999:
             direction = "down"
+        else:
+            direction = "flat"
+        # Only day-0 has a genuine calibrated probability; days 1-N are
+        # scenario paths and should not pollute calibration metrics.
+        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)) if i == 0 else None
         points.append(
             PredictionPoint(
                 target_date=d,
@@ -114,10 +119,9 @@ def log_from_future_df(
                 ci_low=float(lo[i]) if lo[i] is not None else None,
                 ci_high=float(hi[i]) if hi[i] is not None else None,
                 direction=direction,  # type: ignore[arg-type]
-                prob_up=max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)),
+                prob_up=day_prob,
             )
         )
-        prev = p
 
     bundle = PredictionBundle(
         ticker=ticker,
@@ -144,8 +148,15 @@ def log_prediction(
     if not bundle.points:
         return 0
 
+    # Only the earliest-target-date point is a genuine directional call;
+    # later points are MC scenario paths.  Store prob_up only for day-1 so
+    # accuracy_window's calibration metrics (ECE, Brier) are not inflated
+    # by repeated identical or MC-derived probabilities for the same forecast.
+    earliest_target = min(p.target_date for p in bundle.points)
+
     rows = []
     for p in bundle.points:
+        is_day1 = (p.target_date == earliest_target)
         rows.append(
             (
                 bundle.ticker,
@@ -157,7 +168,7 @@ def log_prediction(
                 float(p.ci_low) if p.ci_low is not None else None,
                 float(p.ci_high) if p.ci_high is not None else None,
                 float(p.confidence_level),
-                float(p.prob_up) if p.prob_up is not None else None,
+                float(p.prob_up) if (p.prob_up is not None and is_day1) else None,
                 int(bundle.horizon_days),
                 bundle.model_version,
             )
@@ -331,7 +342,9 @@ def accuracy_window(
         if actual is None or pred is None:
             continue
         price_err.append(abs(actual - pred))
-        if r["hit"] is not None:
+        # Only count hits for day-1 rows (prob_up IS NOT NULL).
+        # Days 2-10 are scenario paths, not independent directional calls.
+        if r["hit"] is not None and r["prob_up"] is not None:
             hits.append(int(r["hit"]))
         if r["prob_up"] is not None and anchor is not None:
             probs.append(float(r["prob_up"]))
@@ -365,6 +378,12 @@ def recent_rows(
     limit: int = 200,
     db_path: Path | None = None,
 ) -> list[LedgerRow]:
+    """Return the most recent ledger rows, one per (ticker, target_date).
+
+    Multiple prediction runs on the same day produce duplicate (ticker, target_date)
+    rows with different made_at timestamps. We keep only the latest made_at per
+    pair so the Accuracy table doesn't show the same target date 4 times.
+    """
     where = ""
     params: list = []
     if ticker:
@@ -373,9 +392,18 @@ def recent_rows(
     with _connect(db_path) as conn:
         rows = conn.execute(
             f"""
-            SELECT * FROM predictions
-            {where}
-            ORDER BY made_at DESC, id DESC
+            SELECT p.*
+            FROM predictions p
+            INNER JOIN (
+                SELECT ticker, target_date, MAX(made_at) AS latest_made_at
+                FROM predictions
+                {where}
+                GROUP BY ticker, target_date
+            ) latest
+            ON p.ticker = latest.ticker
+            AND p.target_date = latest.target_date
+            AND p.made_at = latest.latest_made_at
+            ORDER BY p.made_at DESC, p.id DESC
             LIMIT ?
             """,
             [*params, limit],
@@ -427,6 +455,43 @@ def _parse_date(s: str) -> date:
 
 def _parse_datetime(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def migrate_nullify_non_day1_prob_up(db_path: Path | None = None) -> int:
+    """One-time migration: set prob_up=NULL for every row that is NOT the
+    earliest target_date for its (ticker, made_at) group.
+
+    Before Phase-1C was deployed, all 10 horizon rows were stored with the
+    same prob_up value (the day-1 directional probability). This inflated the
+    denominator in accuracy_window's ECE / Brier computation and produced
+    identical 7/30/90-day stats (all resolved rows fell within the 7-day
+    window, and all had prob_up set, so nothing was filtered out).
+
+    After this migration, only the genuine day-1 call has prob_up set;
+    days 2-10 are NULL and are excluded from calibration scoring.
+
+    Safe to run multiple times — rows already NULL are unaffected.
+    Returns the number of rows updated.
+    """
+    with _connect(db_path) as conn:
+        # SQLite supports correlated sub-queries: find the earliest target_date
+        # for each (ticker, made_at) pair, then NULL-out every other row.
+        result = conn.execute(
+            """
+            UPDATE predictions
+            SET prob_up = NULL
+            WHERE prob_up IS NOT NULL
+              AND target_date != (
+                  SELECT MIN(p2.target_date)
+                  FROM predictions p2
+                  WHERE p2.ticker    = predictions.ticker
+                    AND p2.made_at   = predictions.made_at
+              )
+            """
+        )
+        updated = result.rowcount
+        conn.commit()
+    return updated
 
 
 def _yfinance_close(ticker: str, lo: date, hi: date) -> dict[date, float]:

@@ -636,14 +636,17 @@ def render_manual_fii_dii_input():
     </div>
     """, unsafe_allow_html=True)
     
-    st.info(f"👉 **Step 1:** Open [NSE FII/DII Reports]({NSE_FII_DII_URL}) in a new tab.")
+    st.info(
+        f"👉 **Step 1:** Open [{NSE_FII_DII_URL}]({NSE_FII_DII_URL}) in a new tab. "
+        f"*(You may need to visit [nseindia.com](https://www.nseindia.com) first to get the session cookie.)*"
+    )
     
     manual_input = st.text_area(
-        "👉 **Step 2:** Copy the raw JSON content and paste it here:",
+        "👉 **Step 2:** Select all (Ctrl+A) and copy-paste the raw JSON here:",
         height=200,
         key="fii_dii_manual_area",
-        placeholder='Example: [{"category":"DII","date":"16-Jan-2026","buyValue":"19135.42",...}]',
-        help="Paste the full JSON array from the NSE website."
+        placeholder='Example: [{"category":"DII","date":"23-Apr-2026","buyValue":"18498.19","sellValue":"17556.84","netValue":"941.35"},{"category":"FII/FPI","date":"23-Apr-2026","buyValue":"12829.12","sellValue":"16083.83","netValue":"-3254.71"}]',
+        help="Paste the full JSON array from the NSE API endpoint."
     )
     
     if manual_input:

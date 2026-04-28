@@ -18,6 +18,58 @@ from datetime import datetime, timedelta
 from config.settings import NEWS_API_KEY, DataConfig
 
 
+# ===============================================
+# TRANSLATION LAYER (Hindi → English pre-FinBERT)
+# ===============================================
+
+def _translate_to_english(text: str) -> str:
+    """
+    Translate non-English text to English before FinBERT scoring.
+
+    Uses deep_translator.GoogleTranslator (no API key, rate-limited by IP).
+    Falls back to langdetect for language detection; if detection fails or the
+    text is already English, the original text is returned unchanged.
+
+    Why this matters:
+      FinBERT is English-only. Hindi headlines tokenize to [UNK] tokens, forcing
+      the model toward neutral regardless of content. Translating first restores
+      semantic signal from Hindi financial news sources (Zee Business, Aaj Tak, etc.).
+
+    The article's original `language` field is NOT changed — callers can still
+    label the article as "Hindi" in the UI even though FinBERT saw English text.
+    """
+    if not text or not text.strip():
+        return text
+
+    # Fast check: if text is mostly ASCII it's almost certainly already English.
+    ascii_ratio = sum(1 for c in text if ord(c) < 128) / len(text)
+    if ascii_ratio > 0.85:
+        return text
+
+    try:
+        from deep_translator import GoogleTranslator  # type: ignore[import-not-found]
+        translated = GoogleTranslator(source="auto", target="en").translate(text[:500])
+        return translated if translated else text
+    except Exception:
+        pass
+
+    # Fallback: try langdetect + googletrans
+    try:
+        from langdetect import detect  # type: ignore[import-not-found]
+        lang = detect(text)
+        if lang == "en":
+            return text
+        from googletrans import Translator  # type: ignore[import-not-found]
+        t = Translator()
+        result = t.translate(text[:500], dest="en")
+        return result.text if result and result.text else text
+    except Exception:
+        pass
+
+    # Last resort: return as-is and let FinBERT do its best
+    return text
+
+
 # ==============================================
 # SENTIMENT MODEL CONFIGURATION
 # ==============================================
@@ -95,10 +147,13 @@ def _get_sentiment_pipeline():
     it, transformers loads the TF head and crashes on Streamlit Cloud where
     tensorflow-cpu>=2.16 ships with Keras 3 (incompatible with HF).
     """
+    import torch
+    device = 0 if torch.cuda.is_available() else -1
     return pipeline(
         "sentiment-analysis",
         model=SENTIMENT_MODEL,
         framework="pt",
+        device=device,
     )
 
 
@@ -312,9 +367,14 @@ def _normalize_label(raw_label: str) -> str:
     return "neutral"
 
 
-def analyze_sentiment(text: str) -> tuple:
+def analyze_sentiment(text: str, source_language: str = "en") -> tuple:
     """
     Analyze sentiment with FinBERT + high-precision keyword overrides.
+
+    If `source_language` is not English (or the text contains non-ASCII
+    characters suggesting a non-Latin script), the text is first translated
+    to English via `_translate_to_english()`. The translation is transparent
+    to the caller — it only affects what FinBERT sees internally.
 
     Override rule (from sentiment_analysis_v2.py Cell 5):
       - If text contains a strong bullish/bearish keyword AND the model
@@ -330,11 +390,19 @@ def analyze_sentiment(text: str) -> tuple:
     if not text:
         return "neutral", 0.0
 
-    text_lower = text.lower()
+    # Translate to English if needed so FinBERT gets clean input.
+    en_text = _translate_to_english(text) if source_language != "en" else text
+    # Also auto-translate if the text has many non-ASCII chars (e.g. Devanagari).
+    if en_text == text:
+        non_ascii = sum(1 for c in text if ord(c) > 127)
+        if non_ascii > len(text) * 0.20:  # > 20% non-ASCII → likely Hindi/Devanagari
+            en_text = _translate_to_english(text)
+
+    text_lower = en_text.lower()
     pipe = _get_sentiment_pipeline()
 
     try:
-        result = pipe(text[:512])[0]
+        result = pipe(en_text[:512])[0]
     except Exception:
         return "neutral", 0.5
 
@@ -413,7 +481,9 @@ def analyze_news_sentiment(news_articles: list, stock_symbol: str) -> dict:
 
     for article in filtered_news:
         text = f"{article.get('title', '')} {article.get('description', '')}".strip()
-        sentiment, score = analyze_sentiment(text)
+        # Pass source language so FinBERT gets English input even for Hindi articles
+        source_lang = article.get("language", "en")
+        sentiment, score = analyze_sentiment(text, source_language=source_lang)
         date = article.get("publishedAt", "")[:10]
 
         if date in daily_sentiment:

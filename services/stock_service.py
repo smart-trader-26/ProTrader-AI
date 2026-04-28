@@ -71,7 +71,7 @@ def get_fundamentals(ticker: str) -> Fundamentals:
         revenue_growth=_coerce(raw.get("Revenue Growth")),
         free_cashflow=_coerce(raw.get("Free Cashflow")),
         target_price=_coerce(raw.get("Target Price (Analyst)")),
-        dividend_yield=_coerce(raw.get("Dividend Yield")),
+        dividend_yield=_coerce_yield(raw.get("Dividend Yield")),
     )
 
 
@@ -90,3 +90,17 @@ def _coerce(v) -> float | None:
         return f
     except (TypeError, ValueError):
         return None
+
+
+def _coerce_yield(v) -> float | None:
+    """Normalize dividend_yield from yfinance.
+
+    yfinance sometimes returns dividend yield as a percentage already
+    (e.g. 0.41 meaning 0.41%) rather than a decimal fraction (0.0041).
+    Any value > 0.5 (50% yield) is implausible, so we treat it as a
+    percentage value and divide by 100.
+    """
+    f = _coerce(v)
+    if f is None:
+        return None
+    return f / 100.0 if f > 0.5 else f

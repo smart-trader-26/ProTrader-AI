@@ -58,9 +58,10 @@ export default async function AccuracyPage({
             defaultValue={ticker ?? ""}
             className="input w-44"
             placeholder="All tickers"
+            suppressHydrationWarning
           />
         </label>
-        <button className="btn btn-primary">Refresh</button>
+        <button className="btn btn-primary" suppressHydrationWarning>Refresh</button>
         {ticker && (
           <Link href="/accuracy" className="btn">
             Clear filter

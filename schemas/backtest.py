@@ -20,6 +20,7 @@ class BacktestMetrics(BaseModel):
     avg_loss_pct: float | None = None
     expectancy_pct: float | None = None
     n_trades: int = 0
+    validity_warning: str | None = None
     dm_pvalue: float | None = Field(
         default=None, description="Diebold-Mariano p-value vs. buy-and-hold"
     )

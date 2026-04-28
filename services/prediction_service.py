@@ -95,12 +95,26 @@ def predict(
     last_close = float(df["Close"].iloc[-1])
     stacker_prob = float(metrics.get("last_directional_prob", 50.0)) / 100.0
 
-    blend_info = _maybe_blend_v2(ticker, stacker_prob, use_v2_blend, v2_blend_weight)
+    # Dampen sentiment when patterns are strongly bearish so structural evidence
+    # isn't overridden by a positive news cycle.
+    pattern_conviction = _compute_pattern_conviction(df)
+    effective_v2_weight = _adjust_v2_weight_for_patterns(
+        v2_blend_weight, pattern_conviction
+    )
+    blend_info = _maybe_blend_v2(ticker, stacker_prob, use_v2_blend, effective_v2_weight)
     prob_up = blend_info.blended_prob
     points = _to_points(future, last_close, prob_up)
 
-    # A6 — conformal half-width, if the model computed it during training.
-    conformal_hw = _opt(metrics.get("conformal_halfwidth"))
+    # A6 — conformal half-width (return space → price space).
+    # The model computes halfwidth as |y_true - y_pred| quantile in log-return
+    # units. Convert to an INR price band: price ± price * exp(hw) - price.
+    # This makes the UI stat readable as an actual rupee range, not a 0.01-ish
+    # decimal fraction that displays as zero.
+    conformal_hw_ret = _opt(metrics.get("conformal_halfwidth"))
+    conformal_hw = None
+    if conformal_hw_ret is not None:
+        import math
+        conformal_hw = last_close * (math.exp(conformal_hw_ret) - 1.0)
 
     bundle = PredictionBundle(
         ticker=ticker,
@@ -124,6 +138,11 @@ def predict(
         walkforward=_to_walkforward(metrics),
         v2_blend=blend_info if blend_info.used else None,
         test_predictions=_to_test_series(results_df, df),
+        conformal_halfwidth_return=conformal_hw_ret,  # kept for diagnostics
+        naive_up_rate=_opt(metrics.get("naive_up_rate")),
+        naive_accuracy=_opt(metrics.get("naive_accuracy")),
+        naive_brier=_opt(metrics.get("naive_brier")),
+        conviction_precision=_to_conviction(metrics.get("conviction_precision")),
     )
 
     # A7.2 — append to the ledger so actuals can be resolved later.
@@ -170,6 +189,10 @@ def _to_points(future, last_close: float, prob_up: float) -> list[PredictionPoin
         ci_hi = future[ci_hi_col].tolist() if ci_hi_col in future.columns else [None] * len(prices)
         p25 = future["P25"].tolist() if "P25" in future.columns else [None] * len(prices)
         p75 = future["P75"].tolist() if "P75" in future.columns else [None] * len(prices)
+        # Per-day P(up) from MC paths: fraction of paths ending above anchor.
+        # Day-0 overridden with the blended calibrated prob (more precise);
+        # days 1-N use the MC-derived value which varies with the fan width.
+        mc_prob_up = future["Prob_Up"].tolist() if "Prob_Up" in future.columns else [None] * len(prices)
     else:
         prices = list(future)
         today = date.today()
@@ -178,15 +201,32 @@ def _to_points(future, last_close: float, prob_up: float) -> list[PredictionPoin
         ci_hi = [None] * len(prices)
         p25 = [None] * len(prices)
         p75 = [None] * len(prices)
+        mc_prob_up = [None] * len(prices)
 
     out: list[PredictionPoint] = []
-    prev = last_close
     for i, (d, p) in enumerate(zip(dates, prices)):
+        # Compare every day's predicted price against the ORIGINAL anchor (last
+        # known close), not against the rolling previous predicted price. The
+        # ledger resolves `hit` using `actual vs anchor_price`, so direction must
+        # use the same baseline. The old `prev = p` caused day-2+ directions to
+        # be computed relative to a drifting predicted price, systematically
+        # mis-marking hits in the accuracy ledger.
         direction: Direction = "flat"
-        if p > prev * 1.001:
+        if p > last_close * 1.001:
             direction = "up"
-        elif p < prev * 0.999:
+        elif p < last_close * 0.999:
             direction = "down"
+
+        # Day-0: use the blended calibrated probability (most precise).
+        # Days 1-N: use MC-path probability — varies per horizon so the UI
+        #   shows a genuine spread rather than one number repeated ten times.
+        #   NOT logged to the ledger for calibration (only day-0 is a real call).
+        if i == 0:
+            day_prob: float | None = max(0.0, min(1.0, prob_up))
+        else:
+            raw_mc = mc_prob_up[i]
+            day_prob = float(max(0.0, min(1.0, raw_mc))) if raw_mc is not None else None
+
         out.append(
             PredictionPoint(
                 target_date=d if isinstance(d, date) else pd.to_datetime(d).date(),
@@ -196,10 +236,9 @@ def _to_points(future, last_close: float, prob_up: float) -> list[PredictionPoin
                 p25_price=_opt(p25[i]),
                 p75_price=_opt(p75[i]),
                 direction=direction,
-                prob_up=max(0.0, min(1.0, prob_up)),
+                prob_up=day_prob,
             )
         )
-        prev = p
     return out
 
 
@@ -261,11 +300,14 @@ def _maybe_blend_v2(
     """
     Late-blend the Ridge stacker's prob_up with v2 ensemble's prob_up.
 
+    V2 blend runs automatically as part of every prediction when headlines are
+    available. It does NOT require a separate user action.
+
     Skips cleanly — and returns a `used=False` info record — when:
       • caller passed `use_v2_blend=False`
-      • v2 service isn't configured (no HF_TOKEN)
+      • v2 service module can't be imported
       • headline fetch fails or returns nothing
-      • v2 inference raises for any reason
+      • v2 model download / inference raises for any reason
 
     Any failure falls back to the stacker-only probability, so this path can
     never break a prediction.
@@ -284,8 +326,8 @@ def _maybe_blend_v2(
     except Exception:
         return no_blend
 
-    if use_v2_blend is None and not v2svc.is_configured():
-        return no_blend
+    # v2 is now always attempted — no HF_TOKEN gate. The load() call will
+    # fail gracefully if the model isn't available and we fall back to no_blend.
 
     # Resolve weight: call arg > settings (st.secrets → .env → env) > default.
     weight = weight_override
@@ -404,6 +446,62 @@ def _to_walkforward(metrics: dict) -> WalkforwardSummary | None:
         min=_opt(metrics.get("walkforward_min")),
         max=_opt(metrics.get("walkforward_max")),
         n_windows=n,
+    )
+
+
+def _compute_pattern_conviction(df: "pd.DataFrame") -> float:
+    """Return a signal in [-1, 1]: positive = net bearish patterns, negative = bullish.
+    Used to dampen v2 blend weight when confirmed bearish patterns dominate.
+    Returns 0 on any failure so prediction degrades gracefully."""
+    try:
+        from models.visual_analyst import PatternAnalyst
+        analyst = PatternAnalyst()
+        result = analyst.analyze_all_patterns(df)
+        patterns = result.get("patterns", [])
+        score = 0.0
+        for p in patterns:
+            if str(p.get("Status", "")).upper() != "CONFIRMED":
+                continue
+            conf = float(p.get("Confidence", 50)) / 100.0
+            ptype = str(p.get("Type", ""))
+            if "Bearish" in ptype:
+                score += conf
+            elif "Bullish" in ptype:
+                score -= conf
+        return float(max(-1.0, min(1.0, score)))
+    except Exception:
+        return 0.0
+
+
+def _adjust_v2_weight_for_patterns(
+    base_weight: float | None, conviction: float
+) -> float | None:
+    """Scale down the v2 blend weight when confirmed bearish patterns are strong.
+    conviction > 0.5  → strongly bearish → cap at 10% of base weight.
+    conviction 0.25-0.5 → linearly taper.
+    conviction <= 0.25  → no change."""
+    if base_weight is None:
+        return None
+    if conviction <= 0.25:
+        return base_weight
+    if conviction >= 0.50:
+        return base_weight * 0.33  # at most 1/3 of the normal sentiment influence
+    # linear taper between 0.25 and 0.50
+    scale = 1.0 - ((conviction - 0.25) / 0.25) * 0.67
+    return base_weight * scale
+
+
+def _to_conviction(raw) -> "ConvictionPrecision | None":
+    if not isinstance(raw, dict):
+        return None
+    from schemas.prediction import ConvictionPrecision
+    return ConvictionPrecision(
+        threshold=raw.get("threshold", 0.60),
+        n_high_bull=raw.get("n_high_bull", 0),
+        n_high_bear=raw.get("n_high_bear", 0),
+        bull_precision=raw.get("bull_precision"),
+        bear_precision=raw.get("bear_precision"),
+        conviction_rate=raw.get("conviction_rate", 0.0),
     )
 
 

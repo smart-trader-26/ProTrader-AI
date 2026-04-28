@@ -31,12 +31,27 @@ from api.rate_limit import limiter
 router = APIRouter(tags=["predictions"])
 
 
+class FiiDiiInputRow(BaseModel):
+    """One day of FII/DII flow data supplied manually by the user."""
+    date: str
+    fii_net: float | None = None
+    dii_net: float | None = None
+    fii_buy: float | None = None
+    fii_sell: float | None = None
+    dii_buy: float | None = None
+    dii_sell: float | None = None
+
+
 class PredictRequest(BaseModel):
     horizon_days: int = Field(default=10, ge=1, le=60)
     start: date | None = None
     end: date | None = None
     n_paths: int = Field(default=200, ge=10, le=2000)
     log_to_ledger: bool = True
+    # Optional FII/DII data provided by the user when auto-fetch from NSE fails.
+    # If provided, this is passed directly as the fii_dii_data feature input to
+    # the model, bypassing the auto-fetch. Rows should cover at least 30 days.
+    fii_dii_rows: list[FiiDiiInputRow] | None = None
 
 
 class PredictAccepted(BaseModel):
@@ -59,6 +74,13 @@ def enqueue_predict(
     store: JobStore = Depends(get_job_store),
 ) -> PredictAccepted:
     body = body or PredictRequest()
+
+    # Convert FII/DII input rows to a plain list of dicts for the job queue
+    # (Pydantic models don't survive JSON serialisation through Celery).
+    fii_dii_payload: list[dict] | None = None
+    if body.fii_dii_rows:
+        fii_dii_payload = [r.model_dump() for r in body.fii_dii_rows]
+
     job = store.enqueue(
         "predict",
         ticker=ticker,
@@ -67,6 +89,7 @@ def enqueue_predict(
         end=body.end,
         n_paths=body.n_paths,
         log_to_ledger=body.log_to_ledger,
+        fii_dii_payload=fii_dii_payload,
     )
     return PredictAccepted(
         job_id=job.id,

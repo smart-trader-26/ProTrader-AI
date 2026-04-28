@@ -1,0 +1,53 @@
+# Daily Operations Guide
+
+Here are the commands you need to run every day for your paper trading and accuracy tracking if you are not running the background Celery job queue (which automates these). 
+
+Make sure to run these from the root of your project directory (`c:\Users\divya\Desktop\finance`) using your project's Python environment.
+
+---
+
+## 1. Run Paper Trading 
+**When to run:** Every day near market close (e.g., around 15:20 - 15:25 IST) so the model captures the latest price action for tomorrow's prediction.
+
+```bash
+# Run paper trading on the default stock universe
+python -m scripts.run_paper_trade
+
+# OR run it on specific stocks only
+python -m scripts.run_paper_trade --tickers RELIANCE.NS,TCS.NS,HDFCBANK.NS
+
+# OR run a dry-run (just to see predictions and signals without recording trades)
+python -m scripts.run_paper_trade --dry-run
+```
+*What this does:* Predicts tomorrow's movement, extracts the signal, logs a buy/sell action in the database, and marks-to-market any open positions that hit their stop-loss or target.
+
+
+## 2. Update Accuracy Ledger 
+**When to run:** Every day after market close (e.g., around 16:00 IST), after the day's final closing prices are settled.
+
+```bash
+# Option A — CLI (works without the server running)
+cd c:\Users\divya\Desktop\finance
+python -m services.ledger_backfill
+
+# Option B — HTTP (while FastAPI server is running at localhost:8000)
+curl -X POST http://localhost:8000/api/v1/accuracy/resolve
+```
+*What this does:* Looks at all past predictions whose `target_date` is today or earlier, fetches the actual stock price from Yahoo Finance, compares it with the predicted price and direction, and permanently marks each prediction as a "Hit" or "Miss". This powers the Accuracy tab.
+
+> **Note on the SQL audit:** "No rows returned" means no predictions have been resolved yet (expected for new predictions whose target dates haven't passed). Once target dates pass (tomorrow onward), run the backfill above and you'll see resolved rows.
+
+---
+
+### Pro-Tip: Automation (Celery Beat)
+If you have a Redis server running and your `.env` contains `REDIS_URL`, you can automate all of this.
+
+Start the Celery worker and beat scheduler in separate terminal tabs:
+```bash
+# Tab 1: Start the worker to execute background jobs
+celery -A workers.celery_app worker --loglevel=info
+
+# Tab 2: Start the beat scheduler to trigger the daily jobs automatically
+celery -A workers.celery_app beat --loglevel=info
+```
+With Celery running, `ledger_backfill` automatically runs at 16:30 IST every day, and `run_paper_trade` runs automatically at 15:45 IST.

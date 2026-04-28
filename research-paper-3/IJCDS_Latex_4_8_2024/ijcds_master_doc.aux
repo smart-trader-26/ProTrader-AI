@@ -1,0 +1,205 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{IEEEexample:BSTcontrol}
+\citation{rahmani2023ai}
+\citation{nti2021multisource}
+\citation{long2024hybrid}
+\providecommand \oddpage@label [2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}INTRODUCTION}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{INTRODUCTION}{section.1}{}}
+\citation{nti2021multisource}
+\citation{long2024hybrid}
+\citation{fu2024multisource}
+\citation{long2024hybrid}
+\citation{fu2024multisource}
+\citation{mu2023investor}
+\citation{moodi2024fusion}
+\citation{farhadi2025hybrid}
+\citation{sawhney2020multimodal}
+\citation{mishev2020evaluation}
+\citation{yang2020finbert}
+\citation{liu2024llms}
+\citation{farhadi2025hybrid}
+\@writefile{toc}{\contentsline {section}{\numberline {2}RELATED WORK}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{2}{RELATED WORK}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {2-A}}Multi-Source Data Fusion for Stock Prediction (RO1)}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {2-B}}Hybrid Models Combining Sentiment and Technical Indicators (RO2)}{2}{subsection.2.2}\protected@file@percent }
+\citation{moodi2024fusion}
+\citation{liu2024llms}
+\citation{guo2024quant40}
+\citation{onozo2024llms}
+\citation{parekh2022dlguess}
+\citation{mu2023investor}
+\citation{lundberg2017shap}
+\citation{liu2024llms}
+\citation{li2018sentimental}
+\citation{kim2020predicting}
+\citation{lu2024bridging}
+\citation{kim2020predicting}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {2-C}}Large Language Models, Explainability, and Temporal Dynamics (RO3)}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {2-D}}Cross-Market Transfer Learning (RO4)}{3}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}METHODOLOGY}{3}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{3}{METHODOLOGY}{section.3}{}}
+\citation{araci2019finbert}
+\citation{mishev2020evaluation}
+\citation{malo2014phrasebank}
+\citation{onozo2024llms}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-A}}Multi-Source Data Ingestion (RO1)}{4}{subsection.3.1}\protected@file@percent }
+\newlabel{subsec:ingest}{{\mbox  {3-A}}{4}{Multi-Source Data Ingestion (RO1)}{subsection.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-B}}Feature Engineering (RO1, RO2)}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{subsec:features}{{\mbox  {3-B}}{4}{Feature Engineering (RO1, RO2)}{subsection.3.2}{}}
+\newlabel{eq:rsi}{{1}{4}{Feature Engineering (RO1, RO2)}{equation.1}{}}
+\newlabel{eq:bbpctb}{{2}{4}{Feature Engineering (RO1, RO2)}{equation.2}{}}
+\newlabel{eq:cmf}{{3}{4}{Feature Engineering (RO1, RO2)}{equation.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Feature inventory for ProTrader AI. FII/DII and macro features are joined by date; option-chain features (PCR, max-pain, ATM IV) are optional.}}{4}{table.caption.2}\protected@file@percent }
+\newlabel{tab:features}{{I}{4}{Feature inventory for ProTrader AI. FII/DII and macro features are joined by date; option-chain features (PCR, max-pain, ATM IV) are optional}{table.caption.2}{}}
+\newlabel{eq:beardiv}{{4}{4}{Feature Engineering (RO1, RO2)}{equation.4}{}}
+\newlabel{eq:divflags}{{5}{4}{Feature Engineering (RO1, RO2)}{equation.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-C}}FinBERT Sentiment Pipeline (RO2)}{4}{subsection.3.3}\protected@file@percent }
+\newlabel{subsec:sentiment}{{\mbox  {3-C}}{4}{FinBERT Sentiment Pipeline (RO2)}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-C}0a}Keyword override.}{4}{paragraph.3.3.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-C}0b}Multilingual translation.}{4}{paragraph.3.3.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-C}0c}Six-category routing.}{4}{paragraph.3.3.0.3}\protected@file@percent }
+\citation{chen2016xgboost}
+\citation{ke2017lightgbm}
+\citation{cho2014gru}
+\citation{wolpert1992stacked}
+\citation{zadrozny2002transforming}
+\citation{brier1950verification}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces ProTrader~AI five-stage prediction pipeline. Colour coding: teal = data sources; blue = feature processing; orange = base learners; purple = post-processing and explainability; green = final output. Each stage is labelled with the research objective(s) it addresses.}}{5}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:arch}{{1}{5}{ProTrader~AI five-stage prediction pipeline. Colour coding: teal = data sources; blue = feature processing; orange = base learners; purple = post-processing and explainability; green = final output. Each stage is labelled with the research objective(s) it addresses}{figure.caption.1}{}}
+\newlabel{eq:sent_agg}{{6}{5}{Six-category routing}{equation.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-D}}Hybrid Base-Learner Ensemble and Ridge Stacking (RO2)}{5}{subsection.3.4}\protected@file@percent }
+\newlabel{subsec:ensemble}{{\mbox  {3-D}}{5}{Hybrid Base-Learner Ensemble and Ridge Stacking (RO2)}{subsection.3.4}{}}
+\newlabel{eq:oof}{{7}{5}{Hybrid Base-Learner Ensemble and Ridge Stacking (RO2)}{equation.7}{}}
+\newlabel{eq:stack}{{8}{5}{Hybrid Base-Learner Ensemble and Ridge Stacking (RO2)}{equation.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-E}}Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{subsec:calib}{{\mbox  {3-E}}{5}{Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{subsection.3.5}{}}
+\newlabel{eq:isotonic}{{9}{5}{Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{equation.9}{}}
+\citation{romano2019cqr}
+\citation{vovk2005conformal}
+\citation{angelopoulos2023gentle}
+\citation{gibbs2021adaptive}
+\citation{tibshirani2019covariate}
+\citation{romano2019cqr}
+\citation{romano2019cqr}
+\citation{lundberg2017shap}
+\citation{hurst1951longterm}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces OOF Ensemble Training with Ridge Stacking and Isotonic Calibration}}{6}{algorithm.1}\protected@file@percent }
+\newlabel{alg:oof}{{1}{6}{OOF Ensemble Training with Ridge Stacking and Isotonic Calibration}{algorithm.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Expanding-window OOF fold structure for $n\!=\!500$, $K\!=\!5$ folds, $\text  {min\_train}\!=\!300$ (60\%), step~$=\!40$. Each fold trains on \emph  {all} chronologically prior data (blue) and predicts the next block (orange). The OOF predictions from all folds are concatenated to form the design matrix $\mathbf  {Z}$ for Ridge stacking; base learners never see their own validation indices during fitting, making data leakage structurally impossible.}}{6}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:ooffolds}{{2}{6}{Expanding-window OOF fold structure for $n\!=\!500$, $K\!=\!5$ folds, $\text {min\_train}\!=\!300$ (60\%), step~$=\!40$. Each fold trains on \emph {all} chronologically prior data (blue) and predicts the next block (orange). The OOF predictions from all folds are concatenated to form the design matrix $\mathbf {Z}$ for Ridge stacking; base learners never see their own validation indices during fitting, making data leakage structurally impossible}{figure.caption.3}{}}
+\newlabel{eq:youden}{{10}{6}{Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{equation.10}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces CQR Split-Conformal Prediction Interval at Level $1-\alpha $ \cite  {romano2019cqr}}}{6}{algorithm.2}\protected@file@percent }
+\newlabel{alg:conformal}{{2}{6}{CQR Split-Conformal Prediction Interval at Level $1-\alpha $ \cite {romano2019cqr}}{algorithm.2}{}}
+\newlabel{eq:ncscores}{{11}{6}{Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{equation.11}{}}
+\newlabel{eq:confwidth}{{12}{6}{Calibration, Threshold Tuning, and Conformal Intervals (RO2, RO3)}{equation.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-F}}Explainability and Temporal Sentiment Analysis (RO3)}{6}{subsection.3.6}\protected@file@percent }
+\newlabel{subsec:xai}{{\mbox  {3-F}}{6}{Explainability and Temporal Sentiment Analysis (RO3)}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-F}0a}SHAP attribution.}{6}{paragraph.3.6.0.1}\protected@file@percent }
+\newlabel{eq:shap_prop}{{13}{6}{SHAP attribution}{equation.13}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-F}0b}Hurst-exponent regime detection.}{6}{paragraph.3.6.0.2}\protected@file@percent }
+\citation{granger1969causality}
+\citation{araci2019finbert}
+\citation{li2018sentimental}
+\citation{kim2020predicting}
+\citation{diebold1995comparing}
+\citation{harvey1997testing}
+\citation{harvey1997testing}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {3-F}0c}Sentiment Granger-causality.}{7}{paragraph.3.6.0.3}\protected@file@percent }
+\newlabel{eq:granger}{{14}{7}{Sentiment Granger-causality}{equation.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-G}}Cross-Market Transfer Learning (RO4)}{7}{subsection.3.7}\protected@file@percent }
+\newlabel{subsec:transfer}{{\mbox  {3-G}}{7}{Cross-Market Transfer Learning (RO4)}{subsection.3.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-H}}NSE Transaction Cost Model}{7}{subsection.3.8}\protected@file@percent }
+\newlabel{subsec:costs}{{\mbox  {3-H}}{7}{NSE Transaction Cost Model}{subsection.3.8}{}}
+\newlabel{eq:brok}{{15}{7}{NSE Transaction Cost Model}{equation.15}{}}
+\newlabel{eq:stt}{{16}{7}{NSE Transaction Cost Model}{equation.16}{}}
+\newlabel{eq:exch}{{17}{7}{NSE Transaction Cost Model}{equation.17}{}}
+\newlabel{eq:sebi}{{18}{7}{NSE Transaction Cost Model}{equation.18}{}}
+\newlabel{eq:stamp}{{19}{7}{NSE Transaction Cost Model}{equation.19}{}}
+\newlabel{eq:gst}{{20}{7}{NSE Transaction Cost Model}{equation.20}{}}
+\newlabel{eq:slip}{{21}{7}{NSE Transaction Cost Model}{equation.21}{}}
+\newlabel{eq:costs}{{22}{7}{NSE Transaction Cost Model}{equation.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {3-I}}Backtesting Protocol}{7}{subsection.3.9}\protected@file@percent }
+\newlabel{subsec:backtest}{{\mbox  {3-I}}{7}{Backtesting Protocol}{subsection.3.9}{}}
+\citation{moodi2024fusion}
+\citation{zadrozny2002transforming}
+\citation{diebold1995comparing}
+\citation{harvey1997testing}
+\citation{guo2024quant40}
+\citation{moodi2024fusion}
+\citation{fu2024multisource}
+\citation{mu2023investor}
+\citation{zadrozny2002transforming}
+\@writefile{toc}{\contentsline {section}{\numberline {4}EXPERIMENTAL SETUP}{8}{section.4}\protected@file@percent }
+\newlabel{sec:setup}{{4}{8}{EXPERIMENTAL SETUP}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {4-A}}Datasets}{8}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {4-B}}Baseline Models}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {4-C}}Evaluation Metrics}{8}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {4-D}}Implementation}{8}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}RESULTS AND ANALYSIS}{8}{section.5}\protected@file@percent }
+\newlabel{sec:results}{{5}{8}{RESULTS AND ANALYSIS}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-A}}Main Comparison on Indian Holdout (RO1, RO2)}{8}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-B}}Ablation Study (RO1, RO2)}{8}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-C}}Hyperparameter Sensitivity Analysis}{8}{subsection.5.3}\protected@file@percent }
+\newlabel{subsec:hyper}{{\mbox  {5-C}}{8}{Hyperparameter Sensitivity Analysis}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-D}}Regime-Specific Performance}{8}{subsection.5.4}\protected@file@percent }
+\newlabel{subsec:regime}{{\mbox  {5-D}}{8}{Regime-Specific Performance}{subsection.5.4}{}}
+\citation{guo2024quant40}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Holdout (2024) performance on NIFTY~50 ($\approx $12{,}300 ticker-days). All metrics computed on the strictly untouched test set. ``$-$'' denotes not applicable. DM$^*$ and $p$-value are relative to buy-and-hold.}}{9}{table.caption.4}\protected@file@percent }
+\newlabel{tab:main}{{II}{9}{Holdout (2024) performance on NIFTY~50 ($\approx $12{,}300 ticker-days). All metrics computed on the strictly untouched test set. ``$-$'' denotes not applicable. DM$^*$ and $p$-value are relative to buy-and-hold}{table.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Ablation study on the 2024 NIFTY~50 holdout.}}{9}{table.caption.5}\protected@file@percent }
+\newlabel{tab:ablation}{{III}{9}{Ablation study on the 2024 NIFTY~50 holdout}{table.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Hyperparameter sensitivity for the two tree base learners (full pipeline, 2024 holdout). All other components are fixed at chosen values.}}{9}{table.caption.6}\protected@file@percent }
+\newlabel{tab:hyper}{{IV}{9}{Hyperparameter sensitivity for the two tree base learners (full pipeline, 2024 holdout). All other components are fixed at chosen values}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-E}}Per-Sector Analysis}{9}{subsection.5.5}\protected@file@percent }
+\newlabel{subsec:sector}{{\mbox  {5-E}}{9}{Per-Sector Analysis}{subsection.5.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Regime-stratified performance on the 2024 holdout. Hurst estimated from a trailing 120-day rolling window per ticker-day.}}{9}{table.caption.7}\protected@file@percent }
+\newlabel{tab:regime}{{V}{9}{Regime-stratified performance on the 2024 holdout. Hurst estimated from a trailing 120-day rolling window per ticker-day}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-F}}Explainability and Temporal Sentiment Analysis (RO3)}{9}{subsection.5.6}\protected@file@percent }
+\newlabel{subsec:res-xai}{{\mbox  {5-F}}{9}{Explainability and Temporal Sentiment Analysis (RO3)}{subsection.5.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {5-F}0a}SHAP attribution.}{9}{paragraph.5.6.0.1}\protected@file@percent }
+\citation{lu2024bridging}
+\citation{liu2024llms}
+\citation{parekh2022dlguess}
+\citation{li2018sentimental}
+\citation{kim2020predicting}
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Per-sector performance on the 2024 NIFTY holdout (top~4 + bottom~2 of 9 industry buckets). Remaining sectors---Automobiles, Infrastructure, Diversified---fall between 56.8\%--58.4\% accuracy.}}{10}{table.caption.8}\protected@file@percent }
+\newlabel{tab:sector}{{VI}{10}{Per-sector performance on the 2024 NIFTY holdout (top~4 + bottom~2 of 9 industry buckets). Remaining sectors---Automobiles, Infrastructure, Diversified---fall between 56.8\%--58.4\% accuracy}{table.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Top-10 features by mean absolute XGBoost-component SHAP value $\overline  {|\phi ^{\text  {XGB}\to \text  {stack}}|}_j$, computed via TreeSHAP on the XGBoost base learner and scaled by its Ridge stacking coefficient $\beta _{\text  {XGB}}$ (equation~\eqref  {eq:shap_prop}). FinBERT sentiment $s_t$ (orange) ranks first at $\bar  {|\phi |}\!=\!0.182$, outpacing all 26 technical and macro features. FII institutional net flows rank third ($0.131$), confirming the value of the Indian-market-specific data stream.}}{10}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:shap}{{3}{10}{Top-10 features by mean absolute XGBoost-component SHAP value $\overline {|\phi ^{\text {XGB}\to \text {stack}}|}_j$, computed via TreeSHAP on the XGBoost base learner and scaled by its Ridge stacking coefficient $\beta _{\text {XGB}}$ (equation~\eqref {eq:shap_prop}). FinBERT sentiment $s_t$ (orange) ranks first at $\bar {|\phi |}\!=\!0.182$, outpacing all 26 technical and macro features. FII institutional net flows rank third ($0.131$), confirming the value of the Indian-market-specific data stream}{figure.caption.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {5-F}0b}Granger-causality temporal analysis.}{10}{paragraph.5.6.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {5-F}0c}Sentiment noise analysis.}{10}{paragraph.5.6.0.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {VII}{\ignorespaces Explainability and temporal analysis results (RO3).}}{10}{table.caption.10}\protected@file@percent }
+\newlabel{tab:shap}{{VII}{10}{Explainability and temporal analysis results (RO3)}{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-G}}Reliability Diagram and Conformal Coverage}{10}{subsection.5.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-H}}Equity Curve}{10}{subsection.5.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {5-I}}Cross-Market Transfer Evaluation (RO4)}{10}{subsection.5.9}\protected@file@percent }
+\citation{nti2021multisource}
+\citation{long2024hybrid}
+\citation{gibbs2021adaptive}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Reliability diagram on 2024 NIFTY~50 holdout (10 equal-mass bins). The calibrated model closely follows the diagonal. The uncalibrated stacker is systematically over-confident above 0.60.}}{11}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:reliability}{{4}{11}{Reliability diagram on 2024 NIFTY~50 holdout (10 equal-mass bins). The calibrated model closely follows the diagonal. The uncalibrated stacker is systematically over-confident above 0.60}{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Simulated cumulative return on 2024 NIFTY~50 holdout (net of NSE costs). ProTrader AI achieves $+28.6\%$ with MDD~$=-12.4\%$ vs.\ $+22.1\%$ and MDD~$=-23.8\%$ for buy-and-hold.}}{11}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:equity}{{5}{11}{Simulated cumulative return on 2024 NIFTY~50 holdout (net of NSE costs). ProTrader AI achieves $+28.6\%$ with MDD~$=-12.4\%$ vs.\ $+22.1\%$ and MDD~$=-23.8\%$ for buy-and-hold}{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}DISCUSSION}{11}{section.6}\protected@file@percent }
+\newlabel{sec:discussion}{{6}{11}{DISCUSSION}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {6-A}}RO1 --- Multi-Source Integration}{11}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {VIII}{\ignorespaces Cross-market transfer to S\&P~500 subset, 2024 holdout (RO4). MDD = maximum drawdown.}}{11}{table.caption.13}\protected@file@percent }
+\newlabel{tab:transfer}{{VIII}{11}{Cross-market transfer to S\&P~500 subset, 2024 holdout (RO4). MDD = maximum drawdown}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {6-B}}RO2 --- Hybrid LLM + Indicator Framework}{11}{subsection.6.2}\protected@file@percent }
+\citation{guo2024quant40}
+\citation{lu2024bridging}
+\citation{kim2020predicting}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {6-C}}RO3 --- Explainability and Temporal Sentiment Dynamics}{12}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {6-D}}RO4 --- Cross-Market Evaluation and Transfer Learning}{12}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}CONCLUSION AND FUTURE WORK}{12}{section.7}\protected@file@percent }
+\newlabel{sec:conclusion}{{7}{12}{CONCLUSION AND FUTURE WORK}{section.7}{}}
+\bibstyle{IEEEtran}
+\@input{bu.aux}
+\bibdata{references}
+\@writefile{toc}{\contentsline {section}{References}{13}{section.7}\protected@file@percent }
+\gdef \@abspage@last{14}

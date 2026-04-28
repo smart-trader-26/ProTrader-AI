@@ -136,6 +136,7 @@ def _to_metrics(raw: dict) -> BacktestMetrics:
         avg_loss_pct=_opt_pct(raw.get("Avg Loss")),
         expectancy_pct=None,
         n_trades=int(raw.get("N Trades", 0)),
+        validity_warning=raw.get("Validity Warning"),
         dm_pvalue=_extract_dm_pvalue(raw.get("Statistical Significance")),
     )
 

@@ -78,34 +78,21 @@ def get_stock_data(ticker: str, start, end) -> pd.DataFrame:
 @st.cache_data(ttl=1800, show_spinner=False)
 def get_stock_info(ticker: str) -> dict:
     """
-    Fetch basic stock information from Yahoo Finance.
+    Fetch raw yfinance info dict for a ticker.
+
+    Returns the raw ``yf.Ticker.info`` dict so that the FastAPI
+    ``/info`` endpoint can serve all fields the frontend expects:
+    ``longName``, ``sector``, ``industry``, ``website``, ``country``,
+    ``fullTimeEmployees``, ``longBusinessSummary``, etc.
 
     Args:
         ticker: Stock ticker symbol
 
     Returns:
-        Dictionary with stock info
+        Raw yfinance info dict
     """
     stock = yf.Ticker(ticker)
-    info = stock.info
-    
-    def format_value(value, format_str):
-        if value == "N/A" or value is None:
-            return "N/A"
-        return format_str.format(value)
-    
-    return {
-        "Market Cap": format_value(info.get("marketCap"), "{:,} INR"),
-        "P/E Ratio": format_value(info.get("trailingPE"), "{}"),
-        "ROCE": format_value(info.get("returnOnCapitalEmployed"), "{:.2f}%"),
-        "Current Price": format_value(info.get("currentPrice"), "{:.2f} INR"),
-        "Book Value": format_value(info.get("bookValue"), "{:.2f} INR"),
-        "ROE": format_value(info.get("returnOnEquity"), "{:.2f}%"),
-        "Dividend Yield": format_value(info.get("dividendYield"), "{:.2f}%"),
-        "Face Value": format_value(info.get("faceValue"), "{:.2f} INR"),
-        "High": format_value(info.get("dayHigh"), "{:.2f} INR"),
-        "Low": format_value(info.get("dayLow"), "{:.2f} INR"),
-    }
+    return stock.info or {}
 
 
 @st.cache_data(ttl=1800, show_spinner=False)

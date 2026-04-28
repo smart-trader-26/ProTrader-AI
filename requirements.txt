@@ -111,3 +111,6 @@ opentelemetry-sdk>=1.23.0
 opentelemetry-exporter-otlp-proto-http>=1.23.0
 opentelemetry-instrumentation-fastapi>=0.44b0
 
+
+deep-translator>=1.11.4  # Hindi -> English translation for FinBERT pre-processing
+langdetect>=1.0.9       # Language detection for auto-translation trigger

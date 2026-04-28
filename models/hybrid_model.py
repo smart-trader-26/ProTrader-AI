@@ -643,6 +643,25 @@ def _calibrate_direction_probability(oof_preds: np.ndarray, y_train: np.ndarray,
     iso.fit(oof_preds[valid][sort_idx], y_dir[valid][sort_idx])
 
     prob = iso.predict(test_preds)
+
+    # Collapse detection: if isotonic output has near-zero variance the curve
+    # has degenerated to a constant (all predictions map to the class prior).
+    # Fall back to a sigmoid stretch on the raw return predictions so that at
+    # least the sign and magnitude of the predicted return propagate into the
+    # probability. Scale factor 50 maps ±0.02 log-return → ±0.5 prob shift.
+    if np.std(prob) < 0.01:
+        prob = np.clip(0.5 + test_preds * 50, 0.02, 0.98)
+
+    # Bias correction: the isotonic learns the TRAINING-PERIOD base rate, which
+    # may be significantly above 0.5 in a bull training window (e.g. 0.56).
+    # Subtracting the bias re-centers the distribution at 0.5, preserving the
+    # ranking while removing systematic directional drift.  Only applied when
+    # the empirical bias exceeds 3pp to avoid over-correcting balanced periods.
+    up_frac = float(y_dir[valid].mean())
+    bias = up_frac - 0.5
+    if abs(bias) > 0.03:
+        prob = prob - bias
+
     return np.clip(prob, 0.02, 0.98)
 
 
@@ -797,6 +816,23 @@ def _compute_shap_importance(xgb_model, X_test_scaled: np.ndarray,
     }
 
 
+def _compute_conviction_precision(probs: np.ndarray, y_true: np.ndarray,
+                                   threshold: float = 0.60) -> dict:
+    """Precision restricted to high-conviction calls (prob >= threshold or <= 1-threshold).
+    Go/no-go gate: bull_precision >= 0.55 at threshold=0.60 before paper trading."""
+    y_dir     = (y_true > 0).astype(int)
+    high_bull = probs >= threshold
+    high_bear = probs <= (1.0 - threshold)
+    return {
+        "threshold":       threshold,
+        "n_high_bull":     int(high_bull.sum()),
+        "n_high_bear":     int(high_bear.sum()),
+        "bull_precision":  float(y_dir[high_bull].mean()) if high_bull.sum() > 0 else None,
+        "bear_precision":  float((1 - y_dir[high_bear]).mean()) if high_bear.sum() > 0 else None,
+        "conviction_rate": float((high_bull | high_bear).mean()),
+    }
+
+
 # ============================================================
 # Main Model: create_hybrid_model
 # ============================================================
@@ -936,6 +972,51 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         for col in ['VIX_Norm', 'VIX_Change', 'VIX_High']:
             df_proc[col] = 0.0
 
+    # Pattern target distance feature (Fix 5).
+    # Run pattern detection once on the full close series (no lookahead — the
+    # analyst sees only the price history up to each point, not future bars).
+    # We compute a walk-forward feature: for each bar at index t, detect patterns
+    # visible from close[0..t] and record the signed distance to the nearest
+    # confirmed pattern target.  Expensive to do for every row, so we sample
+    # every 20 bars and forward-fill.  Normalised to last close so the scale
+    # is comparable across tickers.
+    _pattern_col = "Pattern_Target_Dist"
+    try:
+        from models.visual_analyst import PatternAnalyst as _PA
+        _pa_inst = _PA()
+        _close_arr = df_proc["Log_Ret"].cumsum()  # proxy index
+        _step = max(20, len(df_proc) // 50)        # ~50 sample points
+        _ptgt_series: dict[int, float] = {}
+        _min_bars_for_patterns = 60
+        for _t in range(_min_bars_for_patterns, len(df_proc), _step):
+            _sub_df = df[[c for c in ["Open", "High", "Low", "Close", "Volume"] if c in df.columns]].iloc[:_t]
+            try:
+                _res = _pa_inst.analyze_all_patterns(_sub_df)
+                _pats = [
+                    p for p in _res.get("patterns", [])
+                    if str(p.get("Status", "")).upper() == "CONFIRMED"
+                    and p.get("Target") is not None
+                ]
+                if _pats:
+                    _cur = float(df["Close"].iloc[_t - 1])
+                    # Signed distance: positive = target above (bullish), negative = below (bearish)
+                    _dists = [(float(p["Target"]) - _cur) / _cur for p in _pats]
+                    # Use the nearest target by absolute distance
+                    _ptgt_series[_t] = min(_dists, key=abs)
+                else:
+                    _ptgt_series[_t] = 0.0
+            except Exception:
+                _ptgt_series[_t] = 0.0
+        # Build and forward-fill the feature column
+        _ptgt_col = pd.Series(0.0, index=df_proc.index)
+        for _t, _v in _ptgt_series.items():
+            if _t < len(df_proc):
+                _ptgt_col.iloc[_t] = _v
+        _ptgt_col = _ptgt_col.replace(0.0, float("nan")).ffill().fillna(0.0)
+        df_proc[_pattern_col] = _ptgt_col.clip(-0.15, 0.15)  # cap at ±15% distance
+    except Exception:
+        df_proc[_pattern_col] = 0.0
+
     # Define Target
     df_proc['Target_Return'] = df_proc['Log_Ret'].shift(-1)
     df_proc.dropna(inplace=True)
@@ -955,6 +1036,8 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg',
         # Market Fear/VIX (2)
         'VIX_Norm', 'VIX_Change',
+        # Pattern target distance (Fix 5): signed (nearest_target - close) / close
+        'Pattern_Target_Dist',
     ]
     # A5.2 — macro factors (USD/INR, crude, US10Y, gold, S&P, US VIX returns)
     features.extend(_macro_cols)
@@ -1117,7 +1200,11 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         optimizer=Adam(learning_rate=0.001),
         loss={
             'return_out':    'mse',
-            'direction_out': 'binary_crossentropy',
+            # Label smoothing=0.1 prevents the direction head from collapsing to
+            # 0.5 when BCE loss reaches its minimum too quickly. It keeps
+            # gradients flowing and forces the sigmoid to stay away from the
+            # constant-prior attractor.
+            'direction_out': tf.keras.losses.BinaryCrossentropy(label_smoothing=0.1),
             'volatility_out':'mse',
         },
         loss_weights={
@@ -1190,6 +1277,7 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     # directional_prob equals len(y_test) (both come from the test fold).
     calibration_report = _compute_calibration_report(directional_prob, y_test, n_bins=10)
     threshold_tuning = _compute_threshold_tuning(directional_prob, y_test)
+    conviction_precision = _compute_conviction_precision(directional_prob, y_test, threshold=0.60)
 
     # ============================================================
     # ARIMA / Prophet Statistical Models
@@ -1369,6 +1457,13 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     correct_direction = np.sign(hybrid_pred) == np.sign(y_test)
     accuracy          = float(np.mean(correct_direction) * 100)
 
+    # Naive baselines — model must beat these to have any edge
+    up_rate              = float(np.mean(y_test > 0))
+    train_up_rate        = float(np.mean(y_train > 0))  # used for calibration bias display
+    naive_up_rate        = up_rate
+    naive_accuracy       = float(max(up_rate, 1.0 - up_rate) * 100)  # always-majority-class
+    naive_brier          = 0.25  # always predict 50%
+
     # Store predictions
     test_dates = df_proc.index[train_size:]
     _scale = lambda p: p * (train_std / (np.std(p) + 1e-8))
@@ -1397,7 +1492,9 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         w_actual = y_test[start:end]
         if len(w_preds) < 3:
             continue
-        w_acc = float(np.mean(np.sign(w_preds) == np.sign(w_actual)) * 100)
+        # Store as fraction [0.0–1.0]. The frontend formats with * 100 itself;
+        # storing as % caused a double-multiplication producing values like 5333%.
+        w_acc = float(np.mean(np.sign(w_preds) == np.sign(w_actual)))
         window_records.append({
             'window': len(window_records) + 1,
             'accuracy': w_acc,
@@ -1412,10 +1509,13 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         walkforward_min      = float(np.min(wf_accs))
         walkforward_max      = float(np.max(wf_accs))
     else:
-        walkforward_accuracy = accuracy
+        # `accuracy` is in % (line 1370); normalise to fraction [0,1] for
+        # consistency with the window records computed above.
+        _acc_frac            = accuracy / 100.0
+        walkforward_accuracy = _acc_frac
         walkforward_std      = 0.0
-        walkforward_min      = accuracy
-        walkforward_max      = accuracy
+        walkforward_min      = _acc_frac
+        walkforward_max      = _acc_frac
 
     metrics = {
         'rmse':                 rmse,
@@ -1467,6 +1567,13 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'quantile_available':   len(quantile_bundle['models']) > 0,
         'conformal_halfwidth':  float(conformal_hw),
         'conformal_alpha':      0.10,
+        # 3A — naive baselines (model must beat these)
+        'naive_up_rate':        naive_up_rate,
+        'naive_accuracy':       naive_accuracy,
+        'naive_brier':          naive_brier,
+        'train_up_rate':        train_up_rate,  # calibration bias diagnostic
+        # 3B — conviction-precision gate
+        'conviction_precision': conviction_precision,
     }
 
     return (df_proc, results_df,
@@ -1653,8 +1760,12 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
     sample_idx  = np.random.randint(0, len(hist_returns), size=(n_paths, days))
     sampled_ret = hist_returns[sample_idx] * vol_scale   # (n_paths, days)
 
-    # Apply drift + override day-0 anchor for all paths
-    sampled_ret[:, 0]  = anchor_return                   # Anchor all paths to model day-1
+    # Day-1: spread paths around the model's point prediction with ½ historical
+    # volatility so the fan opens at h=1 rather than collapsing to zero width.
+    # Days 2+: apply the full drift. This prevents the "P5=P95=price" artefact
+    # on the first forecast bar while keeping the point estimate unbiased.
+    day1_vol = float(np.std(hist_returns[-60:])) if len(hist_returns) >= 60 else float(np.std(hist_returns)) if len(hist_returns) > 1 else 0.005
+    sampled_ret[:, 0]  = np.random.normal(anchor_return, day1_vol * 0.5, n_paths)
     sampled_ret[:, 1:] = sampled_ret[:, 1:] + drift_per_day  # Drift from day 2 onward
 
     # Cumulative log return → price paths
@@ -1668,6 +1779,12 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
     p75  = np.percentile(price_paths, 75, axis=0)
     p95  = np.percentile(price_paths, 95, axis=0)
 
+    # Per-day P(price > anchor): fraction of MC paths that end above the
+    # prediction-date close at each horizon.  This is the only honest
+    # directional probability for days 2+ — derived from the full path
+    # distribution rather than stamping day-1's number across all horizons.
+    prob_up_per_day = (price_paths > current_price).mean(axis=0)  # (days,)
+
     # ── Step 7: Build future date index ─────────────────────────────────
     future_dates = []
     d = last_date
@@ -1680,10 +1797,11 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
     return pd.DataFrame({
         'Predicted Price':  p50,
         'Daily Change (%)': daily_changes,
-        'P5':  p5,
-        'P25': p25,
-        'P75': p75,
-        'P95': p95,
+        'P5':   p5,
+        'P25':  p25,
+        'P75':  p75,
+        'P95':  p95,
+        'Prob_Up': prob_up_per_day,
     }, index=future_dates)
 
 

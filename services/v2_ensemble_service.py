@@ -115,9 +115,12 @@ def _load() -> _V2Bundle:
             stacker = None
 
         sent_dir = _snapshot_sentiment_dir()
+        import torch
+        device = 0 if torch.cuda.is_available() else -1
         # framework="pt" is a hard invariant — see CLAUDE.md §2.
         sentiment_pipe = pipeline(
             "sentiment-analysis", model=sent_dir, tokenizer=sent_dir, framework="pt",
+            device=device,
         )
 
         _bundle = _V2Bundle(learners=learners, stacker=stacker, sentiment_pipe=sentiment_pipe)

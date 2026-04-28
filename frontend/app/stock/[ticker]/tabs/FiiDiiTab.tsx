@@ -6,6 +6,8 @@ import type { FiiDiiBundle } from "@/lib/types";
 import { formatCompactINR, toneFor } from "@/lib/format";
 
 const NSE_FIIDII_URL = "https://www.nseindia.com/api/fiidiiTradeReact";
+/** localStorage key shared with OverviewTab so prediction can include FII/DII data */
+export const FII_DII_STORAGE_KEY = "fii_dii:rows:v1";
 
 export default function FiiDiiTab() {
   const [data, setData] = useState<FiiDiiBundle | null>(null);
@@ -16,13 +18,31 @@ export default function FiiDiiTab() {
   const [pasteError, setPasteError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/v1/stocks/fii-dii?lookback_days=30")
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    fetch(`${API_BASE}/api/v1/stocks/fii-dii?lookback_days=30`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((d: FiiDiiBundle) => {
-        if (!d || !d.rows || d.rows.length === 0) throw new Error("empty");
+        if (!d || !d.rows || d.rows.length < 3) throw new Error("empty");
         setData(d);
+        // Persist for use by prediction
+        try {
+          localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(d.rows));
+        } catch {}
       })
-      .catch(() => setError(true))
+      .catch(() => {
+        setError(true);
+        // Try to hydrate from previously saved data
+        try {
+          const saved = localStorage.getItem(FII_DII_STORAGE_KEY);
+          if (saved) {
+            const rows = JSON.parse(saved);
+            if (rows?.length) {
+              setData({ rows, fii_net_5d: null, dii_net_5d: null, fii_net_streak: null, dii_net_streak: null });
+              setError(false);
+            }
+          }
+        } catch {}
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,7 +74,32 @@ export default function FiiDiiTab() {
   }
 
   function buildBundle(arr: Record<string, unknown>[]): FiiDiiBundle {
-    const rows = arr.map((r) => ({
+    // NSE API returns one record per category per day: [{category:"DII",date,buyValue,sellValue,netValue},{category:"FII/FPI",...}]
+    // Detect this format and pivot into per-date rows first.
+    const isNseFormat = arr.length > 0 && "category" in arr[0] && "buyValue" in arr[0];
+    let normalised: Record<string, unknown>[];
+    if (isNseFormat) {
+      const byDate: Record<string, Record<string, unknown>> = {};
+      for (const r of arr) {
+        const date = String(r.date ?? "");
+        const cat = String(r.category ?? "").toUpperCase();
+        if (!byDate[date]) byDate[date] = { date };
+        if (cat.includes("FII") || cat.includes("FPI")) {
+          byDate[date].fii_buy = parseNum(r.buyValue);
+          byDate[date].fii_sell = parseNum(r.sellValue);
+          byDate[date].fii_net = parseNum(r.netValue);
+        } else if (cat.includes("DII")) {
+          byDate[date].dii_buy = parseNum(r.buyValue);
+          byDate[date].dii_sell = parseNum(r.sellValue);
+          byDate[date].dii_net = parseNum(r.netValue);
+        }
+      }
+      normalised = Object.values(byDate);
+    } else {
+      normalised = arr;
+    }
+
+    const rows = normalised.map((r) => ({
       date: String(r.date ?? r.tradeDate ?? ""),
       fii_buy: parseNum(r.fii_buy ?? r.fiiBuy ?? r["FII Buy"]),
       fii_sell: parseNum(r.fii_sell ?? r.fiiSell ?? r["FII Sell"]),
@@ -79,6 +124,10 @@ export default function FiiDiiTab() {
     setData(parsed);
     setError(false);
     setPasteMode(false);
+    // Persist for use by OverviewTab prediction
+    try {
+      localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(parsed.rows));
+    } catch {}
   }
 
   if (loading) {
@@ -90,21 +139,31 @@ export default function FiiDiiTab() {
       <div className="panel space-y-4">
         <p className="text-sm text-bear font-semibold">NSE endpoint throttled — data unavailable.</p>
         <p className="text-sm text-muted">
-          FII/DII flows are a model feature. You can paste the data manually from the NSE website:
+          FII/DII flows are a model feature. Paste the raw JSON directly from the NSE API:
         </p>
         <ol className="list-decimal list-inside text-sm space-y-1">
           <li>
             Open{" "}
             <a
-              href="https://www.nseindia.com/market-data/fii-dii-activity"
+              href={NSE_FIIDII_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-accent underline"
             >
-              nseindia.com/market-data/fii-dii-activity
+              nseindia.com/api/fiidiiTradeReact
             </a>
+            {" "}in your browser (you may need to visit{" "}
+            <a
+              href="https://www.nseindia.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline"
+            >
+              nseindia.com
+            </a>
+            {" "}first to get the session cookie)
           </li>
-          <li>Copy the data table (Ctrl+A in the table, then Ctrl+C)</li>
+          <li>Select all (Ctrl+A) and copy (Ctrl+C) the JSON text</li>
           <li>Paste it below and press <strong>Submit</strong></li>
         </ol>
         <button
@@ -120,14 +179,18 @@ export default function FiiDiiTab() {
   if (pasteMode) {
     return (
       <div className="panel space-y-4">
-        <p className="text-sm font-semibold">Paste FII / DII table data</p>
+        <p className="text-sm font-semibold">Paste FII / DII JSON data</p>
         <p className="text-xs text-muted">
-          Accepted: tab-separated, comma-separated, or JSON array. Expected columns:{" "}
-          <code className="bg-border/40 px-1 rounded">Date | FII Buy | FII Sell | FII Net | DII Net</code>
+          Paste the JSON array from{" "}
+          <a href={NSE_FIIDII_URL} target="_blank" rel="noopener noreferrer" className="text-accent underline">
+            nseindia.com/api/fiidiiTradeReact
+          </a>
+          . Format:{" "}
+          <code className="bg-border/40 px-1 rounded">[&#123;&quot;category&quot;:&quot;DII&quot;,&quot;date&quot;:&quot;23-Apr-2026&quot;,&quot;buyValue&quot;:&quot;18498.19&quot;,...&#125;]</code>
         </p>
         <textarea
           className="w-full h-48 bg-surface border border-border rounded p-2 text-sm font-mono resize-y"
-          placeholder={"2025-04-01\t12345\t9876\t2469\t-1200\n..."}
+          placeholder={'[{"category":"DII","date":"23-Apr-2026","buyValue":"18498.19","sellValue":"17556.84","netValue":"941.35"},{"category":"FII/FPI","date":"23-Apr-2026","buyValue":"12829.12","sellValue":"16083.83","netValue":"-3254.71"}]'}
           value={pasteText}
           onChange={(e) => setPasteText(e.target.value)}
         />

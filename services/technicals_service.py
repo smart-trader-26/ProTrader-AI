@@ -124,9 +124,54 @@ def get_patterns(ticker: str, lookback_days: int = 365) -> PatternBundle:
         market_character=_s(result.get("market_character")),
         hurst_exponent=_f(result.get("hurst_exponent")),
         bias=_s(result.get("overall_bias")),
-        patterns=detected,
+        patterns=_reconcile_patterns(detected),
         support_resistance=sr,
     )
+
+
+# Mutually exclusive pattern families — within each group, only the highest-
+# confidence pattern survives.  Simultaneous "Double Top" + "Double Bottom" is
+# physically impossible on the same window; the detector just fired on
+# overlapping sub-windows.
+_PATTERN_FAMILIES = [
+    {"double top", "double bottom"},
+    {"head and shoulders", "inverse head and shoulders"},
+    {"bullish flag", "bearish flag"},
+    {"bullish pennant", "bearish pennant"},
+    {"rising wedge", "falling wedge"},
+    {"cup and handle", "inverted cup and handle"},
+    {"ascending triangle", "descending triangle"},
+]
+
+
+def _pattern_family(name: str) -> int | None:
+    n = name.lower()
+    for i, fam in enumerate(_PATTERN_FAMILIES):
+        if any(f in n for f in fam):
+            return i
+    return None
+
+
+def _reconcile_patterns(patterns: list[DetectedPattern]) -> list[DetectedPattern]:
+    """Keep only the highest-confidence member within each mutually exclusive family.
+
+    Patterns from different families are unaffected.  Patterns with no family
+    (e.g. triangles not in the list) pass through unchanged.
+    """
+    family_best: dict[int, DetectedPattern] = {}
+    orphans: list[DetectedPattern] = []
+
+    for p in patterns:
+        fid = _pattern_family(p.name)
+        if fid is None:
+            orphans.append(p)
+        else:
+            if fid not in family_best or p.confidence > family_best[fid].confidence:
+                family_best[fid] = p
+
+    # Sort survivors by confidence descending
+    survivors: list[DetectedPattern] = list(family_best.values()) + orphans
+    return sorted(survivors, key=lambda p: p.confidence, reverse=True)
 
 
 def get_fii_dii(lookback_days: int = 30) -> FiiDiiBundle:

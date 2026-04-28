@@ -9,10 +9,18 @@ import { formatINR, formatPercent, formatRatio, toneFor } from "@/lib/format";
 
 type Strategy = "ma_crossover" | "momentum";
 
+function defaultStart() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 3);
+  return d.toISOString().slice(0, 10);
+}
+
 export default function BacktestTab({ ticker }: { ticker: string }) {
   const [strategy, setStrategy] = useState<Strategy>("ma_crossover");
   const [initialCapital, setInitialCapital] = useState<number>(100_000);
   const [includeCosts, setIncludeCosts] = useState(true);
+  const [startDate, setStartDate] = useState<string>(defaultStart());
+  const [endDate, setEndDate] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -30,6 +38,8 @@ export default function BacktestTab({ ticker }: { ticker: string }) {
           strategy,
           initial_capital: initialCapital,
           include_costs: includeCosts,
+          start: startDate || undefined,
+          end: endDate || undefined,
         },
       );
       setPhase("running");
@@ -69,6 +79,26 @@ export default function BacktestTab({ ticker }: { ticker: string }) {
             </select>
           </label>
           <label>
+            <span className="block text-xs uppercase text-muted mb-1">Start date</span>
+            <input
+              type="date"
+              className="input"
+              value={startDate}
+              max={endDate || undefined}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          <label>
+            <span className="block text-xs uppercase text-muted mb-1">End date (blank = today)</span>
+            <input
+              type="date"
+              className="input"
+              value={endDate}
+              min={startDate || undefined}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+          <label>
             <span className="block text-xs uppercase text-muted mb-1">Initial capital (₹)</span>
             <input
               type="number"
@@ -87,7 +117,7 @@ export default function BacktestTab({ ticker }: { ticker: string }) {
             />
             Include NSE costs
           </label>
-          <button disabled={busy} className="btn btn-primary">
+          <button disabled={busy} className="btn btn-primary sm:col-start-4">
             {busy ? (phase ?? "…") : "Run backtest"}
           </button>
         </form>
@@ -96,44 +126,44 @@ export default function BacktestTab({ ticker }: { ticker: string }) {
 
       {result && (
         <>
-          <section className="panel grid gap-4 sm:grid-cols-4">
+          {/* Dim all metrics when there aren't enough trades for reliable statistics */}
+          <section className={`panel grid gap-4 sm:grid-cols-4 ${result.metrics.n_trades < 50 ? "opacity-40 pointer-events-none" : ""}`}>
             <Stat
               label="Total return"
               value={formatPercent(result.metrics.total_return_pct, 2)}
-              tone={toneFor(result.metrics.total_return_pct)}
+              tone={result.metrics.n_trades < 50 ? "muted" : toneFor(result.metrics.total_return_pct)}
             />
             <Stat
               label="CAGR"
               value={formatPercent(result.metrics.cagr_pct, 2)}
-              tone={toneFor(result.metrics.cagr_pct)}
+              tone={result.metrics.n_trades < 50 ? "muted" : toneFor(result.metrics.cagr_pct)}
             />
             <Stat
               label="Sharpe"
               value={formatRatio(result.metrics.sharpe)}
               tone={
-                result.metrics.sharpe >= 1.2
-                  ? "bull"
-                  : result.metrics.sharpe < 0
-                  ? "bear"
-                  : "muted"
+                result.metrics.n_trades < 50 ? "muted"
+                : result.metrics.sharpe >= 1.2 ? "bull"
+                : result.metrics.sharpe < 0 ? "bear"
+                : "muted"
               }
-              hint="Target ≥ 1.2"
+              hint={result.metrics.n_trades < 50 ? `Only ${result.metrics.n_trades} trades — need ≥50` : "Target ≥ 1.2"}
             />
             <Stat
               label="Max drawdown"
               value={formatPercent(result.metrics.max_drawdown_pct, 2)}
-              tone="bear"
+              tone={result.metrics.n_trades < 50 ? "muted" : "bear"}
             />
           </section>
 
-          <section className="panel grid gap-4 sm:grid-cols-4">
+          <section className={`panel grid gap-4 sm:grid-cols-4 ${result.metrics.n_trades < 50 ? "opacity-40 pointer-events-none" : ""}`}>
             <Stat label="Sortino" value={formatRatio(result.metrics.sortino)} />
             <Stat label="Calmar" value={formatRatio(result.metrics.calmar)} />
             <Stat
               label="Profit factor"
               value={formatRatio(result.metrics.profit_factor)}
               tone={
-                result.metrics.profit_factor == null
+                result.metrics.n_trades < 50 || result.metrics.profit_factor == null
                   ? "muted"
                   : result.metrics.profit_factor > 1.5
                   ? "bull"
@@ -163,6 +193,12 @@ export default function BacktestTab({ ticker }: { ticker: string }) {
             />
             <Stat label="Trades" value={String(result.metrics.n_trades)} />
           </section>
+
+          {result.metrics.validity_warning && (
+            <div className="rounded border border-red-400 bg-red-400/10 px-4 py-3 text-sm text-red-400">
+              ⚠ {result.metrics.validity_warning}
+            </div>
+          )}
 
           <section className="panel">
             <div className="flex items-baseline justify-between mb-2">

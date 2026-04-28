@@ -102,13 +102,24 @@ def log_from_future_df(
     hi = future_df["P95"].tolist() if "P95" in future_df.columns else [None] * len(prices)
 
     points: list[PredictionPoint] = []
-    prev = anchor_price
     for i, (d, p) in enumerate(zip(dates, prices)):
-        direction = "flat"
-        if p > prev * 1.001:
+        # Compare every day's predicted price to the ORIGINAL anchor, not to the
+        # previous predicted price. The ledger resolves `hit` using
+        # `actual_price vs anchor_price`, so direction must use the same baseline.
+        # The old rolling `prev = p` caused day-2+ directions to be computed
+        # relative to a drifting predicted price, systematically mis-marking hits.
+        if p > anchor_price * 1.001:
             direction = "up"
-        elif p < prev * 0.999:
+        elif p < anchor_price * 0.999:
             direction = "down"
+        else:
+            direction = "flat"
+
+        # Only day-0 (the next trading day) has a genuine calibrated directional
+        # probability. Days 1-N are Monte Carlo scenario paths — mark prob_up as
+        # None so the ledger does not compute spurious calibration metrics on them.
+        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)) if i == 0 else None
+
         points.append(
             PredictionPoint(
                 target_date=d,
@@ -116,10 +127,9 @@ def log_from_future_df(
                 ci_low=float(lo[i]) if lo[i] is not None else None,
                 ci_high=float(hi[i]) if hi[i] is not None else None,
                 direction=direction,  # type: ignore[arg-type]
-                prob_up=max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)),
+                prob_up=day_prob,
             )
         )
-        prev = p
 
     bundle = PredictionBundle(
         ticker=ticker,
@@ -202,10 +212,9 @@ def backfill_actuals(
                 anchor = row.get("anchor_price")
                 if anchor is None:
                     made_at_raw = row["made_at"]
-                    made_date = (
-                        datetime.fromisoformat(made_at_raw.replace("Z", "+00:00")).date()
-                        if isinstance(made_at_raw, str) else made_at_raw.date()
-                    )
+                    # Convert UTC timestamp → IST date to get the correct NSE
+                    # trading day the prediction was originally made on.
+                    made_date = _to_ist_date(made_at_raw)
                     anchor = anchor_cache.get(made_date)
                     if anchor is None:
                         anchor = _anchor_close(ticker, made_date, fetcher)
@@ -237,6 +246,34 @@ def _anchor_close(ticker: str, made_date: date, fetcher) -> float:
     if not candidates:
         return float("nan")
     return float(lookup[candidates[-1]])
+
+
+_IST = None
+
+
+def _to_ist_date(made_at_raw) -> date:
+    """Convert a made_at value (UTC string or datetime) to an IST calendar date.
+
+    NSE closes at 15:30 IST. Predictions logged after midnight UTC (= 05:30 IST)
+    must be anchored against the same IST trading day, not the UTC date which may
+    be one day ahead. Using UTC dates directly caused anchors to slip by one day
+    for predictions logged in the evening IST.
+    """
+    global _IST
+    if _IST is None:
+        try:
+            import pytz
+            _IST = pytz.timezone("Asia/Kolkata")
+        except ImportError:
+            _IST = UTC  # graceful fallback — pytz not installed
+
+    if isinstance(made_at_raw, str):
+        dt = datetime.fromisoformat(made_at_raw.replace("Z", "+00:00"))
+    else:
+        dt = made_at_raw
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(_IST).date()
 
 
 # ───────────────────────── read path ─────────────────────────────────────
@@ -295,7 +332,12 @@ def accuracy_window(
         if actual is None or pred is None:
             continue
         price_err.append(abs(actual - pred))
-        if r.get("hit") is not None:
+        # Only count hits for day-1 predictions (prob_up IS NOT NULL).
+        # Days 2-10 are Monte Carlo scenario paths — their pred_dir is an
+        # indication of trajectory direction vs anchor, not an independent
+        # directional forecast. Including them in the hit rate would inflate the
+        # denominator with rows that were never meant to be directional calls.
+        if r.get("hit") is not None and r.get("prob_up") is not None:
             hits.append(int(r["hit"]))
         if r.get("prob_up") is not None and anchor is not None:
             probs.append(float(r["prob_up"]))

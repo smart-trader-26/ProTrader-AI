@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import type { PredictionBundle, PredictionJobAccepted, StockHistory } from "@/lib/types";
+import { useState, useRef } from "react";
+import type { PredictionBundle, PredictionJobAccepted, StockHistory, FiiDiiRow } from "@/lib/types";
 import Stat from "@/components/Stat";
 import ProgressLoader from "@/components/ProgressLoader";
 import HorizontalBarChart from "../charts/HorizontalBarChart";
 import PredictedVsActualChart from "../charts/PredictedVsActualChart";
 import PriceForecastBandsChart from "../charts/PriceForecastBandsChart";
 import ModelAccuracyChart from "../charts/ModelAccuracyChart";
-import { apiPost, waitForJob } from "@/lib/api-client";
+import { apiPost, apiGet, waitForJob } from "@/lib/api-client";
 import usePersistedState from "@/lib/usePersistedState";
 import { formatINR, formatPercent, formatRatio, toneFor } from "@/lib/format";
+import { FII_DII_STORAGE_KEY } from "./FiiDiiTab";
 
 interface Props {
   ticker: string;
@@ -45,15 +46,105 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
   const [run, setRun] = useState<RunState>(INITIAL_STATE);
   const [busy, setBusy] = useState(false);
 
-  async function runPredict(e: React.FormEvent) {
-    e.preventDefault();
+  // FII/DII inline-prompt state
+  const [fiiDiiModalOpen, setFiiDiiModalOpen] = useState(false);
+  const [fiiDiiPasteText, setFiiDiiPasteText] = useState("");
+  const [fiiDiiPasteError, setFiiDiiPasteError] = useState<string | null>(null);
+  // Resolved FII/DII rows to attach to the next prediction run
+  const pendingFiiDiiRowsRef = useRef<FiiDiiRow[] | null>(null);
+  // Pending prediction horizon when waiting for FII/DII modal
+  const pendingHorizonRef = useRef<number>(horizon);
+
+  /** Read FII/DII rows from localStorage (written by FiiDiiTab). */
+  function loadSavedFiiDiiRows(): FiiDiiRow[] | null {
+    try {
+      const raw = localStorage.getItem(FII_DII_STORAGE_KEY);
+      if (!raw) return null;
+      const rows = JSON.parse(raw) as FiiDiiRow[];
+      return rows?.length ? rows : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Parse JSON (NSE format or legacy) or tab/comma-separated paste into FiiDiiRow[]  */
+  function parseFiiDiiPaste(raw: string): FiiDiiRow[] | null {
+    try {
+      const trimmed = raw.trim();
+      // Try JSON first (NSE API format)
+      if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+        const parsed = JSON.parse(trimmed);
+        const arr: Record<string, unknown>[] = Array.isArray(parsed) ? parsed : parsed.data ?? [];
+        // NSE category format: [{category, date, buyValue, sellValue, netValue},...]
+        const isNseFormat = arr.length > 0 && "category" in arr[0] && "buyValue" in arr[0];
+        if (isNseFormat) {
+          const byDate: Record<string, FiiDiiRow> = {};
+          for (const r of arr) {
+            const date = String(r.date ?? "");
+            const cat = String(r.category ?? "").toUpperCase();
+            if (!byDate[date]) byDate[date] = { date, fii_buy: null, fii_sell: null, fii_net: null, dii_buy: null, dii_sell: null, dii_net: null };
+            const pf = (v: unknown) => { const n = parseFloat(String(v ?? "")); return isNaN(n) ? null : n; };
+            if (cat.includes("FII") || cat.includes("FPI")) {
+              byDate[date].fii_buy = pf(r.buyValue);
+              byDate[date].fii_sell = pf(r.sellValue);
+              byDate[date].fii_net = pf(r.netValue);
+            } else if (cat.includes("DII")) {
+              byDate[date].dii_buy = pf(r.buyValue);
+              byDate[date].dii_sell = pf(r.sellValue);
+              byDate[date].dii_net = pf(r.netValue);
+            }
+          }
+          const rows = Object.values(byDate).filter((r) => r.date && /\d/.test(r.date));
+          return rows.length ? rows : null;
+        }
+        // Generic JSON row array
+        const rows = arr.map((r) => ({
+          date: String(r.date ?? r.tradeDate ?? ""),
+          fii_buy: parseFloat(String(r.fii_buy ?? r.fiiBuy ?? "")) || null,
+          fii_sell: parseFloat(String(r.fii_sell ?? r.fiiSell ?? "")) || null,
+          fii_net: parseFloat(String(r.fii_net ?? r.fiiNet ?? "")) || null,
+          dii_net: parseFloat(String(r.dii_net ?? r.diiNet ?? "")) || null,
+          dii_buy: null,
+          dii_sell: null,
+        } as FiiDiiRow)).filter((r) => r.date && /\d/.test(r.date));
+        return rows.length ? rows : null;
+      }
+      // Fall back to tab/comma-separated
+      const lines = raw.trim().split("\n").filter(Boolean);
+      const rows = lines
+        .map((line) => {
+          const cols = line.split(/[\t,|]/).map((c) => c.trim());
+          return {
+            date: cols[0],
+            fii_buy: parseFloat(cols[1]) || null,
+            fii_sell: parseFloat(cols[2]) || null,
+            fii_net: parseFloat(cols[3]) || null,
+            dii_net: parseFloat(cols[4]) || null,
+            dii_buy: null,
+            dii_sell: null,
+          } as FiiDiiRow;
+        })
+        .filter((r) => r.date && /\d/.test(r.date));
+      return rows.length ? rows : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function _doRunPredict(fiiDiiRows: FiiDiiRow[] | null) {
     setBusy(true);
     setRun({ startedAt: Date.now(), finishedAt: null, phase: "queued", error: null });
     setBundle(null);
     try {
+      const body: Record<string, unknown> = {
+        horizon_days: pendingHorizonRef.current,
+      };
+      if (fiiDiiRows && fiiDiiRows.length > 0) {
+        body.fii_dii_rows = fiiDiiRows;
+      }
       const accepted = await apiPost<PredictionJobAccepted>(
         `/api/v1/stocks/${ticker}/predict`,
-        { horizon_days: horizon, use_v2_blend: null },
+        body,
       );
       setRun((s) => ({ ...s, phase: "started" }));
       const result = await waitForJob<PredictionBundle>(accepted.job_id, {
@@ -68,6 +159,72 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
       setBusy(false);
     }
   }
+
+  async function runPredict(e: React.FormEvent) {
+    e.preventDefault();
+    pendingHorizonRef.current = horizon;
+
+    // Check if FII/DII data is already saved from the FII/DII tab
+    const savedRows = loadSavedFiiDiiRows();
+    if (savedRows) {
+      // Great — data available, run immediately
+      await _doRunPredict(savedRows);
+      return;
+    }
+
+    // No FII/DII data — try to auto-fetch quickly (timeout 4s)
+    let autoFetchedRows: FiiDiiRow[] | null = null;
+    try {
+      // Use apiGet so the request goes to http://localhost:8000, not Next.js.
+      // Wrap in a race with a 4s timeout using AbortController.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const resp = await fetch(`${API_BASE}/api/v1/stocks/fii-dii?lookback_days=30`, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data?.rows?.length) {
+          autoFetchedRows = data.rows as FiiDiiRow[];
+          // Save for future runs
+          try { localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(autoFetchedRows)); } catch {}
+        }
+      }
+    } catch {
+      // NSE throttled or timeout — show the modal
+    }
+
+    if (autoFetchedRows) {
+      await _doRunPredict(autoFetchedRows);
+      return;
+    }
+
+    // NSE throttled and no saved data — prompt user
+    pendingFiiDiiRowsRef.current = null;
+    setFiiDiiPasteText("");
+    setFiiDiiPasteError(null);
+    setFiiDiiModalOpen(true);
+  }
+
+  function handleFiiDiiModalSubmit() {
+    setFiiDiiPasteError(null);
+    const rows = parseFiiDiiPaste(fiiDiiPasteText);
+    if (!rows) {
+      setFiiDiiPasteError("Could not parse. Use tab-separated: Date | FII Buy | FII Sell | FII Net | DII Net");
+      return;
+    }
+    try { localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(rows)); } catch {}
+    setFiiDiiModalOpen(false);
+    _doRunPredict(rows);
+  }
+
+  function handleFiiDiiModalSkip() {
+    setFiiDiiModalOpen(false);
+    // Run without FII/DII — model will use zeros for those features
+    _doRunPredict(null);
+  }
+
+
 
   function clearPrediction() {
     setBundle(null);
@@ -89,6 +246,61 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* FII/DII data prompt modal — shown when NSE is throttled and no cached data exists */}
+      {fiiDiiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface border border-border rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">FII / DII data required</h3>
+              <p className="text-sm text-muted mt-1">
+                NSE is throttled and no saved FII/DII data was found. The model uses FII/DII institutional
+                flows as a key feature. You can paste recent data from{" "}
+                <a
+                  href="https://www.nseindia.com/api/fiidiiTradeReact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent underline"
+                >
+                  nseindia.com/api/fiidiiTradeReact
+                </a>{" "}
+                (visit{" "}
+                <a href="https://www.nseindia.com" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                  nseindia.com
+                </a>
+                {" "}first to get the session cookie, then copy-paste the raw JSON), or skip to run
+                without this feature.
+              </p>
+            </div>
+            <textarea
+              className="input w-full h-40 font-mono text-xs resize-y"
+              placeholder={`[{"category":"DII","date":"23-Apr-2026","buyValue":"18498.19","sellValue":"17556.84","netValue":"941.35"},{"category":"FII/FPI","date":"23-Apr-2026","buyValue":"12829.12","sellValue":"16083.83","netValue":"-3254.71"}]`}
+              value={fiiDiiPasteText}
+              onChange={(e) => setFiiDiiPasteText(e.target.value)}
+            />
+            {fiiDiiPasteError && (
+              <p className="text-xs text-bear">{fiiDiiPasteError}</p>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={handleFiiDiiModalSkip}
+                className="btn text-sm"
+              >
+                Skip (run without FII/DII)
+              </button>
+              <button
+                type="button"
+                onClick={handleFiiDiiModalSubmit}
+                className="btn btn-primary text-sm"
+                disabled={!fiiDiiPasteText.trim()}
+              >
+                Use this data &amp; run prediction
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="panel">
         {ohlcv && ohlcv.bars.length > 0 ? (
           <div className="flex items-baseline justify-between mb-2">
@@ -137,9 +349,10 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
               className="input"
               value={horizon}
               onChange={(e) => setHorizon(Number(e.target.value))}
+              suppressHydrationWarning
             />
           </label>
-          <button type="submit" disabled={busy} className="btn btn-primary">
+          <button type="submit" disabled={busy} className="btn btn-primary" suppressHydrationWarning>
             {busy ? "Analyzing…" : bundle ? "Re-run prediction" : "Run prediction"}
           </button>
           {bundle && !busy && (
@@ -202,7 +415,7 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
                 }
                 hint={
                   bundle.conformal_halfwidth != null
-                    ? `conformal ± ${(bundle.conformal_halfwidth * 100).toFixed(2)}%`
+                    ? `conformal ±\u20b9${bundle.conformal_halfwidth.toFixed(2)}`
                     : undefined
                 }
               />
@@ -258,12 +471,47 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
                     <p className="text-xs uppercase text-muted">Walk-forward accuracy</p>
                     <p className="font-medium">
                       {formatPercent((bundle.walkforward.accuracy ?? 0) * 100, 1)}
+                      {bundle.naive_accuracy != null && (
+                        <span className="ml-1 text-xs text-muted font-normal">
+                          {" "}
+                          vs naive {formatPercent(bundle.naive_accuracy, 1)}
+                          {" "}
+                          <span className={(bundle.walkforward.accuracy ?? 0) * 100 > bundle.naive_accuracy ? "text-green-500" : "text-red-400"}>
+                            ({((bundle.walkforward.accuracy ?? 0) * 100 - bundle.naive_accuracy) >= 0 ? "+" : ""}
+                            {((bundle.walkforward.accuracy ?? 0) * 100 - bundle.naive_accuracy).toFixed(1)}pp)
+                          </span>
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted">
                       {bundle.walkforward.n_windows} windows
                       {bundle.walkforward.std != null
                         ? ` · σ ${(bundle.walkforward.std * 100).toFixed(1)}%`
                         : ""}
+                    </p>
+                  </div>
+                )}
+                {bundle.conviction_precision != null && (
+                  <div>
+                    <p className="text-xs uppercase text-muted">Conviction precision</p>
+                    <p className="font-medium">
+                      {bundle.conviction_precision.bull_precision != null
+                        ? formatPercent(bundle.conviction_precision.bull_precision * 100, 1)
+                        : "—"}
+                      <span className={
+                        bundle.conviction_precision.bull_precision != null &&
+                        bundle.conviction_precision.bull_precision >= 0.55
+                          ? "ml-1 text-xs text-green-500"
+                          : "ml-1 text-xs text-red-400"
+                      }>
+                        {bundle.conviction_precision.bull_precision != null
+                          ? bundle.conviction_precision.bull_precision >= 0.55 ? "✓ Go" : "✗ No-go"
+                          : ""}
+                      </span>
+                    </p>
+                    <p className="text-xs text-muted">
+                      Bull calls ≥{(bundle.conviction_precision.threshold * 100).toFixed(0)}%
+                      · n={bundle.conviction_precision.n_high_bull}
                     </p>
                   </div>
                 )}
@@ -387,7 +635,7 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
                           {p.direction}
                         </td>
                         <td className="py-1 text-right">
-                          {(p.prob_up * 100).toFixed(1)}%
+                          {p.prob_up != null ? `${(p.prob_up * 100).toFixed(1)}%` : "—"}
                         </td>
                         <td className="py-1 text-right">
                           {p.ci_low != null ? formatINR(p.ci_low) : "—"}
@@ -546,8 +794,8 @@ function VerdictBanner({
             </p>
             {caliTag && (
               <p className="text-xs text-muted mt-0.5">
-                Calibration: <span className={ece! <= 0.05 ? "text-bull" : ece! <= 0.1 ? "text-fg" : "text-bear"}>{caliTag}</span>{" "}
-                (ECE {(ece! * 100).toFixed(1)}%){ece! <= 0.05 ? " — you can trust these probabilities." : ece! <= 0.1 ? " — probabilities are approximately right." : " — treat these probabilities with caution."}
+                Calibration (in-sample): <span className={ece! <= 0.05 ? "text-bull" : ece! <= 0.1 ? "text-fg" : "text-bear"}>{caliTag}</span>{" "}
+                (ECE {(ece! * 100).toFixed(1)}%){ece! <= 0.05 ? " — check Accuracy tab for live resolved ECE." : ece! <= 0.1 ? " — probabilities approximately right on training data." : " — treat these probabilities with caution."}
               </p>
             )}
           </div>
