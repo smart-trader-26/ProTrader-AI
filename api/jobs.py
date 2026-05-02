@@ -54,10 +54,7 @@ class JobStore(Protocol):
     def shutdown(self) -> None: ...
 
 
-# ───────────────────────── in-process backend ────────────────────────────
-
 class InProcessJobStore:
-    """Thread-pool backend — used when REDIS_URL is unset."""
 
     def __init__(self, max_workers: int = 4):
         self._jobs: dict[str, JobRecord] = {}
@@ -131,8 +128,6 @@ class InProcessJobStore:
         self._executor.shutdown(wait=False, cancel_futures=True)
 
 
-# ───────────────────────── Celery backend ────────────────────────────────
-
 _CELERY_STATE_MAP: dict[str, JobStatus] = {
     "PENDING":  "queued",
     "RECEIVED": "queued",
@@ -146,12 +141,9 @@ _CELERY_STATE_MAP: dict[str, JobStatus] = {
 
 class CeleryJobStore:
     """
-    Redis-backed backend (B2). Hands work to `celery worker` via the
-    broker; reads results back via Celery's result backend.
-
-    We keep a tiny per-job hash (`protrader:jobs:{id}` → kind, created_at)
-    in Redis so `/api/v1/jobs/{id}` can answer with the same shape as the
-    in-process store. The hash TTLs out 6 h after enqueue.
+    Redis-backed backend. Queues work to `celery worker`; reads results via Celery.
+    Stores a tiny `protrader:jobs:{id}` hash in Redis (kind + created_at, 6h TTL)
+    so the jobs endpoint returns the same shape as InProcessJobStore.
     """
 
     META_PREFIX = "protrader:jobs:"
@@ -164,7 +156,7 @@ class CeleryJobStore:
         # `app.backend.client` is the raw Redis connection (StrictRedis).
         try:
             self._redis = app.backend.client
-        except Exception:  # pragma: no cover — only when Redis is unreachable
+        except Exception:  # pragma: no cover
             self._redis = None
 
     def enqueue(self, kind: str, **kwargs) -> JobRecord:
@@ -201,8 +193,7 @@ class CeleryJobStore:
                 for k, v in raw.items()
             }
         if not meta:
-            # No meta means we never stored this id, OR the TTL passed.
-            # Either way, treat as not-found so the FE shows a clean 404.
+            # Never stored, or TTL expired — either way treat as 404.
             return None
 
         ar = AsyncResult(job_id, app=self._app)
@@ -220,15 +211,11 @@ class CeleryJobStore:
         )
 
     def shutdown(self) -> None:
-        # The Celery app owns its own connection pool; uvicorn shutdown is
-        # enough. Nothing for us to do here.
-        return None
+        return None  # Celery owns its connection pool; nothing to do
 
 
 def _jsonable_kwargs(kwargs: dict) -> dict:
-    """Pydantic / date / datetime → JSON-serializable so Celery's JSON
-    serializer doesn't choke. Routers pass plain primitives + dates today,
-    so this is mostly defensive."""
+    """Coerce Pydantic models and dates to JSON-serializable types for Celery."""
     out: dict[str, Any] = {}
     for k, v in kwargs.items():
         if hasattr(v, "model_dump"):
@@ -240,14 +227,12 @@ def _jsonable_kwargs(kwargs: dict) -> dict:
     return out
 
 
-# ───────────────────────── factory ───────────────────────────────────────
-
 _STORE: JobStore | None = None
 _STORE_LOCK = threading.Lock()
 
 
 def get_store() -> JobStore:
-    """Pick a backend once per process based on REDIS_URL."""
+    """Singleton: CeleryJobStore when REDIS_URL is set, else InProcessJobStore."""
     global _STORE
     with _STORE_LOCK:
         if _STORE is None:
@@ -258,9 +243,9 @@ def get_store() -> JobStore:
 
 
 def reset_store_for_tests() -> None:
-    """Used by `tests/api/conftest.py` to start each test from a clean slate."""
+    """Reset the singleton to a fresh InProcessJobStore for test isolation."""
     global _STORE
     with _STORE_LOCK:
         if _STORE is not None:
             _STORE.shutdown()
-        _STORE = InProcessJobStore()  # tests always use the local backend
+        _STORE = InProcessJobStore()

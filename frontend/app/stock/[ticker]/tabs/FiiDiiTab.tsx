@@ -8,11 +8,35 @@ import { formatCompactINR, toneFor } from "@/lib/format";
 const NSE_FIIDII_URL = "https://www.nseindia.com/api/fiidiiTradeReact";
 /** localStorage key shared with OverviewTab so prediction can include FII/DII data */
 export const FII_DII_STORAGE_KEY = "fii_dii:rows:v1";
+const FII_DII_SAVED_AT_KEY = "fii_dii:saved_at:v1";
+
+function todayIST(): string {
+  // Returns "YYYY-MM-DD" in IST (UTC+5:30)
+  const now = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  return now.toISOString().slice(0, 10);
+}
+
+function isDataStale(): boolean {
+  try {
+    const savedAt = localStorage.getItem(FII_DII_SAVED_AT_KEY);
+    if (!savedAt) return true;
+    return savedAt < todayIST();
+  } catch {
+    return false;
+  }
+}
+
+function markSaved() {
+  try {
+    localStorage.setItem(FII_DII_SAVED_AT_KEY, todayIST());
+  } catch {}
+}
 
 export default function FiiDiiTab() {
   const [data, setData] = useState<FiiDiiBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [stale, setStale] = useState(false);
   const [pasteMode, setPasteMode] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteError, setPasteError] = useState<string | null>(null);
@@ -24,14 +48,14 @@ export default function FiiDiiTab() {
       .then((d: FiiDiiBundle) => {
         if (!d || !d.rows || d.rows.length < 3) throw new Error("empty");
         setData(d);
-        // Persist for use by prediction
         try {
           localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(d.rows));
+          markSaved();
         } catch {}
       })
       .catch(() => {
         setError(true);
-        // Try to hydrate from previously saved data
+        // Hydrate from cache, but flag as stale if from a previous day
         try {
           const saved = localStorage.getItem(FII_DII_STORAGE_KEY);
           if (saved) {
@@ -39,6 +63,7 @@ export default function FiiDiiTab() {
             if (rows?.length) {
               setData({ rows, fii_net_5d: null, dii_net_5d: null, fii_net_streak: null, dii_net_streak: null });
               setError(false);
+              if (isDataStale()) setStale(true);
             }
           }
         } catch {}
@@ -123,10 +148,11 @@ export default function FiiDiiTab() {
     }
     setData(parsed);
     setError(false);
+    setStale(false);
     setPasteMode(false);
-    // Persist for use by OverviewTab prediction
     try {
       localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(parsed.rows));
+      markSaved();
     } catch {}
   }
 
@@ -225,6 +251,23 @@ export default function FiiDiiTab() {
 
   return (
     <div className="space-y-5">
+      {stale && (
+        <div className="rounded-lg border border-yellow-600/40 bg-yellow-900/20 p-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-yellow-400">FII / DII data may be outdated</p>
+            <p className="text-xs text-muted mt-0.5">
+              Showing cached data from a previous trading day. NSE throttled the live endpoint.
+              Paste today&apos;s data manually to keep predictions accurate.
+            </p>
+          </div>
+          <button
+            className="shrink-0 text-xs px-3 py-1.5 rounded bg-yellow-700/30 text-yellow-300 hover:bg-yellow-700/50 transition"
+            onClick={() => { setData(null); setError(true); setStale(false); setPasteMode(true); }}
+          >
+            Paste fresh data
+          </button>
+        </div>
+      )}
       <section className="panel grid gap-4 sm:grid-cols-4">
         <Stat label="FII net (5d)" value={formatCompactINR(data.fii_net_5d)} tone={toneFor(data.fii_net_5d)} />
         <Stat label="DII net (5d)" value={formatCompactINR(data.dii_net_5d)} tone={toneFor(data.dii_net_5d)} />

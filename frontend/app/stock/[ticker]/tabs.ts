@@ -13,6 +13,7 @@ export const TABS: TabDef[] = [
   { key: "patterns",     label: "Patterns",     icon: "🔍" },
   { key: "backtest",     label: "Backtest",     icon: "🛠️" },
   { key: "accuracy",     label: "Accuracy",     icon: "🎯" },
+  { key: "portfolio",    label: "My Position",  icon: "💰" },
 ];
 
 export const TAB_KEYS = new Set(TABS.map((t) => t.key));

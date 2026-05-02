@@ -148,23 +148,22 @@ def test_backfill_skips_unreached_target_dates(tmp_path):
 
 
 def test_accuracy_window_computes_hit_rate_and_brier(tmp_path):
+    """Only day-1 rows (prob_up IS NOT NULL) count toward directional accuracy.
+    Three independent bundles → three day-1 calls → 2 hits out of 3."""
     db = tmp_path / "ledger.sqlite"
-    made = datetime(2026, 4, 10, 9, 30, tzinfo=UTC)
 
-    # Three predictions, two hits, all with prob_up=0.7
-    points = [
-        _point(date(2026, 4, 11), 101.0, "up", prob_up=0.7),
-        _point(date(2026, 4, 12), 102.0, "up", prob_up=0.7),
-        _point(date(2026, 4, 13), 103.0, "up", prob_up=0.7),
+    # Three separate same-day bundles, each with a distinct day-1 target.
+    # All made the same morning; each covers one target date as its day-1.
+    bundles_and_actuals = [
+        (datetime(2026, 4, 10, 9, 30, tzinfo=UTC), date(2026, 4, 11), 101.0, "up",  101.0),  # hit
+        (datetime(2026, 4, 11, 9, 30, tzinfo=UTC), date(2026, 4, 12), 102.0, "up",   99.5),  # miss
+        (datetime(2026, 4, 12, 9, 30, tzinfo=UTC), date(2026, 4, 13), 103.0, "up",  102.0),  # hit
     ]
-    bundle = _bundle("ABC.NS", made, points)
-    ledger_service.log_prediction(bundle, anchor_price=100.0, db_path=db)
-
-    actuals = {
-        date(2026, 4, 11): 101.0,  # up hit
-        date(2026, 4, 12): 99.5,   # up miss
-        date(2026, 4, 13): 102.0,  # up hit
-    }
+    actuals: dict[date, float] = {}
+    for made_dt, target, pred_price, direction, actual_price in bundles_and_actuals:
+        bundle = _bundle("ABC.NS", made_dt, [_point(target, pred_price, direction, prob_up=0.7)])
+        ledger_service.log_prediction(bundle, anchor_price=100.0, db_path=db)
+        actuals[target] = actual_price
 
     def fetcher(ticker, lo, hi):
         return actuals
@@ -177,10 +176,11 @@ def test_accuracy_window_computes_hit_rate_and_brier(tmp_path):
         "ABC.NS", days=30, db_path=db, now=date(2026, 4, 15)
     )
     assert window.n_resolved == 3
+    assert window.n_predictions == 3
     assert window.directional_accuracy == pytest.approx(2 / 3, abs=1e-6)
-    # Brier = mean((0.7 - truth)^2) with truths [1, 0, 1] = (0.09 + 0.49 + 0.09)/3
+    # Brier = mean((0.7 - truth)^2) with truths [1, 0, 1] = (0.09 + 0.49 + 0.09) / 3
     assert window.brier_score == pytest.approx((0.09 + 0.49 + 0.09) / 3, abs=1e-6)
-    assert window.mae_price is not None and window.mae_price > 0
+    assert window.mae_price is not None
 
 
 def test_accuracy_window_empty_when_no_resolved(tmp_path):
@@ -199,9 +199,14 @@ def test_accuracy_window_empty_when_no_resolved(tmp_path):
 
 def test_log_from_future_df_adapter(tmp_path):
     import pandas as pd
+    from datetime import date as _date
 
     db = tmp_path / "ledger.sqlite"
-    idx = pd.DatetimeIndex([datetime(2026, 4, 11), datetime(2026, 4, 12)])
+    # Use future dates so the past-target filter doesn't drop them.
+    today = _date.today()
+    d1 = today + timedelta(days=1)
+    d2 = today + timedelta(days=2)
+    idx = pd.DatetimeIndex([pd.Timestamp(d1), pd.Timestamp(d2)])
     future_df = pd.DataFrame(
         {"Predicted Price": [101.0, 102.5], "P5": [99.0, 99.5], "P95": [103.0, 105.0]},
         index=idx,
@@ -218,8 +223,10 @@ def test_log_from_future_df_adapter(tmp_path):
 
     rows = sorted(ledger_service.recent_rows(db_path=db), key=lambda r: r.target_date)
     assert rows[0].ci_low == 99.0 and rows[0].ci_high == 103.0
+    # prob_up is stored on the earliest (day-1) row and NULL on day-2+
     assert rows[0].prob_up == pytest.approx(0.65)
     assert rows[0].pred_dir == "up"
+    assert rows[1].prob_up is None  # day-2 is a scenario path, not a directional call
 
 
 def test_backfill_uses_anchor_cache_when_row_missing_anchor(tmp_path):

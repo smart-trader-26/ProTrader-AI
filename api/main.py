@@ -174,7 +174,6 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def _rate_limit_handler(request, exc: RateLimitExceeded):
-    """Map slowapi's RateLimitExceeded to a JSON 429."""
     from fastapi.responses import JSONResponse
 
     return JSONResponse(
@@ -216,7 +215,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Routers — public.
     app.include_router(health_router.router,    prefix=API_PREFIX)
     app.include_router(stocks_router.router,    prefix=API_PREFIX)
     app.include_router(sentiment_router.router, prefix=API_PREFIX)
@@ -227,12 +225,10 @@ def create_app() -> FastAPI:
     app.include_router(models_router.router,    prefix=API_PREFIX)
     app.include_router(ws_router.router,        prefix=API_PREFIX)
 
-    # Routers — auth-required (B3).
     app.include_router(auth_router.router,       prefix=API_PREFIX)
     app.include_router(watchlists_router.router, prefix=API_PREFIX)
     app.include_router(alerts_router.router,     prefix=API_PREFIX)
 
-    # Root redirect — hitting `/` in a browser should land on Swagger UI.
     @app.get("/", include_in_schema=False)
     def _root() -> RedirectResponse:
         return RedirectResponse(url="/docs")

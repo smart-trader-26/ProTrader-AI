@@ -51,6 +51,32 @@ class MigrateResponse(BaseModel):
 
 
 @router.post(
+    "/migrate/delete-stale-predictions",
+    response_model=MigrateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="One-time migration: delete ledger rows with target_date before made_at",
+)
+def migrate_delete_stale() -> MigrateResponse:
+    """
+    Removes rows logged before `log_prediction` filtered out past-dated forecast
+    points. yfinance returns the same close for the anchor day and any earlier
+    target, so these rows have `actual_price == anchor_price` and contribute
+    guaranteed-zero hits + bogus calibration samples to the rolling metrics.
+
+    Idempotent: rows where `target_date >= DATE(made_at)` are untouched.
+    """
+    deleted = ledger_service.migrate_delete_stale_predictions()
+    return MigrateResponse(
+        updated=deleted,
+        message=(
+            f"Deleted {deleted} stale ledger row(s)."
+            if deleted > 0
+            else "No stale rows found — every prediction has target_date >= DATE(made_at)."
+        ),
+    )
+
+
+@router.post(
     "/migrate/nullify-non-day1-prob",
     response_model=MigrateResponse,
     status_code=status.HTTP_200_OK,

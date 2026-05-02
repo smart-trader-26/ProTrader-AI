@@ -49,9 +49,8 @@ class AuthUser:
 
 
 def _decode_token(token: str) -> dict:
-    """Verify HS256 + audience and return the claims dict."""
+    """Verify HS256 signature + audience; return claims."""
     if not SUPABASE_JWT_SECRET:
-        # Should be guarded upstream; bail loudly if we land here in prod.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="auth: SUPABASE_JWT_SECRET is not configured",
@@ -73,7 +72,6 @@ def _decode_token(token: str) -> dict:
 def current_user(
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> AuthUser:
-    """Required-auth dep — raises 401 when no/invalid token."""
     if not SUPABASE_JWT_SECRET:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -94,10 +92,7 @@ def current_user(
 def optional_user(
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> AuthUser | None:
-    """
-    Soft-auth dep — returns `None` when no token (anonymous use OK).
-    A bad token still 401s; we only allow the *no-creds* case.
-    """
+    """Returns None when no token; bad token still 401s."""
     if creds is None or not creds.credentials:
         return None
     if not SUPABASE_JWT_SECRET:

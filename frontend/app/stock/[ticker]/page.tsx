@@ -13,6 +13,7 @@ import FiiDiiTab from "./tabs/FiiDiiTab";
 import PatternsTab from "./tabs/PatternsTab";
 import BacktestTab from "./tabs/BacktestTab";
 import AccuracyTab from "./tabs/AccuracyTab";
+import PortfolioTab from "./tabs/PortfolioTab";
 import { formatINR, formatPercent, toneFor } from "@/lib/format";
 
 export default async function StockPage({
@@ -90,6 +91,7 @@ export default async function StockPage({
         {tab === "patterns" && <PatternsTab ticker={ticker} />}
         {tab === "backtest" && <BacktestTab ticker={ticker} />}
         {tab === "accuracy" && <AccuracyTab ticker={ticker} />}
+        {tab === "portfolio" && <PortfolioTab ticker={ticker} lastClose={lastClose} />}
       </div>
     </div>
   );

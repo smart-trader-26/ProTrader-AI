@@ -32,13 +32,12 @@ class TaskPair:
     celery_task: Any  # celery.app.task.Task
 
     def to_jsonable(self, result: Any) -> Any:
-        """Pydantic → JSON dict; passthrough otherwise."""
+        """Pydantic model → JSON dict; passthrough for plain types."""
         if hasattr(result, "model_dump"):
             return result.model_dump(mode="json")
         return result
 
 
-# ───────────────────────── prediction ────────────────────────────────
 
 def _predict_sync(**kwargs):
     from services import prediction_service
@@ -89,7 +88,6 @@ def predict_task(**kwargs):
     return _to_json(_predict_sync(**kwargs))
 
 
-# ───────────────────────── backtest ──────────────────────────────────
 
 def _backtest_sync(**kwargs):
     from services import backtest_service
@@ -102,7 +100,6 @@ def backtest_task(**kwargs):
     return _to_json(_backtest_sync(**kwargs))
 
 
-# ───────────────────────── ledger backfill ───────────────────────────
 
 def _ledger_backfill_sync(**kwargs):
     from services import ledger_service
@@ -115,14 +112,9 @@ def ledger_backfill_task(**kwargs):
     return _ledger_backfill_sync(**kwargs)
 
 
-# ───────────────────────── news refresh (placeholder) ────────────────
 
 def _news_refresh_sync(**kwargs):
-    """
-    Pre-warm the FinBERT cache for the most-watched tickers so the next
-    user request sees the headlines + sentiment already in cache.
-    Implementation light for now — real top-watchlist query lands with B3.3.
-    """
+    """Pre-warm the FinBERT cache for the most-watched tickers."""
     from data.news_sentiment import get_news
 
     tickers = kwargs.get("tickers") or ["RELIANCE.NS", "TCS.NS", "INFY.NS"]
@@ -141,15 +133,9 @@ def news_refresh_task(**kwargs):
     return _news_refresh_sync(**kwargs)
 
 
-# ───────────────────────── alert evaluation ──────────────────────────
 
 def _alert_eval_sync(**kwargs):
-    """
-    Evaluate every active alert against current price. Trips alerts whose
-    threshold was crossed since the last run.
-
-    Defers to db.alerts_service when Supabase is configured; no-op otherwise.
-    """
+    """Evaluate active alerts against current price; no-op when Supabase is unconfigured."""
     from db import supabase_client as sb
 
     if not sb.has_service_role():
@@ -165,12 +151,8 @@ def alert_eval_task(**kwargs):
     return _alert_eval_sync(**kwargs)
 
 
-# ───────────────────────── paper trading ───────────────────────────
 
 def _paper_trade_sync(**kwargs):
-    """
-    Run the daily paper-trade loop across the universe.
-    """
     from scripts.run_paper_trade import run_cycle, _default_tickers
     
     tickers = kwargs.get("tickers") or _default_tickers()
@@ -183,8 +165,6 @@ def _paper_trade_sync(**kwargs):
 def paper_trade_task(**kwargs):
     return _to_json(_paper_trade_sync(**kwargs))
 
-
-# ───────────────────────── registry ──────────────────────────────────
 
 TASK_REGISTRY: dict[str, TaskPair] = {
     "predict":         TaskPair(sync_fn=_predict_sync,         celery_task=predict_task),

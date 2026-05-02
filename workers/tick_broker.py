@@ -62,11 +62,8 @@ class Tick:
         )
 
 
-# ─── sync publish (used by the standalone publisher) ───────────────────────
 def publish(tick: Tick) -> int:
-    """Publish a tick synchronously. Returns the subscriber count Redis reports.
-    Caller is expected to keep a single Redis connection alive across calls —
-    this helper re-uses a process-global one."""
+    """Publish synchronously. Returns the subscriber count Redis reports. Reuses a process-global connection."""
     r = _sync_redis()
     return int(r.publish(channel_for(tick.ticker), tick.to_json()))
 
@@ -77,7 +74,7 @@ _SYNC_R: Any | None = None
 def _sync_redis():
     global _SYNC_R
     if _SYNC_R is None:
-        import redis  # local import so the module stays importable without redis
+        import redis  # late import so the module stays importable without redis installed
 
         if not REDIS_URL:
             raise RuntimeError("REDIS_URL not set — tick broker unavailable")
@@ -85,19 +82,12 @@ def _sync_redis():
     return _SYNC_R
 
 
-# ─── async subscribe (used by the WS router) ───────────────────────────────
 async def subscribe(symbols: list[str]) -> AsyncIterator[Tick]:
-    """Yield :class:`Tick` instances for the given symbols until the consumer
-    cancels. Uses a single pubsub connection — Redis handles the fan-out.
-
-    The caller must be inside an async context and should wrap this in a
-    try/finally so the pubsub is unsubscribed when the client disconnects.
-    """
+    """Yield ticks for the given symbols. Caller wraps in try/finally to unsubscribe on disconnect."""
     if not REDIS_URL:
         raise RuntimeError("REDIS_URL not set — tick broker unavailable")
 
-    # Late import so `redis` is only required when the broker is actually used.
-    from redis import asyncio as aioredis
+    from redis import asyncio as aioredis  # late import
 
     r = aioredis.from_url(REDIS_URL, decode_responses=True)
     pubsub = r.pubsub()
@@ -106,8 +96,8 @@ async def subscribe(symbols: list[str]) -> AsyncIterator[Tick]:
         return
     try:
         await pubsub.subscribe(*channels)
-        # `get_message` with a short timeout lets us stay responsive to
-        # cancellation. `listen()` is blocking and worse under asyncio.
+        # get_message with a short timeout keeps us cancellation-responsive;
+        # listen() blocks and doesn't play well with asyncio cancellation.
         while True:
             msg = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
             if msg is None:

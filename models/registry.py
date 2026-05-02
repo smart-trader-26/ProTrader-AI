@@ -56,14 +56,13 @@ class ActiveModelSpec(BaseModel):
     version: str = Field(description="Opaque version tag, e.g. 'v3' or 'v2026-04-19'.")
     trained_at: str | None = None
     source: str = "registry"
-    backend: str = "local"  # "local" | "s3"
-    artifacts: list[str] = Field(default_factory=list, description="Filenames under <root>/<version>/")
-    sha256: str | None = Field(default=None, description="Optional hash of the canonical artifact bundle.")
+    backend: str = "local"
+    artifacts: list[str] = Field(default_factory=list)
+    sha256: str | None = None
     notes: str | None = None
 
 
 class Registry(Protocol):
-    """Storage-agnostic interface."""
 
     backend: str
 
@@ -71,9 +70,6 @@ class Registry(Protocol):
     def write_active(self, spec: ActiveModelSpec) -> None: ...
     def fetch_artifact(self, version: str, filename: str) -> Path: ...
     def list_versions(self) -> list[str]: ...
-
-
-# ─── local file backend ────────────────────────────────────────────────────
 
 
 @dataclass
@@ -130,10 +126,10 @@ class S3Registry:
     def _key(self, *parts: str) -> str:
         return "/".join(p.strip("/") for p in (self.prefix, *parts) if p)
 
-    def _client(self):  # noqa: ANN401 — boto3 S3.Client
-        import boto3  # lazy — only needed when MODEL_REGISTRY_URI is s3://
+    def _client(self):  # noqa: ANN401
+        import boto3  # lazy import — only needed when MODEL_REGISTRY_URI is s3://
 
-        endpoint_url = os.environ.get("S3_ENDPOINT_URL") or None  # R2 or MinIO
+        endpoint_url = os.environ.get("S3_ENDPOINT_URL") or None  # Cloudflare R2 or MinIO
         return boto3.client("s3", endpoint_url=endpoint_url)
 
     def read_active(self) -> ActiveModelSpec:
@@ -162,7 +158,7 @@ class S3Registry:
         cache_dir.mkdir(parents=True, exist_ok=True)
         dst = cache_dir / filename
         if dst.exists() and dst.stat().st_size > 0:
-            return dst
+            return dst  # cache hit
         key = self._key(version, filename)
         tmp = dst.with_suffix(dst.suffix + ".part")
         self._client().download_file(self.bucket, key, str(tmp))
@@ -177,9 +173,6 @@ class S3Registry:
             if name and name != "active.json":
                 out.append(name)
         return sorted(out)
-
-
-# ─── factory ───────────────────────────────────────────────────────────────
 
 
 def _bootstrap_spec(backend: str) -> ActiveModelSpec:
@@ -203,7 +196,7 @@ _SINGLETON_LOCK = threading.Lock()
 
 
 def get_registry() -> Registry:
-    """Resolve the registry once per process based on `MODEL_REGISTRY_URI`."""
+    """Singleton registry, resolved once from `MODEL_REGISTRY_URI`."""
     global _SINGLETON
     if _SINGLETON is not None:
         return _SINGLETON
@@ -214,7 +207,7 @@ def get_registry() -> Registry:
 
 
 def reset_registry_for_tests() -> None:
-    """Dump the process-wide singleton — lets tests inject a fresh factory."""
+    """Clear the singleton so tests can inject a fresh registry."""
     global _SINGLETON
     with _SINGLETON_LOCK:
         _SINGLETON = None
@@ -229,9 +222,8 @@ def _build_from_env() -> Registry:
 
     parsed = urlparse(uri) if "://" in uri else None
     if parsed and parsed.scheme == "file":
-        # urllib doesn't round-trip Windows drive letters cleanly: `file://C:/x`
-        # parses as netloc='C:' / path='/x'. Stitch them back together and strip
-        # the leading slash only when it's followed by a `<letter>:` drive.
+        # urllib mis-parses Windows drive letters: `file://C:/x` → netloc='C:', path='/x'.
+        # Stitch them back and strip the leading slash before a drive letter.
         raw = (parsed.netloc + parsed.path) if parsed.netloc else parsed.path
         if len(raw) >= 3 and raw[0] == "/" and raw[2] == ":":
             raw = raw[1:]
@@ -242,11 +234,8 @@ def _build_from_env() -> Registry:
         if not bucket:
             raise ValueError(f"S3 URI missing bucket: {uri!r}")
         return S3Registry(bucket=bucket, prefix=prefix)
-    # Bare path: treat as local.
+    # bare path: treat as local
     return LocalFileRegistry(root=Path(uri))
-
-
-# ─── helpers ───────────────────────────────────────────────────────────────
 
 
 def sha256_of(path: Path) -> str:
@@ -264,11 +253,7 @@ def publish_version(
     trained_at: str | None = None,
     notes: str | None = None,
 ) -> ActiveModelSpec:
-    """
-    Upload a bundle of artifacts under `<root>/<version>/` and flip
-    `active.json` to point at it. Convenience helper for CLI / CI jobs —
-    not called from the request path.
-    """
+    """Copy artifacts into `<root>/<version>/` and flip `active.json`."""
     if not isinstance(registry, LocalFileRegistry):
         raise NotImplementedError(
             "publish_version currently only supports LocalFileRegistry — use aws cli for s3"

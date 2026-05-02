@@ -1,7 +1,4 @@
-"""
-Volatility Expert Model.
-MLP model for volatility (VIX) based return prediction.
-"""
+"""MLP model for volatility (VIX) based return prediction."""
 
 import numpy as np
 import pandas as pd
@@ -15,17 +12,13 @@ from config.settings import ModelConfig
 
 
 class VolatilityExpertModel:
-    """MLP model for volatility (VIX) data analysis."""
-    
     def __init__(self):
-        """Initialize the Volatility Expert Model."""
         self.model = self._build_model()
         self.scaler = MinMaxScaler()
         self.recent_errors = []
         self.max_error_window = ModelConfig.MAX_ERROR_WINDOW
         
     def _build_model(self) -> Sequential:
-        """Build the MLP neural network architecture."""
         model = Sequential([
             Dense(32, activation='relu', input_shape=(3,)),
             BatchNormalization(),
@@ -43,28 +36,16 @@ class VolatilityExpertModel:
         )
         return model
     
-    def extract_volatility_features(self, vix_data: pd.DataFrame, 
+    def extract_volatility_features(self, vix_data: pd.DataFrame,
                                      stock_data: pd.DataFrame) -> np.ndarray:
-        """
-        Extract volatility features from VIX and stock data.
-        
-        Args:
-            vix_data: DataFrame with VIX OHLCV data
-            stock_data: DataFrame with stock data (should include Volatility_20D)
-        
-        Returns:
-            Feature array of shape (1, 3)
-        """
         if vix_data is None or stock_data is None or vix_data.empty or stock_data.empty:
             return np.array([[0.0, 0.0, 0.0]])
 
-        # Ensure we operate on the 'Close' series for VIX
         if 'Close' in vix_data.columns:
             vix_close = vix_data['Close']
         else:
             vix_close = pd.Series(dtype=float)
 
-        # Latest VIX close (scalar)
         latest_vix_close = 0.0
         if len(vix_close) > 0:
             last = vix_close.iloc[-1]
@@ -79,7 +60,6 @@ class VolatilityExpertModel:
             except Exception:
                 latest_vix_close = 0.0
 
-        # VIX vs MA20 (safe computation)
         vix_vs_ma = 1.0
         if len(vix_close) >= 20:
             try:
@@ -97,7 +77,6 @@ class VolatilityExpertModel:
             except Exception:
                 vix_vs_ma = 1.0
 
-        # Latest stock volatility (scalar)
         if 'Volatility_20D' in stock_data.columns and len(stock_data) > 0:
             latest_stock_vol = stock_data['Volatility_20D'].iloc[-1]
             latest_stock_vol = float(latest_stock_vol) if not pd.isna(latest_stock_vol) else 0.0
@@ -107,20 +86,8 @@ class VolatilityExpertModel:
         features = [latest_vix_close, vix_vs_ma, latest_stock_vol]
         return np.array(features, dtype=float).reshape(1, -1)
     
-    def train(self, X_train: np.ndarray, y_train: np.ndarray, 
+    def train(self, X_train: np.ndarray, y_train: np.ndarray,
               epochs: int = 30, batch_size: int = 16):
-        """
-        Train the model.
-        
-        Args:
-            X_train: Training features
-            y_train: Training targets
-            epochs: Number of training epochs
-            batch_size: Batch size
-        
-        Returns:
-            Training history
-        """
         history = self.model.fit(
             X_train, y_train,
             epochs=epochs,
@@ -131,22 +98,11 @@ class VolatilityExpertModel:
         return history
     
     def predict(self, vix_data: pd.DataFrame, stock_data: pd.DataFrame) -> float:
-        """
-        Make prediction based on volatility data.
-        
-        Args:
-            vix_data: DataFrame with VIX data
-            stock_data: DataFrame with stock data
-        
-        Returns:
-            Predicted return value
-        """
         features = self.extract_volatility_features(vix_data, stock_data)
         prediction = self.model.predict(features, verbose=0)[0][0]
         return prediction
     
     def update_errors(self, true_value: float, predicted_value: float):
-        """Update error tracking for uncertainty calculation."""
         error = (true_value - predicted_value) ** 2
         self.recent_errors.append(error)
         
@@ -154,7 +110,6 @@ class VolatilityExpertModel:
             self.recent_errors.pop(0)
     
     def get_uncertainty(self) -> float:
-        """Calculate uncertainty (variance of recent errors)."""
         if len(self.recent_errors) == 0:
             return 1.0
         

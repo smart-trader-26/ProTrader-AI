@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 
 
 def _key_func(request: Request) -> str:
-    """Prefer the JWT `sub` (user id) over IP for fairness across NATs."""
+    """Key by JWT `sub` when available, IP otherwise."""
     auth = request.headers.get("authorization") or request.headers.get("Authorization")
     if auth and auth.lower().startswith("bearer ") and SUPABASE_JWT_SECRET:
         token = auth.split(" ", 1)[1].strip()
@@ -43,13 +43,13 @@ def _key_func(request: Request) -> str:
                 SUPABASE_JWT_SECRET,
                 algorithms=["HS256"],
                 audience="authenticated",
-                options={"verify_exp": False},  # the auth dep handles freshness
+                options={"verify_exp": False},  # auth dep enforces freshness
             )
             sub = claims.get("sub")
             if sub:
                 return f"user:{sub}"
         except jwt.InvalidTokenError:
-            pass  # fall through to IP-based limiting
+            pass  # fall through to IP
     return f"ip:{get_remote_address(request)}"
 
 
@@ -58,11 +58,9 @@ _storage_uri = REDIS_URL or "memory://"
 limiter = Limiter(
     key_func=_key_func,
     storage_uri=_storage_uri,
-    # Per-route decorators provide the actual limits; this is a safety net.
     default_limits=["120/minute"],
-    # `headers_enabled=True` would attach X-RateLimit-* headers but slowapi
-    # then requires every limited endpoint to declare a `Response` param.
-    # Skip the headers for now — the FE only needs the 429 status to retry.
+    # headers_enabled=True requires every limited endpoint to declare a Response param;
+    # skip for now — the frontend only needs the 429 status.
     headers_enabled=False,
 )
 

@@ -97,7 +97,7 @@ def _snapshot_sentiment_dir() -> str:
 
 
 def _load() -> _V2Bundle:
-    """Load + cache the full v2 bundle. Thread-safe, idempotent."""
+    """Load the full v2 bundle once; thread-safe via double-checked lock."""
     global _bundle
     if _bundle is not None:
         return _bundle
@@ -173,20 +173,8 @@ def _ensemble(feature_row: pd.DataFrame, bundle: _V2Bundle) -> tuple[dict[str, f
 
 def predict_v2(ticker: str, headlines: list[dict]) -> V2EnsemblePrediction:
     """
-    Run the v2 ensemble on a set of headlines.
-
-    Args:
-        ticker: e.g. "RELIANCE.NS"
-        headlines: list of dicts, each with a "title" key (other keys ignored).
-            Accepts title-only or {"title": ..., "description": ...}.
-
-    Returns:
-        V2EnsemblePrediction with prob_up, breakdown, aggregates, and
-        whether the stacker was used (vs weighted-average fallback).
-
-    Raises:
-        ValueError: if `headlines` is empty (caller should short-circuit
-            before loading the model to save a download round-trip).
+    Run the v2 ensemble on a set of headlines. Raises ValueError when headlines is
+    empty — caller should check before calling to avoid a HF download round-trip.
     """
     if not headlines:
         raise ValueError("predict_v2 requires at least one headline")
@@ -243,5 +231,5 @@ def predict_v2(ticker: str, headlines: list[dict]) -> V2EnsemblePrediction:
 
 
 def is_configured() -> bool:
-    """True if HF_TOKEN is present — gate UI rendering cleanly when missing."""
+    """True when HF_TOKEN is set — gates v2 UI panel."""
     return bool(HF_TOKEN) and bool(HF_REPO_ID)

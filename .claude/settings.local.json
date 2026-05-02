@@ -139,7 +139,17 @@
       "Bash(grep -n -B2 \"\\\\\\\\\\\\\\\\label{fig:\" \"c:/Users/divya/Desktop/finance/research-paper-3/IJCDS_Latex_4_8_2024/ijcds_body.tex\")",
       "Bash(grep -n -B2 \"\\\\\\\\\\\\\\\\label{tab:\" \"c:/Users/divya/Desktop/finance/research-paper-3/IJCDS_Latex_4_8_2024/ijcds_body.tex\")",
       "Bash(grep -oE \"^@[a-zA-Z]+\\\\{[^,]+\" \"c:/Users/divya/Desktop/finance/research-paper-3/IJCDS_Latex_4_8_2024/references.bib\")",
-      "Bash(grep -oE \"\\\\\\\\\\\\\\\\cite\\\\{[^}]+\\\\}\" \"c:/Users/divya/Desktop/finance/research-paper-3/IJCDS_Latex_4_8_2024/ijcds_body.tex\")"
+      "Bash(grep -oE \"\\\\\\\\\\\\\\\\cite\\\\{[^}]+\\\\}\" \"c:/Users/divya/Desktop/finance/research-paper-3/IJCDS_Latex_4_8_2024/ijcds_body.tex\")",
+      "Bash(pdflatex -interaction=nonstopmode easr_protrader.tex)",
+      "Bash(grep -n \"\\\\\\\\->\" easr_protrader.tex)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\section\\\\|\\\\\\\\\\\\\\\\subsection\\\\|\\\\\\\\\\\\\\\\begin{abstract}\" easr_protrader.tex)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\small\" easr_protrader.tex)",
+      "Bash(grep -c \"\\\\\\\\\\\\\\\\bibitem\" easr_protrader.tex)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\section\" easr_protrader.tex)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\indent \" easr_protrader.tex)",
+      "Bash(python -c \"import sys; src=sys.stdin.read\\(\\); print\\('forward_points' in src, 'p.target_date >= made_date' in src\\)\")",
+      "Bash(python -m pytest tests/services/test_ledger_service.py tests/api/test_accuracy_router.py -x -q)",
+      "Bash(python -m pytest tests/services/test_ledger_service.py tests/api/test_accuracy_router.py -q)"
     ],
     "additionalDirectories": [
       "C:\\Users\\divya\\Desktop",

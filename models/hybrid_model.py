@@ -1,7 +1,7 @@
 """
-Hybrid Model for stock price prediction.
-Combines XGBoost + LightGBM + GRU neural network with stacking meta-learner,
-calibrated probabilities, SHAP importance, and Hurst exponent regime detection.
+Hybrid model ensemble: XGBoost + LightGBM + multi-task LSTM/GRU + stacking
+meta-learner, with calibrated probabilities, SHAP importance, and Hurst
+exponent regime detection.
 """
 
 import numpy as np
@@ -19,7 +19,6 @@ from sklearn.linear_model import Ridge
 from sklearn.isotonic import IsotonicRegression
 from pandas.tseries.offsets import CustomBusinessDay
 
-# Statistical models for ensemble
 try:
     from statsmodels.tsa.arima.model import ARIMA
     ARIMA_AVAILABLE = True
@@ -32,21 +31,21 @@ try:
 except ImportError:
     PROPHET_AVAILABLE = False
 
-# LightGBM (optional — graceful fallback to XGBoost-only if not installed)
+# LightGBM — graceful fallback to XGBoost-only if not installed
 try:
     import lightgbm as lgb
     LGBM_AVAILABLE = True
 except ImportError:
     LGBM_AVAILABLE = False
 
-# CatBoost (optional — ordered boosting, superior on small financial datasets)
+# CatBoost (optional — ordered boosting for small financial datasets)
 try:
     from catboost import CatBoostRegressor
     CATBOOST_AVAILABLE = True
 except ImportError:
     CATBOOST_AVAILABLE = False
 
-# SHAP for feature importance (optional — falls back to XGB native importance)
+# SHAP for feature importance (optional — falls back to XGB native)
 try:
     import shap
     SHAP_AVAILABLE = True
@@ -57,40 +56,22 @@ from config.settings import ModelConfig
 from data.vix_data import IndiaHolidayCalendar
 
 
-# ============================================================
-# Utility: Hurst Exponent
-# ============================================================
 
 def calculate_hurst_exponent(prices: np.ndarray, lags: range = None) -> float:
     """
-    Compute the Hurst exponent using R/S (rescaled range) analysis.
-
-    Interpretation:
-        H > 0.55  → Trending (momentum regime)
-        H < 0.45  → Mean-reverting (range-bound regime)
-        H ≈ 0.50  → Random walk (efficient market)
-
-    Uses only past price data — no look-ahead bias.
-    Runtime: < 0.5 seconds (pure numpy).
-
-    Args:
-        prices: Array of close prices (ideally ≥ 100 observations)
-        lags: Range of lag values for R/S computation (default range(2, 21))
-
-    Returns:
-        Hurst exponent as float in approximately [0, 1]
+    Hurst exponent via R/S analysis.
+    H > 0.55 → trending, H < 0.45 → mean-reverting, H ≈ 0.5 → random walk.
     """
     if lags is None:
         lags = range(2, 21)
 
     if len(prices) < 40:
-        return 0.5  # Insufficient data — assume random walk
+        return 0.5
 
     log_returns = np.diff(np.log(np.maximum(prices, 1e-10)))
 
     rs_pairs = []
     for lag in lags:
-        # Split into non-overlapping windows of size `lag`
         rs_vals = []
         n_windows = len(log_returns) // lag
         if n_windows < 2:
@@ -99,8 +80,8 @@ def calculate_hurst_exponent(prices: np.ndarray, lags: range = None) -> float:
             seg = log_returns[w * lag:(w + 1) * lag]
             mean_adj = seg - np.mean(seg)
             cumdev = np.cumsum(mean_adj)
-            r = np.max(cumdev) - np.min(cumdev)  # Range
-            s = np.std(seg, ddof=1)              # Standard deviation
+            r = np.max(cumdev) - np.min(cumdev)
+            s = np.std(seg, ddof=1)
             if s > 1e-10:
                 rs_vals.append(r / s)
         if rs_vals:
@@ -112,7 +93,6 @@ def calculate_hurst_exponent(prices: np.ndarray, lags: range = None) -> float:
     lags_arr = np.array([p[0] for p in rs_pairs], dtype=float)
     rs_arr   = np.array([p[1] for p in rs_pairs], dtype=float)
 
-    # Linear regression of log(R/S) vs log(lag) → slope = Hurst exponent
     valid = rs_arr > 0
     if valid.sum() < 4:
         return 0.5
@@ -121,38 +101,14 @@ def calculate_hurst_exponent(prices: np.ndarray, lags: range = None) -> float:
     return float(np.clip(slope, 0.1, 0.9))
 
 
-# ============================================================
-# Feature Engineering
-# ============================================================
 
 def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create strictly stationary features for ML.
-    Avoids absolute prices — uses returns, volatility, oscillators,
-    and volume-flow indicators.
-
-    Features added (27 total):
-        Core (5): Log_Ret, Volatility_5D, RSI_Norm, Vol_Ratio, MA_Div
-        Enhanced (9): MACD_Norm, MACD_Hist_Norm, BB_PctB, ATR_Norm, OBV_Slope,
-                      Ret_2D, Ret_5D, Ret_10D, Ret_20D
-        New (4): CMF_20, Williams_R_Norm, RSI_Bear_Div, RSI_Bull_Div
-        (Sentiment / FII / VIX added separately in create_hybrid_model)
-
-    Args:
-        df: DataFrame with OHLCV data (Open, High, Low, Close, Volume)
-
-    Returns:
-        DataFrame with engineered features
-    """
+    """Build stationary ML features from OHLCV data."""
     df = df.copy()
 
-    # Target: Log Returns (Stationary)
     df['Log_Ret'] = np.log(df['Close'] / df['Close'].shift(1))
-
-    # Volatility (Normalized)
     df['Volatility_5D'] = df['Log_Ret'].rolling(window=5).std()
 
-    # Momentum (RSI normalized to 0-1)
     if 'RSI' not in df.columns:
         delta = df['Close'].diff()
         gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
@@ -161,16 +117,9 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
         df['RSI'] = 100 - (100 / (1 + rs))
 
     df['RSI_Norm'] = df['RSI'] / 100.0
-
-    # Volume Trend (Ratio)
     df['Vol_Ratio'] = df['Volume'] / df['Volume'].rolling(window=20).mean()
-
-    # Moving Average Divergence (Normalized by Price)
     df['MA_Div'] = (df['Close'] - df['Close'].rolling(window=20).mean()) / df['Close']
 
-    # --- Enhanced Features ---
-
-    # MACD (normalized by price to keep stationary)
     ema12 = df['Close'].ewm(span=12, adjust=False).mean()
     ema26 = df['Close'].ewm(span=26, adjust=False).mean()
     macd_line = ema12 - ema26
@@ -178,38 +127,27 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     df['MACD_Norm'] = macd_line / df['Close']
     df['MACD_Hist_Norm'] = (macd_line - macd_signal) / df['Close']
 
-    # Bollinger Band %B (where price sits within the bands, 0-1 range)
     bb_ma  = df['Close'].rolling(window=20).mean()
     bb_std = df['Close'].rolling(window=20).std()
     bb_upper = bb_ma + 2 * bb_std
     bb_lower = bb_ma - 2 * bb_std
     df['BB_PctB'] = (df['Close'] - bb_lower) / (bb_upper - bb_lower + 1e-8)
 
-    # ATR (normalized by price for stationarity)
     high_low   = df['High'] - df['Low']
     high_close = np.abs(df['High'] - df['Close'].shift())
     low_close  = np.abs(df['Low'] - df['Close'].shift())
     true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
     df['ATR_Norm'] = true_range.rolling(14, min_periods=1).mean() / df['Close']
 
-    # OBV slope (rate of change of On-Balance Volume, normalized)
     obv    = (np.sign(df['Close'].diff()) * df['Volume']).fillna(0).cumsum()
     obv_ma = obv.rolling(5, min_periods=1).mean()
     df['OBV_Slope'] = obv_ma.pct_change(5).clip(-1, 1).fillna(0)
 
-    # Multi-timeframe returns (captures momentum at different scales)
     df['Ret_2D']  = np.log(df['Close'] / df['Close'].shift(2))
     df['Ret_5D']  = np.log(df['Close'] / df['Close'].shift(5))
     df['Ret_10D'] = np.log(df['Close'] / df['Close'].shift(10))
     df['Ret_20D'] = np.log(df['Close'] / df['Close'].shift(20))
 
-    # ============================================================
-    # NEW FEATURES (Plan items 1D)
-    # ============================================================
-
-    # Chaikin Money Flow (CMF-20):
-    # Measures buying/selling pressure using volume-weighted close position
-    # within daily high-low range. Ranges [-1, +1]. Stationary by construction.
     hl_range = (df['High'] - df['Low']).replace(0, np.nan)
     mfm = ((df['Close'] - df['Low']) - (df['High'] - df['Close'])) / hl_range
     mfvol = mfm.fillna(0) * df['Volume']
@@ -217,16 +155,11 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     df['CMF_20'] = mfvol.rolling(20).sum() / (vol_sum + 1e-8)
     df['CMF_20'] = df['CMF_20'].fillna(0).clip(-1, 1)
 
-    # Williams %R (14-period):
-    # Fast momentum oscillator; complement to RSI.
-    # Normalized to [-1, 0] range (original is [-100, 0]).
     high14 = df['High'].rolling(14).max()
     low14  = df['Low'].rolling(14).min()
     df['Williams_R_Norm'] = (high14 - df['Close']) / (high14 - low14 + 1e-8) * -1.0
 
-    # RSI Divergence (binary flags, no look-ahead — shift(1) applied):
-    # Bearish divergence: price makes new 10D high but RSI does not → selling pressure
-    # Bullish divergence: price makes new 10D low but RSI does not → buying pressure
+    # Divergence flags: no look-ahead — shift(1) applied before comparison
     rsi_10h = df['RSI'].rolling(10).max().shift(1)
     px_10h  = df['Close'].rolling(10).max().shift(1)
     rsi_10l = df['RSI'].rolling(10).min().shift(1)
@@ -234,47 +167,22 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     df['RSI_Bear_Div'] = ((df['Close'] >= px_10h) & (df['RSI'] < rsi_10h)).astype(float).fillna(0)
     df['RSI_Bull_Div'] = ((df['Close'] <= px_10l) & (df['RSI'] > rsi_10l)).astype(float).fillna(0)
 
-    # Drop NaNs created by rolling windows
     df.dropna(inplace=True)
 
     return df
 
 
-# ============================================================
-# Market Regime Detection (with Hurst)
-# ============================================================
 
 def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: int = 20) -> dict:
-    """
-    Detect current market regime from recent price data.
-
-    Classifies the market into one of 4 regimes:
-    - 'trending':       Strong directional movement (confirmed by Hurst > 0.55)
-    - 'mean_reverting': Low volatility, sideways/range-bound (Hurst < 0.45)
-    - 'high_volatility':Crisis-like conditions, elevated fear
-    - 'normal':         Default regime, moderate conditions
-
-    Hurst exponent is used to CONFIRM or OVERRIDE the slope-based classification,
-    reducing false regime labels from noisy slope estimates.
-
-    Args:
-        df: DataFrame with at least 'Log_Ret', 'Volatility_5D', 'Close' columns
-        vol_window: Lookback for volatility percentile (default 20)
-        trend_window: Lookback for trend detection (default 20)
-
-    Returns:
-        Dictionary with 'type', 'detail', and 'hurst' fields
-    """
+    """Classify current market regime using volatility, trend slope, and Hurst exponent."""
     if len(df) < max(vol_window, trend_window, 60):
         return {'type': 'normal', 'detail': 'Insufficient data for regime detection', 'hurst': 0.5}
 
     recent_returns = df['Log_Ret'].iloc[-trend_window:]
 
-    # --- Hurst Exponent (uses last 120 closes for stability) ---
     close_arr = df['Close'].values[-120:] if len(df) >= 120 else df['Close'].values
     H = calculate_hurst_exponent(close_arr)
 
-    # --- Volatility analysis ---
     if 'Volatility_5D' in df.columns:
         recent_vol    = df['Volatility_5D'].iloc[-1]
         vol_history   = df['Volatility_5D'].iloc[-60:]
@@ -282,7 +190,6 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
     else:
         vol_percentile = 50.0
 
-    # --- Trend analysis (linear regression on cumulative returns) ---
     cumulative_ret = recent_returns.cumsum().values
     x = np.arange(len(cumulative_ret))
     if len(x) > 1 and np.std(cumulative_ret) > 1e-10:
@@ -295,7 +202,6 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
 
     abs_slope = abs(slope)
 
-    # --- Regime classification (Hurst used to confirm/override) ---
     if vol_percentile > 85:
         direction = 'down-trending' if slope < 0 else 'up-trending'
         return {
@@ -304,7 +210,6 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
             'hurst': round(H, 3)
         }
     elif abs_slope > 0.002 and r_squared > 0.3:
-        # Slope says trending — confirm with Hurst
         if H >= 0.45:  # Hurst does not contradict → confirm as trending
             direction = 'Uptrend' if slope > 0 else 'Downtrend'
             strength  = 'strong' if r_squared > 0.6 else 'moderate'
@@ -313,14 +218,13 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
                 'detail': f'{direction} ({strength}, R²={r_squared:.2f}, H={H:.2f})',
                 'hurst': round(H, 3)
             }
-        else:  # H < 0.45 overrides slope → mean-reverting despite apparent slope
+        else:  # H < 0.45 overrides slope → mean-reverting despite apparent slope direction
             return {
                 'type': 'mean_reverting',
                 'detail': f'Slope-trend overridden by Hurst (H={H:.2f}<0.45)',
                 'hurst': round(H, 3)
             }
     elif vol_percentile < 30 and abs_slope < 0.001:
-        # Low vol + no direction — Hurst confirms mean-reverting
         return {
             'type': 'mean_reverting',
             'detail': f'Range-bound (vol {vol_percentile:.0f}th pctl, H={H:.2f})',
@@ -334,25 +238,13 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
         }
 
 
-# ============================================================
-# LightGBM Helper
-# ============================================================
 
 def _train_quantile_xgb(X_train: np.ndarray, y_train: np.ndarray,
                         X_test: np.ndarray,
                         alphas: tuple = (0.1, 0.9)) -> dict:
     """
     Train XGB quantile regressors (A6.1) — one model per alpha.
-
-    Uses `reg:quantileerror` (XGBoost ≥ 2.0). Returns:
-        {
-          'models':  {0.1: xgb, 0.9: xgb},
-          'test_preds': {0.1: np.array, 0.9: np.array},
-        }
-
-    These quantile predictions live alongside the hybrid point estimator
-    and feed the prediction-interval band. They are NOT fed into the meta
-    stacker — that would overfit on the same OOF residuals twice.
+    Not fed into the meta stacker — that would overfit on the same OOF residuals twice.
     """
     models: dict = {}
     preds: dict = {}
@@ -373,22 +265,16 @@ def _train_quantile_xgb(X_train: np.ndarray, y_train: np.ndarray,
             models[alpha] = m
             preds[alpha] = m.predict(X_test)
         except Exception:
-            # Graceful fallback — quantile XGB isn't available in xgboost < 2.0.
-            continue
+            continue  # quantile XGB requires xgboost >= 2.0
     return {"models": models, "test_preds": preds}
 
 
 def _conformal_halfwidth(y_true: np.ndarray, y_pred: np.ndarray,
                           alpha: float = 0.10) -> float:
     """
-    Split-conformal half-width on holdout residuals (A6.2).
-
-    Returns the (1-alpha) quantile of |y - y_hat|. The 90% prediction
-    interval is `y_hat ± halfwidth`, distribution-free, assuming
-    exchangeability of the holdout residuals with future residuals.
-
-    For log-return predictions the halfwidth is in log-return units —
-    converted to a price band at inference time.
+    Split-conformal half-width (A6.2): (1-alpha) quantile of |y - y_hat|.
+    Distribution-free; assumes exchangeability of holdout residuals with future ones.
+    +1 correction for finite-sample validity (Angelopoulos & Bates, 2023).
     """
     if len(y_true) == 0:
         return 0.0
@@ -396,7 +282,6 @@ def _conformal_halfwidth(y_true: np.ndarray, y_pred: np.ndarray,
     residuals = residuals[~np.isnan(residuals)]
     if len(residuals) == 0:
         return 0.0
-    # +1 correction for finite-sample validity (Angelopoulos & Bates, 2023)
     n = len(residuals)
     q_level = min(1.0, np.ceil((n + 1) * (1 - alpha)) / n)
     return float(np.quantile(residuals, q_level))
@@ -404,26 +289,7 @@ def _conformal_halfwidth(y_true: np.ndarray, y_pred: np.ndarray,
 
 def _train_lightgbm(X_train: np.ndarray, y_train: np.ndarray,
                     X_test: np.ndarray) -> tuple:
-    """
-    Train LightGBM regressor.
-
-    Advantages over XGBoost for this use case:
-    - 3-5× faster training (histogram-based splits)
-    - Better generalization with `min_child_samples` on small financial datasets
-    - L1 + L2 regularization handles correlated financial features well
-    - num_leaves controls complexity more intuitively than max_depth
-
-    Parameters chosen via offline experiments on Indian equity data.
-    Runtime: ~8-10 seconds on 5-year daily data (CPU).
-
-    Args:
-        X_train: Scaled training feature matrix
-        y_train: Training target returns
-        X_test: Scaled test feature matrix
-
-    Returns:
-        Tuple of (fitted_model, test_predictions)
-    """
+    """Train LightGBM regressor. Returns (model, test_predictions)."""
     params = dict(
         n_estimators=200,
         max_depth=5,
@@ -444,42 +310,10 @@ def _train_lightgbm(X_train: np.ndarray, y_train: np.ndarray,
     return model, preds
 
 
-# ============================================================
-# CatBoost Helper
-# ============================================================
 
 def _train_catboost(X_train: np.ndarray, y_train: np.ndarray,
                     X_test: np.ndarray) -> tuple:
-    """
-    Train CatBoostRegressor with ordered boosting.
-
-    Key advantages over XGBoost / LightGBM for financial time-series:
-    - Ordered boosting: each tree is fit on a permutation of the data where
-      residuals for row i are computed from a model trained on rows < i only.
-      This eliminates target leakage inside the booster itself, reducing
-      overfitting on small (<=5yr daily) datasets.
-    - Symmetric (oblivious) trees: same split condition applied at every node
-      of a level → uniform prediction time, better generalization.
-    - No need for manual categorical encoding (handled natively, though our
-      features are all numeric).
-
-    Parameters tuned for ~1250-row daily datasets:
-      - iterations=300 + od_wait=40  → early-stop after 40 rounds no improvement
-      - depth=6, l2_leaf_reg=3       → moderate complexity, regularized
-      - min_data_in_leaf=20          → prevents overfitting on small leaves
-      - bagging_temperature=0.7      → bootstrap sampling strength
-      - random_strength=0.3          → feature perturbation during splitting
-
-    Runtime: ~6–10s on CPU (similar to LGBM).
-
-    Args:
-        X_train: Scaled training features
-        y_train: Training target returns
-        X_test:  Scaled test features
-
-    Returns:
-        Tuple of (fitted_model, test_predictions)
-    """
+    """Train CatBoostRegressor with ordered boosting. Returns (model, test_predictions)."""
     model = CatBoostRegressor(
         iterations=300,
         depth=6,
@@ -493,43 +327,21 @@ def _train_catboost(X_train: np.ndarray, y_train: np.ndarray,
         verbose=0,
         random_seed=42,
         thread_count=-1,
-        allow_writing_files=False,   # Avoid tmp file creation in Streamlit
+        allow_writing_files=False,   # avoid tmp file creation in Streamlit Cloud
     )
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
     return model, preds
 
 
-# ============================================================
-# Stacking: Out-of-Fold Predictions
-# ============================================================
 
 def _generate_oof_predictions(X_train: np.ndarray, y_train: np.ndarray,
                                n_folds: int = 5) -> tuple:
     """
-    Generate out-of-fold (OOF) predictions for stacking meta-learner.
-
-    Uses EXPANDING window time-series folds — each fold trains on ALL
-    prior data and predicts the next block. Strictly chronological,
-    zero data leakage.
-
-    Fold structure (example, n=500, n_folds=5, min_train=300):
-        Fold 0: Train[0:300]  → Predict[300:340]
-        Fold 1: Train[0:340]  → Predict[340:380]
-        ...
-        Fold 4: Train[0:460]  → Predict[460:500]
-
-    OOF generated for XGB + LGBM + CatBoost (all lightweight, fast).
-    GRU OOF is approximated as a lag-1 of XGB in the meta-learner
-    (training a full GRU per fold would be too slow).
-
-    Args:
-        X_train: Scaled training features (2D)
-        y_train: Training targets
-        n_folds: Number of expanding folds
-
-    Returns:
-        (oof_xgb, oof_lgbm, oof_catboost) arrays of same length as y_train
+    Expanding-window OOF predictions for the stacking meta-learner.
+    Each fold trains on all prior data, strictly chronological.
+    GRU OOF is approximated as lag-1 of XGB (training full GRU per fold is too slow).
+    Returns (oof_xgb, oof_lgbm, oof_catboost) arrays aligned to y_train.
     """
     n = len(X_train)
     min_train = max(int(n * 0.6), 30)
@@ -566,12 +378,10 @@ def _generate_oof_predictions(X_train: np.ndarray, y_train: np.ndarray,
         Xtr, ytr = X_train[:train_end], y_train[:train_end]
         Xval     = X_train[train_end:val_end]
 
-        # XGBoost OOF
         xm = xgb.XGBRegressor(**xgb_params)
         xm.fit(Xtr, ytr)
         oof_xgb[train_end:val_end] = xm.predict(Xval)
 
-        # LightGBM OOF
         if LGBM_AVAILABLE:
             lm = lgb.LGBMRegressor(**lgbm_params)
             lm.fit(Xtr, ytr)
@@ -579,7 +389,6 @@ def _generate_oof_predictions(X_train: np.ndarray, y_train: np.ndarray,
         else:
             oof_lgbm[train_end:val_end] = oof_xgb[train_end:val_end]
 
-        # CatBoost OOF
         if CATBOOST_AVAILABLE:
             cm = CatBoostRegressor(**cb_params)
             cm.fit(Xtr, ytr)
@@ -590,104 +399,75 @@ def _generate_oof_predictions(X_train: np.ndarray, y_train: np.ndarray,
     return oof_xgb, oof_lgbm, oof_catboost
 
 
-# ============================================================
-# Calibrated Directional Probability
-# ============================================================
 
 def _calibrate_direction_probability(oof_preds: np.ndarray, y_train: np.ndarray,
-                                      test_preds: np.ndarray) -> np.ndarray:
+                                      test_preds: np.ndarray,
+                                      return_calibrator: bool = False):
     """
-    Convert return predictions to calibrated P(direction up) in [0, 1].
+    Calibrated P(direction up) via isotonic regression on OOF predictions (A1.1).
 
-    Calibration invariant (A1.1, audited):
-        isotonic is fit on `oof_preds` (out-of-fold predictions for rows the
-        base model NEVER saw during its own training) and applied to
-        `test_preds` (out-of-sample predictions for the held-out tail).
-        Fitting on in-sample training preds would over-flatten the isotone
-        curve; fitting on test preds would leak labels. OOF is the correct
-        middle path — same approach sklearn's CalibratedClassifierCV uses
-        with method='isotonic', cv=5.
+    Isotonic is fit on OOF (rows the base model never saw), applied to test preds.
+    Fitting on training preds would over-flatten the curve; fitting on test would
+    leak labels. Same strategy as sklearn's CalibratedClassifierCV with cv=5.
 
-    Uses isotonic regression (non-parametric monotone mapping) rather than
-    logistic regression because:
-      - Financial returns have fat tails and are non-Gaussian
-      - Isotonic makes no distributional assumptions
-
-    Args:
-        oof_preds: OOF predicted returns (same length as y_train), typically
-                   the average of XGB+LGBM+CatBoost OOFs from
-                   `_generate_oof_predictions`.
-        y_train:   Actual training returns (aligned to oof_preds)
-        test_preds: Final model predictions on held-out test set
-
-    Returns:
-        Array of probabilities (0.02–0.98) for each test prediction.
+    When `return_calibrator=True` returns `(probs, calibrate_fn)` so callers can
+    apply the same transformation to a live single-sample inference (Bug D fix).
     """
     assert oof_preds.shape == y_train.shape, (
         f"oof_preds ({oof_preds.shape}) and y_train ({y_train.shape}) must align — "
         "isotonic calibration requires paired OOF pred ↔ actual label rows"
     )
 
-    # Binary label: 1 = up day, 0 = down day
     y_dir = (y_train > 0).astype(float)
 
-    # Only use folds where OOF prediction is non-zero (pre-min_train rows are
-    # left as 0 by _generate_oof_predictions and would corrupt the fit)
+    # Pre-min_train rows are zero in OOF — exclude them from the isotonic fit
     valid = np.abs(oof_preds) > 1e-12
     if valid.sum() < 10:
-        # Not enough OOF data — use simple sign-based heuristic
-        return np.clip(0.5 + test_preds * 10, 0.05, 0.95)
+        _fallback = lambda p: np.clip(0.5 + p * 10, 0.05, 0.95)
+        prob = _fallback(test_preds)
+        return (prob, _fallback) if return_calibrator else prob
 
     iso = IsotonicRegression(out_of_bounds='clip')
     sort_idx = np.argsort(oof_preds[valid])
     iso.fit(oof_preds[valid][sort_idx], y_dir[valid][sort_idx])
 
-    prob = iso.predict(test_preds)
+    # Bug P fix: collapse fallback scale derived from test_preds std, not
+    # hardcoded 50.  The old value mapped ±2% log-returns to ±0.5 prob shift —
+    # fine for mid-cap but broke for high/low-vol tickers. Using 1/σ * 0.25
+    # keeps ±1σ of raw predictions at ±0.25 prob regardless of asset.
+    _pred_sig = max(float(np.std(test_preds)), 1e-6)
+    _fb_scale = 0.25 / _pred_sig
 
-    # Collapse detection: if isotonic output has near-zero variance the curve
-    # has degenerated to a constant (all predictions map to the class prior).
-    # Fall back to a sigmoid stretch on the raw return predictions so that at
-    # least the sign and magnitude of the predicted return propagate into the
-    # probability. Scale factor 50 maps ±0.02 log-return → ±0.5 prob shift.
-    if np.std(prob) < 0.01:
-        prob = np.clip(0.5 + test_preds * 50, 0.02, 0.98)
-
-    # Bias correction: the isotonic learns the TRAINING-PERIOD base rate, which
-    # may be significantly above 0.5 in a bull training window (e.g. 0.56).
-    # Subtracting the bias re-centers the distribution at 0.5, preserving the
-    # ranking while removing systematic directional drift.  Only applied when
-    # the empirical bias exceeds 3pp to avoid over-correcting balanced periods.
     up_frac = float(y_dir[valid].mean())
     bias = up_frac - 0.5
-    if abs(bias) > 0.03:
-        prob = prob - bias
 
-    return np.clip(prob, 0.02, 0.98)
+    def _apply(preds: np.ndarray) -> np.ndarray:
+        p = iso.predict(preds)
+        if np.std(p) < 0.01:
+            p = np.clip(0.5 + preds * _fb_scale, 0.02, 0.98)
+        if abs(bias) > 0.03:
+            p = p - bias
+        return np.clip(p, 0.02, 0.98)
+
+    prob = _apply(test_preds)
+    return (prob, _apply) if return_calibrator else prob
 
 
 def _compute_threshold_tuning(probs: np.ndarray, y_true: np.ndarray) -> dict:
     """
-    Learn the per-ticker optimal decision threshold for the directional call.
+    Per-ticker optimal decision threshold via Youden's J on the val fold (A1.5).
+    Falls back to τ = 0.5 when val is too small or single-class.
 
-    Different tickers have different noise profiles — a high-beta midcap needs
-    stronger conviction (τ ≈ 0.65) before "buy" pays off, while a slow-moving
-    largecap may signal reliably at τ ≈ 0.55. We pick the threshold τ* that
-    maximizes Youden's J = TPR(τ) − FPR(τ) on the held-out test probabilities.
-    Youden's J is standard when the cost of FP and FN are symmetric; once A8
-    has realistic brokerage+STT costs, this becomes a cost-weighted optimum.
-
-    Returns dict with:
-        optimal_threshold : τ* in [0, 1] (fraction, not %)
-        auc               : ROC-AUC on the holdout (1.0 perfect, 0.5 coin flip)
-        accuracy_at_opt   : directional accuracy when classifying at τ*
-        n_samples         : holdout size
-    Falls back to τ = 0.5 when the holdout is too small or single-class.
+    Output keys match `schemas.prediction.ThresholdTuning` (tau_star,
+    accuracy_at_tau) — earlier versions returned optimal_threshold /
+    accuracy_at_opt and silently dropped through the prediction_service
+    DTO mapping, leaving the frontend verdict pill stuck on τ = 0.5.
     """
     probs = np.asarray(probs, dtype=float)
     y_dir = (np.asarray(y_true, dtype=float) > 0).astype(int)
     n = len(probs)
     fallback = {
-        "optimal_threshold": 0.5, "auc": 0.5, "accuracy_at_opt": 0.5, "n_samples": n,
+        "tau_star": 0.5, "auc": 0.5, "accuracy_at_tau": 0.5, "n_samples": n,
     }
     if n < 20 or len(np.unique(y_dir)) < 2:
         return fallback
@@ -702,9 +482,9 @@ def _compute_threshold_tuning(probs: np.ndarray, y_true: np.ndarray) -> dict:
         acc = float((preds_at_tau == y_dir).mean())
         auc = float(roc_auc_score(y_dir, probs))
         return {
-            "optimal_threshold": tau,
+            "tau_star": tau,
             "auc": auc,
-            "accuracy_at_opt": acc,
+            "accuracy_at_tau": acc,
             "n_samples": n,
         }
     except Exception:
@@ -713,17 +493,7 @@ def _compute_threshold_tuning(probs: np.ndarray, y_true: np.ndarray) -> dict:
 
 def _compute_calibration_report(probs: np.ndarray, y_true: np.ndarray,
                                 n_bins: int = 10) -> dict:
-    """
-    Bin predicted probabilities and compare to actual hit rates.
-
-    Returns a dict matching `schemas.prediction.CalibrationReport`:
-      - ece          : weighted mean |predicted - actual| across bins (A1 target ≤ 0.05)
-      - brier_score  : mean squared error of probability vs. binary outcome
-      - bin_edges, bin_predicted, bin_actual, bin_counts
-
-    Empty bins are dropped from the returned vectors so the chart doesn't draw
-    spurious points at 50%.
-    """
+    """Reliability diagram data: ECE + Brier + per-bin vectors. Empty bins dropped."""
     probs = np.asarray(probs, dtype=float)
     y_dir = (np.asarray(y_true, dtype=float) > 0).astype(float)
     n = len(probs)
@@ -763,28 +533,10 @@ def _compute_calibration_report(probs: np.ndarray, y_true: np.ndarray,
     }
 
 
-# ============================================================
-# SHAP Feature Importance
-# ============================================================
 
 def _compute_shap_importance(xgb_model, X_test_scaled: np.ndarray,
                               feature_names: list) -> dict:
-    """
-    Compute SHAP feature importance using TreeExplainer.
-
-    TreeExplainer is O(n_trees × n_samples) — fast for XGBoost.
-    Uses at most 200 test samples to cap runtime at ~3-5 seconds.
-
-    Falls back to XGBoost native feature_importances_ if SHAP not installed.
-
-    Args:
-        xgb_model: Fitted XGBRegressor
-        X_test_scaled: Scaled test features (2D array)
-        feature_names: List of feature name strings
-
-    Returns:
-        Dict with 'importance' (feature→mean|SHAP|), 'top_features' list
-    """
+    """SHAP TreeExplainer importance (capped at 200 samples). Falls back to XGB native."""
     n_sample = min(200, len(X_test_scaled))
     X_sample = X_test_scaled[:n_sample]
 
@@ -804,7 +556,6 @@ def _compute_shap_importance(xgb_model, X_test_scaled: np.ndarray,
         except Exception:
             pass  # Fall through to native importance
 
-    # Native XGBoost importance (fallback)
     importance = pd.Series(
         xgb_model.feature_importances_,
         index=feature_names
@@ -833,9 +584,6 @@ def _compute_conviction_precision(probs: np.ndarray, y_true: np.ndarray,
     }
 
 
-# ============================================================
-# Main Model: create_hybrid_model
-# ============================================================
 
 def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                         fii_dii_data: pd.DataFrame = None,
@@ -845,55 +593,40 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                         option_features: dict = None,
                         macro_features: pd.DataFrame = None) -> tuple:
     """
-    Create and train a research-grade hybrid model ensemble.
+    Train the full hybrid ensemble (XGB + LGBM + CatBoost + multi-task LSTM/GRU +
+    Ridge stacker) on OHLCV + sentiment + FII/DII + VIX + macro + option-chain data.
 
-    Architecture:
-        Level 0 (Base Models):
-            - XGBoost (150 trees, depth=4)
-            - LightGBM (200 trees, 31 leaves) [if installed]
-            - LSTM + GRU parallel network (30-day lookback)
-            - ARIMA(2,0,2) + Prophet [if installed]
-
-        Level 1 (Meta-Learner):
-            - Ridge regression on OOF predictions from XGB + LGBM
-            - Stacking improves generalization vs fixed-weight averaging
-
-        Output:
-            - Blended prediction (stacked + regime-weighted)
-            - Calibrated directional probability (0–100%)
-            - SHAP feature importance for top-10 features
-            - Hurst exponent and market regime
-
-    Data leakage prevention:
-        - Strict 80/20 time-series split (no shuffling)
-        - Scaler fit on training only
-        - OOF predictions use only chronologically prior training data
-        - Calibration uses OOF predictions (not test set)
-
-    Args:
-        df: DataFrame with OHLCV data
-        sentiment_features: Dictionary with date keys and sentiment data
-        fii_dii_data: DataFrame with FII/DII data (optional)
-        vix_data: DataFrame with VIX data (optional)
-        multi_source_sentiment: Dictionary from multi-source sentiment analysis (optional)
-        enable_automl: Whether to use Optuna for hyperparameter tuning
-
-    Returns:
-        Tuple of (processed_df, results_df, models, scaler, features, metrics)
+    Strict 80/20 time-series split — scaler fit on training only.
+    Returns (processed_df, results_df, models, scaler, features, metrics).
     """
-    # ---- Feature Engineering ----
+    # Bug K fix: set global seeds so the same input always produces the same
+    # model. random_state=42 on LGBM/CatBoost only covered their internal
+    # sampling; XGB colsample, GRU/LSTM weight init, and dropout were unseeded.
+    import random as _random
+    _random.seed(42)
+    np.random.seed(42)
+    tf.keras.utils.set_random_seed(42)
+
     df_proc = create_advanced_features(df)
 
-    # Merge Sentiment (basic)
     sentiment_df = pd.DataFrame(sentiment_features.items(), columns=["Date", "Sentiment"])
     if not sentiment_df.empty:
-        sentiment_df['Date'] = pd.to_datetime(sentiment_df['Date']).dt.tz_localize(None)
+        # Bug H: convert UTC timestamps to IST before flooring to date so that
+        # late-evening UTC headlines (e.g. 22:00 UTC = 03:30 IST next day) don't
+        # bleed onto the wrong trading row.
+        _raw_dt = pd.to_datetime(sentiment_df['Date'], utc=True, errors='coerce')
+        _has_tz = _raw_dt.dt.tz is not None
+        if _has_tz:
+            sentiment_df['Date'] = (_raw_dt.dt.tz_convert('Asia/Kolkata')
+                                          .dt.normalize()
+                                          .dt.tz_localize(None))
+        else:
+            sentiment_df['Date'] = pd.to_datetime(sentiment_df['Date']).dt.normalize()
         df_proc = df_proc.reset_index().merge(sentiment_df, on="Date", how="left").set_index("Date")
         df_proc['Sentiment'] = pd.to_numeric(df_proc['Sentiment'], errors='coerce').fillna(0)
     else:
         df_proc['Sentiment'] = 0.0
 
-    # Enhance with Multi-Source Sentiment if available
     if multi_source_sentiment:
         ms_score      = multi_source_sentiment.get('combined_sentiment', 0)
         ms_confidence = multi_source_sentiment.get('confidence', 0)
@@ -903,22 +636,26 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         df_proc['Multi_Sentiment']      = df_proc['Sentiment']
         df_proc['Sentiment_Confidence'] = 0.5
 
-    # Merge FII/DII Data
     if fii_dii_data is not None and not fii_dii_data.empty:
         df_proc = df_proc.join(fii_dii_data[['FII_Net', 'DII_Net']], how='left')
         df_proc['FII_Net'] = df_proc['FII_Net'].fillna(0)
         df_proc['DII_Net'] = df_proc['DII_Net'].fillna(0)
-        df_proc['FII_Net_Norm'] = df_proc['FII_Net'] / (df_proc['FII_Net'].abs().max() + 1e-6)
-        df_proc['DII_Net_Norm'] = df_proc['DII_Net'] / (df_proc['DII_Net'].abs().max() + 1e-6)
+        # Bug B fix: normalization scale computed on training rows only so future
+        # data doesn't leak through the denominator. Approximate train boundary
+        # at this stage (target dropna hasn't happened yet) — differs from the
+        # final train_size by at most ~20 rows.
+        _fii_norm_end = max(1, int(len(df_proc) * ModelConfig.TRAIN_TEST_SPLIT))
+        _fii_scale = df_proc['FII_Net'].iloc[:_fii_norm_end].abs().max() + 1e-6
+        _dii_scale = df_proc['DII_Net'].iloc[:_fii_norm_end].abs().max() + 1e-6
+        df_proc['FII_Net_Norm'] = df_proc['FII_Net'] / _fii_scale
+        df_proc['DII_Net_Norm'] = df_proc['DII_Net'] / _dii_scale
         df_proc['FII_5D_Avg']   = df_proc['FII_Net_Norm'].rolling(5, min_periods=1).mean()
         df_proc['DII_5D_Avg']   = df_proc['DII_Net_Norm'].rolling(5, min_periods=1).mean()
     else:
         for col in ['FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg']:
             df_proc[col] = 0.0
 
-    # Merge Macro Features (A5.2) — time-indexed USD/INR, crude, US10Y, gold,
-    # S&P, US VIX returns. Join forward-filled so non-trading macro days
-    # (US holidays) carry the last observation.
+    # A5.2 — macro factors. Non-trading days (US holidays) are forward-filled.
     _macro_cols: list[str] = []
     if macro_features is not None and not macro_features.empty:
         macro_df = macro_features.copy()
@@ -932,12 +669,9 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                 df_proc[col] = df_proc[col].ffill().fillna(0.0)
                 _macro_cols.append(col)
 
-    # Merge Option-Chain Features (A4.3). NSE publishes a live snapshot only,
-    # so we broadcast the same scalar across every training row — meaningful
-    # only for the most recent bars at inference time. The stacker will learn
-    # a near-zero weight on training, but the feature lets the model factor
-    # PCR / max-pain / IV-skew into the live prediction without a separate
-    # inference path.
+    # A4.3 — option-chain snapshot. Broadcast as a constant across all training rows;
+    # near-zero weight on training, but lets the live prediction see PCR / IV-skew
+    # without a separate inference path.
     _option_cols: list[str] = []
     if option_features:
         for key, val in option_features.items():
@@ -945,7 +679,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
             df_proc[col] = float(val) if val is not None else 0.0
             _option_cols.append(col)
 
-    # Merge VIX Data
     if vix_data is not None and not vix_data.empty:
         vix_df = vix_data.copy()
         if isinstance(vix_df.columns, pd.MultiIndex):
@@ -972,14 +705,8 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         for col in ['VIX_Norm', 'VIX_Change', 'VIX_High']:
             df_proc[col] = 0.0
 
-    # Pattern target distance feature (Fix 5).
-    # Run pattern detection once on the full close series (no lookahead — the
-    # analyst sees only the price history up to each point, not future bars).
-    # We compute a walk-forward feature: for each bar at index t, detect patterns
-    # visible from close[0..t] and record the signed distance to the nearest
-    # confirmed pattern target.  Expensive to do for every row, so we sample
-    # every 20 bars and forward-fill.  Normalised to last close so the scale
-    # is comparable across tickers.
+    # Walk-forward pattern target distance (Fix 5). Sampled every 20 bars, ffilled.
+    # Signed distance to nearest confirmed pattern target, normalised by close.
     _pattern_col = "Pattern_Target_Dist"
     try:
         from models.visual_analyst import PatternAnalyst as _PA
@@ -999,9 +726,7 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                 ]
                 if _pats:
                     _cur = float(df["Close"].iloc[_t - 1])
-                    # Signed distance: positive = target above (bullish), negative = below (bearish)
                     _dists = [(float(p["Target"]) - _cur) / _cur for p in _pats]
-                    # Use the nearest target by absolute distance
                     _ptgt_series[_t] = min(_dists, key=abs)
                 else:
                     _ptgt_series[_t] = 0.0
@@ -1013,53 +738,55 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
             if _t < len(df_proc):
                 _ptgt_col.iloc[_t] = _v
         _ptgt_col = _ptgt_col.replace(0.0, float("nan")).ffill().fillna(0.0)
-        df_proc[_pattern_col] = _ptgt_col.clip(-0.15, 0.15)  # cap at ±15% distance
+        df_proc[_pattern_col] = _ptgt_col.clip(-0.15, 0.15)
     except Exception:
         df_proc[_pattern_col] = 0.0
 
-    # Define Target
     df_proc['Target_Return'] = df_proc['Log_Ret'].shift(-1)
+    # Bug D fix: save the last row BEFORE dropna — this is the most recent close
+    # which has no Target_Return yet (it's tomorrow's return). After dropna it
+    # disappears, so directional_prob[-1] was always one bar stale.
+    _live_row_df = df_proc.iloc[[-1]].copy()
     df_proc.dropna(inplace=True)
 
-    # FULL FEATURE SET: 27 core + optional macro + optional options
     features = [
-        # Core Technical (5)
         'Log_Ret', 'Volatility_5D', 'RSI_Norm', 'Vol_Ratio', 'MA_Div',
-        # Enhanced Technical (9)
         'MACD_Norm', 'MACD_Hist_Norm', 'BB_PctB', 'ATR_Norm', 'OBV_Slope',
         'Ret_2D', 'Ret_5D', 'Ret_10D', 'Ret_20D',
-        # New Technical (4): CMF, Williams %R, RSI Divergence
         'CMF_20', 'Williams_R_Norm', 'RSI_Bear_Div', 'RSI_Bull_Div',
-        # Sentiment (3)
         'Sentiment', 'Multi_Sentiment', 'Sentiment_Confidence',
-        # Institutional (4)
         'FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg',
-        # Market Fear/VIX (2)
         'VIX_Norm', 'VIX_Change',
-        # Pattern target distance (Fix 5): signed (nearest_target - close) / close
         'Pattern_Target_Dist',
     ]
-    # A5.2 — macro factors (USD/INR, crude, US10Y, gold, S&P, US VIX returns)
-    features.extend(_macro_cols)
-    # A4.3 — option-chain snapshot features (PCR, max-pain, IV-skew, OI walls)
-    features.extend(_option_cols)
+    features.extend(_macro_cols)   # A5.2
+    features.extend(_option_cols)  # A4.3
+
+    # Bug 3 fix: drop features that are constant over the training window.
+    # `multi_source_sentiment` (single dict) and `option_features` (snapshot)
+    # both broadcast a scalar across every historical row, so the model trained
+    # on a constant and then saw a different live value at inference — it
+    # could never learn anything from those columns. Same protection applies
+    # to any future broadcast-only feature. The training-fold variance check
+    # uses the same TRAIN_TEST_SPLIT we apply below so we don't peek at test.
+    _split_idx = max(1, int(len(df_proc) * ModelConfig.TRAIN_TEST_SPLIT))
+    _train_view = df_proc[features].iloc[:_split_idx]
+    _train_std = _train_view.std(axis=0, ddof=0).fillna(0.0)
+    _zero_var = [c for c in features if float(_train_std.get(c, 0.0)) < 1e-9]
+    if _zero_var:
+        features = [c for c in features if c not in _zero_var]
 
     X = df_proc[features].values
     y = df_proc['Target_Return'].values
 
-    # Strict Time-Series Split
     train_size    = int(len(X) * ModelConfig.TRAIN_TEST_SPLIT)
     X_train, X_test = X[:train_size], X[train_size:]
     y_train, y_test = y[:train_size], y[train_size:]
 
-    # Scale on training only
     scaler = MinMaxScaler(feature_range=(-1, 1))
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled  = scaler.transform(X_test)
 
-    # ============================================================
-    # XGBoost — Primary Tabular Model
-    # ============================================================
     xgb_model = xgb.XGBRegressor(
         objective='reg:squarederror',
         n_estimators=150,
@@ -1075,9 +802,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     xgb_model.fit(X_train_scaled, y_train)
     xgb_pred = xgb_model.predict(X_test_scaled)
 
-    # ============================================================
-    # LightGBM — Second Tabular Model (if available)
-    # ============================================================
     lgbm_model = None
     lgbm_pred  = None
     if LGBM_AVAILABLE:
@@ -1086,9 +810,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     else:
         lgbm_rmse = float('inf')
 
-    # ============================================================
-    # CatBoost — Third Tabular Model (ordered boosting)
-    # ============================================================
     catboost_model = None
     catboost_pred  = None
     if CATBOOST_AVAILABLE:
@@ -1097,43 +818,21 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     else:
         catboost_rmse = float('inf')
 
-    # ============================================================
-    # Stacking Meta-Learner — OOF from XGB + LGBM + CatBoost
-    # ============================================================
     oof_xgb, oof_lgbm, oof_catboost = _generate_oof_predictions(
         X_train_scaled, y_train, n_folds=5
     )
 
-    # Lag-1 of XGB OOF acts as a temporal proxy for RNN in the meta-learner
-    # (avoids training a full GRU per fold which would be too slow)
+    # Lag-1 of XGB OOF is a temporal proxy for the RNN in the meta-learner
     oof_lag1 = np.roll(oof_xgb, 1)
     oof_lag1[0] = 0.0
 
-    valid_oof = np.abs(oof_xgb) > 1e-12  # Rows where OOF was actually generated
+    valid_oof = np.abs(oof_xgb) > 1e-12
     stack_train = np.column_stack([oof_xgb, oof_lgbm, oof_catboost, oof_lag1])
 
-    # Test stacking matrix will be completed after RNN training below
-
-    # ============================================================
-    # Multi-Task LSTM + GRU (3 output heads)
-    #
-    # Architecture: shared LSTM+GRU backbone → 3 task-specific heads
-    #   Head 1 — Return      : Dense(1)                   loss=MSE  weight=0.5
-    #   Head 2 — Direction   : Dense(1, sigmoid)          loss=BCE  weight=0.3
-    #   Head 3 — Volatility  : Dense(1, softplus)         loss=MSE  weight=0.2
-    #
-    # Why multi-task helps direction accuracy:
-    #   The direction head gets its own gradient signal (binary cross-entropy)
-    #   directly supervising the up/down decision, instead of hoping the shared
-    #   MSE gradient implicitly learns directionality. Empirically this improves
-    #   direction accuracy by 2–4% vs single-output GRU.
-    #
-    # The shared backbone forces the network to learn representations useful for
-    # all three tasks simultaneously. Volatility prediction regularises the
-    # return head — it cannot overfit to outlier return days without also
-    # predicting their higher volatility.
-    # ============================================================
-    rnn_lookback = ModelConfig.LOOKBACK_PERIOD  # 30 days
+    # Multi-task LSTM+GRU: shared backbone → 3 heads (return MSE, direction BCE,
+    # volatility MSE). Direction head uses BCE so the up/down signal gets its own
+    # gradient path rather than relying on the MSE gradient to learn directionality.
+    rnn_lookback = ModelConfig.LOOKBACK_PERIOD
 
     X_train_3d, y_train_rnn = [], []
     for i in range(rnn_lookback, len(X_train_scaled)):
@@ -1142,15 +841,11 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     X_train_3d  = np.array(X_train_3d)
     y_train_rnn = np.array(y_train_rnn)
 
-    # Multi-task labels for training sequences
-    # Direction: 1 if next-day return > 0, else 0
     y_train_direction = (y_train_rnn > 0).astype(np.float32)
 
-    # Volatility: 5-day rolling std of returns, aligned to sequence end-points
     _all_returns = pd.Series(y_train)
     _rolling_vol = _all_returns.rolling(5, min_periods=1).std().fillna(method='bfill').values
     y_train_volatility = _rolling_vol[rnn_lookback:].astype(np.float32)
-    # Truncate/pad to match sequence count
     seq_len = len(y_train_rnn)
     if len(y_train_volatility) > seq_len:
         y_train_volatility = y_train_volatility[:seq_len]
@@ -1159,13 +854,20 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
             y_train_volatility, (0, seq_len - len(y_train_volatility)), mode='edge'
         )
 
+    # Bug G: standardise return and volatility targets to ~unit variance so that
+    # MSE losses are on comparable scales with the BCE direction loss (~0.5–0.7).
+    # Direction labels stay in {0,1}; only the regression heads are scaled.
+    _ret_scale = float(np.std(y_train_rnn)) or 1.0
+    _vol_scale = float(np.std(y_train_volatility)) or 1.0
+    y_train_rnn_s = (y_train_rnn / _ret_scale).astype(np.float32)
+    y_train_vol_s = (y_train_volatility / _vol_scale).astype(np.float32)
+
     X_combined = np.vstack([X_train_scaled[-rnn_lookback:], X_test_scaled])
     X_test_3d  = np.array([
         X_combined[i - rnn_lookback:i]
         for i in range(rnn_lookback, len(X_combined))
     ])
 
-    # ── Shared backbone ────────────────────────────────────────
     input_layer = Input(shape=(rnn_lookback, len(features)))
 
     lstm_branch = LSTM(64, return_sequences=True)(input_layer)
@@ -1183,35 +885,29 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     merged = Dropout(0.2)(merged)
     shared = Dense(16, activation='relu')(merged)
 
-    # ── Task-specific output heads ─────────────────────────────
-    # Head 1: Return (regression, no activation — predicts log return)
-    return_out = Dense(1, name='return_out')(shared)
-
-    # Head 2: Direction (binary classification, sigmoid → P(up))
+    return_out    = Dense(1, name='return_out')(shared)
     direction_out = Dense(1, activation='sigmoid', name='direction_out')(shared)
 
-    # Head 3: Volatility (regression, softplus ensures non-negative output)
     from tensorflow.keras.layers import Activation
-    volatility_dense = Dense(1, name='volatility_out')(shared)
-    volatility_out   = Activation('softplus')(volatility_dense)
+    # Volatility head: pre-activation Dense, then softplus to keep predictions
+    # strictly positive (volatility is non-negative by definition). Earlier
+    # versions wired the model output to `volatility_dense` (the raw Dense),
+    # which could emit negative values — benign for the current consumers
+    # (display only), but wrong on its face. Use the post-softplus tensor.
+    volatility_pre = Dense(1)(shared)
+    volatility_out = Activation('softplus', name='volatility_out')(volatility_pre)
 
-    model_rnn = Model(inputs=input_layer, outputs=[return_out, direction_out, volatility_dense])
+    model_rnn = Model(inputs=input_layer, outputs=[return_out, direction_out, volatility_out])
+    # label_smoothing=0.1 prevents the direction head from collapsing to the
+    # constant-prior attractor before the rest of the network has converged.
     model_rnn.compile(
         optimizer=Adam(learning_rate=0.001),
         loss={
             'return_out':    'mse',
-            # Label smoothing=0.1 prevents the direction head from collapsing to
-            # 0.5 when BCE loss reaches its minimum too quickly. It keeps
-            # gradients flowing and forces the sigmoid to stay away from the
-            # constant-prior attractor.
             'direction_out': tf.keras.losses.BinaryCrossentropy(label_smoothing=0.1),
             'volatility_out':'mse',
         },
-        loss_weights={
-            'return_out':    0.5,   # Primary objective: return prediction
-            'direction_out': 0.3,   # Direct direction supervision
-            'volatility_out':0.2,   # Regularizing objective
-        }
+        loss_weights={'return_out': 0.5, 'direction_out': 0.3, 'volatility_out': 0.2}
     )
 
     rnn_callbacks = [
@@ -1221,9 +917,9 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     model_rnn.fit(
         X_train_3d,
         {
-            'return_out':    y_train_rnn,
+            'return_out':    y_train_rnn_s,   # Bug G: unit-variance scaled
             'direction_out': y_train_direction,
-            'volatility_out':y_train_volatility,
+            'volatility_out':y_train_vol_s,   # Bug G: unit-variance scaled
         },
         epochs=200,
         batch_size=32,
@@ -1232,17 +928,11 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         callbacks=rnn_callbacks
     )
 
-    # ── Multi-task predictions on test set ─────────────────────
     rnn_outputs      = model_rnn.predict(X_test_3d, verbose=0)
-    rnn_pred         = rnn_outputs[0].flatten()   # Head 1: return
-    rnn_dir_prob     = rnn_outputs[1].flatten()   # Head 2: P(up) [0,1]
-    rnn_vol_pred     = rnn_outputs[2].flatten()   # Head 3: predicted volatility
+    rnn_pred         = rnn_outputs[0].flatten() * _ret_scale   # Bug G: unscale
+    rnn_dir_prob     = rnn_outputs[1].flatten()
+    rnn_vol_pred     = rnn_outputs[2].flatten() * _vol_scale   # Bug G: unscale
 
-    # ============================================================
-    # Complete Stacking Meta-Learner (XGB + LGBM + CatBoost + RNN)
-    # ============================================================
-    # Test stack: 4 base models (catboost_pred replaces lag1 in test since
-    # we have the actual catboost test predictions now)
     stack_test = np.column_stack([
         xgb_pred,
         lgbm_pred      if lgbm_pred      is not None else xgb_pred,
@@ -1250,7 +940,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         rnn_pred,
     ])
 
-    # Fit Ridge meta-learner on training OOF only (strictly no test data)
     if valid_oof.sum() >= 10:
         meta = Ridge(alpha=1.0, fit_intercept=True)
         meta.fit(stack_train[valid_oof], y_train[valid_oof])
@@ -1259,29 +948,47 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         stacked_pred = xgb_pred.copy()
         meta = None
 
-    # ============================================================
-    # Calibrated Directional Probability
-    # Two signals blended:
-    #   1. Isotonic regression on tree OOF predictions (XGB+LGBM+CB avg)
-    #   2. GRU multi-task direction head (direct sigmoid probability)
-    # The blend gives both tabular and sequential signals.
-    # ============================================================
-    n_tree_models  = sum([1, LGBM_AVAILABLE, CATBOOST_AVAILABLE])
-    oof_tree_avg   = (oof_xgb + oof_lgbm + oof_catboost) / n_tree_models
-    tree_dir_prob  = _calibrate_direction_probability(oof_tree_avg, y_train, stacked_pred)
+    # ── Directional probability: calibrated tree blend + Platt-calibrated RNN ──
+    n_tree_models = sum([1, LGBM_AVAILABLE, CATBOOST_AVAILABLE])
+    oof_tree_avg  = (oof_xgb + oof_lgbm + oof_catboost) / n_tree_models
+    tree_dir_prob, _tree_calibrate = _calibrate_direction_probability(
+        oof_tree_avg, y_train, stacked_pred, return_calibrator=True
+    )
 
-    # Blend: 60% tree isotonic calibration + 40% GRU direction head
-    directional_prob = 0.60 * tree_dir_prob + 0.40 * rnn_dir_prob
+    # Val/test split — defined early so every downstream computation can use it
+    # without looking at test data when picking thresholds or scale factors.
+    # First half = val  (τ-tuning, Platt fit, RMSE model selection, variance scale)
+    # Last half  = test (ECE/Brier/conviction, reported metrics)
+    n_split = len(y_test)
+    val_end = n_split // 2 if n_split >= 40 else None
+    y_val  = y_test[:val_end] if val_end else np.array([])
+    y_eval = y_test[val_end:] if val_end else y_test
 
-    # Calibration diagnostic on the held-out test set. Length of
-    # directional_prob equals len(y_test) (both come from the test fold).
-    calibration_report = _compute_calibration_report(directional_prob, y_test, n_bins=10)
-    threshold_tuning = _compute_threshold_tuning(directional_prob, y_test)
-    conviction_precision = _compute_conviction_precision(directional_prob, y_test, threshold=0.60)
+    # Bug F fix: Platt-scale rnn_dir_prob on val before blending.
+    # The tree side is isotonic-calibrated; blending it with raw sigmoid degrades
+    # the blended ECE by mixing two differently-shaped probability distributions.
+    from sklearn.linear_model import LogisticRegression as _LR
+    _rnn_val = rnn_dir_prob[:val_end] if val_end else None
+    _platt_cal = None
+    if (_rnn_val is not None and len(_rnn_val) >= 20
+            and len(np.unique((y_val > 0).astype(int))) == 2):
+        _platt_cal = _LR(C=1.0, solver='lbfgs', max_iter=300)
+        _platt_cal.fit(_rnn_val.reshape(-1, 1), (y_val > 0).astype(int))
+        rnn_dir_prob_cal = _platt_cal.predict_proba(rnn_dir_prob.reshape(-1, 1))[:, 1]
+    else:
+        rnn_dir_prob_cal = rnn_dir_prob
 
-    # ============================================================
-    # ARIMA / Prophet Statistical Models
-    # ============================================================
+    directional_prob = 0.60 * tree_dir_prob + 0.40 * rnn_dir_prob_cal
+
+    prob_val  = directional_prob[:val_end] if val_end else np.array([])
+    prob_eval = directional_prob[val_end:] if val_end else directional_prob
+
+    threshold_tuning = _compute_threshold_tuning(prob_val, y_val) if len(prob_val) else {
+        "tau_star": 0.5, "auc": 0.5, "accuracy_at_tau": 0.5, "n_samples": 0,
+    }
+    calibration_report = _compute_calibration_report(prob_eval, y_eval, n_bins=10)
+    conviction_precision = _compute_conviction_precision(prob_eval, y_eval, threshold=0.60)
+
     arima_pred   = None
     prophet_pred = None
 
@@ -1311,27 +1018,14 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         except Exception:
             prophet_pred = None
 
-    # ============================================================
-    # Market Regime Detection (Hurst-enhanced)
-    # ============================================================
     regime = detect_market_regime(df_proc)
     H      = regime.get('hurst', 0.5)
 
-    # ============================================================
-    # Multi-Model Ensemble with Regime-Aware Weighting
-    # Now 5 models: XGB, LGBM, CatBoost, RNN (multi-task), Stacked
-    # ============================================================
+    # Test-fold RMSEs — used for reporting only, not for weight selection.
     xgb_rmse      = float(np.sqrt(mean_squared_error(y_test, xgb_pred)))
     rnn_rmse      = float(np.sqrt(mean_squared_error(y_test, rnn_pred)))
     stacked_rmse  = float(np.sqrt(mean_squared_error(y_test, stacked_pred)))
 
-    # Regime-aware base weights
-    # Rationale:
-    #   Trending: RNN captures momentum better, stacked meta-learner synthesises
-    #   Mean-rev: Tree models handle oscillation better, CatBoost ordered boosting excels
-    #   High-vol: Trust stacked ensemble (diversified), give CatBoost extra weight
-    #             (ordered boosting more robust to fat-tailed return distributions)
-    #   Normal:   Balanced distribution
     if regime['type'] == 'trending':
         base_xgb_weight  = 0.15
         base_lgbm_weight = 0.15
@@ -1347,9 +1041,9 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     elif regime['type'] == 'high_volatility':
         base_xgb_weight  = 0.12
         base_lgbm_weight = 0.13
-        base_cb_weight   = 0.20   # CatBoost more robust to outliers
+        base_cb_weight   = 0.20
         base_rnn_weight  = 0.15
-        base_stack_weight= 0.40   # Meta-learner most conservative
+        base_stack_weight= 0.40
     else:  # normal
         base_xgb_weight  = 0.18
         base_lgbm_weight = 0.17
@@ -1357,16 +1051,21 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         base_rnn_weight  = 0.20
         base_stack_weight= 0.28
 
-    # Performance adjustment: 10% boost to the best-performing model
-    all_rmses = {
-        'xgb': xgb_rmse, 'rnn': rnn_rmse, 'stacked': stacked_rmse,
+    # Bug A fix: select the best model using val-fold RMSEs, not test-fold.
+    # Previously min(test_rmses) → +10% boost → evaluate on same test = circular.
+    # val_end may be None when n_test < 40; fall back to full test in that case.
+    _s = slice(0, val_end) if val_end else slice(None)
+    _sel_rmses = {
+        'xgb':     float(np.sqrt(mean_squared_error(y_test[_s], xgb_pred[_s]))),
+        'rnn':     float(np.sqrt(mean_squared_error(y_test[_s], rnn_pred[_s]))),
+        'stacked': float(np.sqrt(mean_squared_error(y_test[_s], stacked_pred[_s]))),
     }
     if lgbm_pred is not None:
-        all_rmses['lgbm'] = lgbm_rmse
+        _sel_rmses['lgbm']     = float(np.sqrt(mean_squared_error(y_test[_s], lgbm_pred[_s])))
     if catboost_pred is not None:
-        all_rmses['catboost'] = catboost_rmse
+        _sel_rmses['catboost'] = float(np.sqrt(mean_squared_error(y_test[_s], catboost_pred[_s])))
 
-    best_model = min(all_rmses, key=all_rmses.get)
+    best_model = min(_sel_rmses, key=_sel_rmses.get)
     boost = 0.10
     if best_model == 'stacked':
         base_stack_weight = min(base_stack_weight + boost, 0.55)
@@ -1379,7 +1078,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     elif best_model == 'catboost' and catboost_pred is not None:
         base_cb_weight    = min(base_cb_weight     + boost, 0.40)
 
-    # Zero out unavailable models and renormalize
     if lgbm_pred is None:
         base_lgbm_weight = 0.0
     if catboost_pred is None:
@@ -1393,7 +1091,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     rnn_weight    = base_rnn_weight   / total_weight
     stack_weight  = base_stack_weight / total_weight
 
-    # Final blended prediction
     ml_pred = (
         xgb_weight   * xgb_pred
         + lgbm_weight  * (lgbm_pred     if lgbm_pred     is not None else xgb_pred)
@@ -1402,69 +1099,96 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         + stack_weight * stacked_pred
     )
 
-    # Add statistical model predictions
     stat_preds = [p for p in [arima_pred, prophet_pred] if p is not None]
     if stat_preds:
-        stat_avg  = np.mean(stat_preds, axis=0)
-        stat_w    = 0.10  # Fixed 10% to statistical models
-        hybrid_pred = (1 - stat_w) * ml_pred + stat_w * stat_avg
+        stat_avg = np.mean(stat_preds, axis=0)
+        # Bug I: ARIMA's recursive forecast reverts to the unconditional mean
+        # within a few steps, so a flat 10% blend at every horizon just adds
+        # noise. Fade the weight exponentially: full 10% at step 1, ~1% by
+        # step 20, effectively zero by step 30+.
+        _n = len(stat_avg)
+        _steps = np.arange(_n, dtype=float)
+        stat_w_arr = 0.10 * np.exp(-_steps / 5.0)
+        hybrid_pred = (1 - stat_w_arr) * ml_pred + stat_w_arr * stat_avg
     else:
         hybrid_pred = ml_pred
 
-    # ============================================================
-    # Production Scaling — Calibrate prediction variance
-    # Uses TRAINING set std only (no data leakage)
-    # ============================================================
-    pred_std  = np.std(hybrid_pred)
+    # Rescale prediction variance to match training std.
+    # Bug E fix: compute the scale factor on the val fold only, then apply it
+    # uniformly to all test predictions. Using np.std(hybrid_pred) over the
+    # entire test array made every prediction depend on the others — re-running
+    # on a different test window changed every individual value.
     train_std = np.std(y_train)
+    _scale_slice = hybrid_pred[:val_end] if val_end else hybrid_pred
+    pred_std = np.std(_scale_slice)
 
     if pred_std > 1e-8:
         scale_factor = train_std / pred_std
         hybrid_pred  = hybrid_pred * scale_factor
     else:
         hybrid_pred = xgb_pred.copy()
-        pred_std = np.std(xgb_pred)
-        if pred_std > 1e-8:
-            hybrid_pred = hybrid_pred * (train_std / pred_std)
+        _fb_std = np.std(xgb_pred[:val_end] if val_end else xgb_pred)
+        if _fb_std > 1e-8:
+            hybrid_pred = hybrid_pred * (train_std / _fb_std)
 
     max_pred    = 3 * train_std
     hybrid_pred = np.clip(hybrid_pred, -max_pred, max_pred)
 
-    # ============================================================
-    # Quantile Regression + Conformal Intervals (A6.1 / A6.2)
-    #
-    # Two complementary sources of a 90% return-space band:
-    #   1. XGB quantile heads at α=0.1 / α=0.9 — direct quantile regression
-    #   2. Split-conformal ±halfwidth around the hybrid point estimator,
-    #      distribution-free guarantee from holdout residuals
-    #
-    # The Monte Carlo fan (P5/P95 inside `hybrid_predict_prices`) remains the
-    # default UI band because it's horizon-aware; these two quantities give
-    # the *1-step* uncertainty the UI can display alongside as sanity checks.
-    # ============================================================
     quantile_bundle = _train_quantile_xgb(X_train_scaled, y_train, X_test_scaled)
-    conformal_hw = _conformal_halfwidth(y_test, hybrid_pred, alpha=0.10)
-
-    # ============================================================
-    # SHAP Feature Importance
-    # ============================================================
+    # Bug C fix: split-conformal requires a holdout disjoint from where the band
+    # is applied. Fit on val residuals; the band is then applied at inference time.
+    _hw_y = y_test[:val_end] if val_end else y_test
+    _hw_p = hybrid_pred[:val_end] if val_end else hybrid_pred
+    conformal_hw = _conformal_halfwidth(_hw_y, _hw_p, alpha=0.10)
     shap_info = _compute_shap_importance(xgb_model, X_test_scaled, features)
 
-    # ============================================================
-    # Evaluation
-    # ============================================================
     rmse              = float(np.sqrt(mean_squared_error(y_test, hybrid_pred)))
     correct_direction = np.sign(hybrid_pred) == np.sign(y_test)
     accuracy          = float(np.mean(correct_direction) * 100)
 
-    # Naive baselines — model must beat these to have any edge
     up_rate              = float(np.mean(y_test > 0))
     train_up_rate        = float(np.mean(y_train > 0))  # used for calibration bias display
     naive_up_rate        = up_rate
     naive_accuracy       = float(max(up_rate, 1.0 - up_rate) * 100)  # always-majority-class
-    naive_brier          = 0.25  # always predict 50%
+    # Bug M fix: actual Bernoulli baseline, not hardcoded 0.25.
+    naive_brier          = float(up_rate * (1.0 - up_rate))
 
-    # Store predictions
+    # Bug D fix: compute directional probability for the LIVE bar (the last
+    # close that was dropped by dropna because it has no Target_Return yet).
+    # directional_prob[-1] was one trading day stale — this run-time single-pass
+    # inference uses the actual most-recent close.
+    _live_dir_prob = float(directional_prob[-1])  # fallback
+    try:
+        _live_feats = [f for f in features if f in _live_row_df.columns]
+        if len(_live_feats) == len(features):
+            _lx = _live_row_df[features].values.astype(float)
+            if not np.any(np.isnan(_lx)):
+                _lx_s = scaler.transform(_lx)
+                # Tree branch
+                _lxgb = float(xgb_model.predict(_lx_s)[0])
+                _llgb = float(lgbm_model.predict(_lx_s)[0]) if lgbm_model else _lxgb
+                _lcb  = float(catboost_model.predict(_lx_s)[0]) if catboost_model else _lxgb
+                # RNN branch: slide the lookback window one step forward
+                _live_win = np.vstack([X_test_scaled[-(rnn_lookback - 1):], _lx_s])
+                _live_3d  = _live_win.reshape(1, rnn_lookback, len(features))
+                _lrnn_out = model_rnn.predict(_live_3d, verbose=0)
+                _lrnn_ret = float(_lrnn_out[0].flatten()[0]) * _ret_scale  # Bug G: unscale
+                _lrnn_dir = float(_lrnn_out[1].flatten()[0])
+                # Meta-stacker
+                if meta is not None:
+                    _l_stacked = float(meta.predict(
+                        np.array([[_lxgb, _llgb, _lcb, _lrnn_ret]])
+                    )[0])
+                else:
+                    _l_stacked = _lxgb
+                # Apply stored calibrators
+                _ltree_p = float(_tree_calibrate(np.array([_l_stacked]))[0])
+                _lrnn_p  = (float(_platt_cal.predict_proba([[_lrnn_dir]])[0, 1])
+                            if _platt_cal else _lrnn_dir)
+                _live_dir_prob = float(np.clip(0.60 * _ltree_p + 0.40 * _lrnn_p, 0.02, 0.98))
+    except Exception:
+        pass  # any failure falls back to directional_prob[-1]
+
     test_dates = df_proc.index[train_size:]
     _scale = lambda p: p * (train_std / (np.std(p) + 1e-8))
     results_df = pd.DataFrame({
@@ -1474,26 +1198,26 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'LGBM_Return':      _scale(lgbm_pred)     if lgbm_pred     is not None else _scale(xgb_pred),
         'CatBoost_Return':  _scale(catboost_pred) if catboost_pred is not None else _scale(xgb_pred),
         'RNN_Return':       _scale(rnn_pred),
-        'Directional_Prob': directional_prob * 100,       # Blended [0–100%]
-        'RNN_Dir_Prob':     rnn_dir_prob * 100,           # GRU head only [0–100%]
-        'RNN_Vol_Pred':     rnn_vol_pred,                 # Predicted next-day volatility
+        'Directional_Prob': directional_prob * 100,
+        'RNN_Dir_Prob':     rnn_dir_prob * 100,
+        'RNN_Vol_Pred':     rnn_vol_pred,
     }, index=test_dates)
 
-    # ============================================================
-    # Expanding Window Walk-Forward (replaces fixed 5-window)
-    # ============================================================
     min_wf_train = max(int(len(y_test) * 0.50), 10)
-    wf_step      = max(int(len(y_test) * 0.05), 5)  # ~5% of test set per window
+    # Bug J: windows of ~5 samples yield SE ≈ 20%, drowning the signal.
+    # Enforce a 30-sample minimum with 50% overlap so reported walkforward_std
+    # reflects real variance rather than sampling noise.
+    wf_window = max(30, int(len(y_test) * 0.20))
+    wf_step   = max(wf_window // 2, 1)
     window_records = []
 
-    for start in range(min_wf_train, len(y_test) - wf_step + 1, wf_step):
-        end = min(start + wf_step, len(y_test))
+    for start in range(min_wf_train, len(y_test) - wf_window + 1, wf_step):
+        end = min(start + wf_window, len(y_test))
         w_preds  = hybrid_pred[start:end]
         w_actual = y_test[start:end]
-        if len(w_preds) < 3:
+        if len(w_preds) < 10:
             continue
-        # Store as fraction [0.0–1.0]. The frontend formats with * 100 itself;
-        # storing as % caused a double-multiplication producing values like 5333%.
+        # Stored as fraction — frontend multiplies by 100 itself
         w_acc = float(np.mean(np.sign(w_preds) == np.sign(w_actual)))
         window_records.append({
             'window': len(window_records) + 1,
@@ -1509,8 +1233,6 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         walkforward_min      = float(np.min(wf_accs))
         walkforward_max      = float(np.max(wf_accs))
     else:
-        # `accuracy` is in % (line 1370); normalise to fraction [0,1] for
-        # consistency with the window records computed above.
         _acc_frac            = accuracy / 100.0
         walkforward_accuracy = _acc_frac
         walkforward_std      = 0.0
@@ -1520,59 +1242,46 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     metrics = {
         'rmse':                 rmse,
         'accuracy':             accuracy,
-        # Model weights
         'xgb_weight':           xgb_weight,
         'lgbm_weight':          lgbm_weight,
         'catboost_weight':      cb_weight,
         'rnn_weight':           rnn_weight,
         'stack_weight':         stack_weight,
-        # Per-model RMSE
         'xgb_rmse':             xgb_rmse,
         'lgbm_rmse':            lgbm_rmse      if lgbm_pred      is not None else None,
         'catboost_rmse':        catboost_rmse  if catboost_pred  is not None else None,
         'rnn_rmse':             rnn_rmse,
         'stacked_rmse':         stacked_rmse,
-        # Availability flags
         'lgbm_available':       LGBM_AVAILABLE,
         'catboost_available':   CATBOOST_AVAILABLE,
         'arima_used':           arima_pred is not None,
         'prophet_used':         prophet_pred is not None,
-        # Walk-forward
         'walkforward_accuracy': walkforward_accuracy,
         'walkforward_std':      walkforward_std,
         'walkforward_min':      walkforward_min,
         'walkforward_max':      walkforward_max,
         'walkforward_windows':  window_records,
-        # Regime
         'regime':               regime['type'],
         'regime_detail':        regime['detail'],
         'hurst_exponent':       H,
-        # Calibrated directional probability (blended: isotonic + GRU head)
         'avg_directional_prob':  float(np.mean(directional_prob) * 100),
-        'last_directional_prob': float(directional_prob[-1] * 100) if len(directional_prob) > 0 else 50.0,
-        # Calibration diagnostic (A1.2) — ECE + bin vectors for the reliability plot
-        'calibration':           calibration_report,
-        # Per-ticker threshold tuning (A1.5) — τ*, AUC, accuracy_at_τ*
-        'threshold_tuning':      threshold_tuning,
-        # Multi-task GRU extra outputs
+        'last_directional_prob': float(_live_dir_prob * 100),  # Bug D: live row, not stale test[-1]
+        'calibration':           calibration_report,       # A1.2 — ECE + reliability plot
+        'threshold_tuning':      threshold_tuning,         # A1.5 — τ*, AUC
         'last_rnn_dir_prob':     float(rnn_dir_prob[-1] * 100)  if len(rnn_dir_prob)  > 0 else 50.0,
         'last_rnn_vol_pred':     float(rnn_vol_pred[-1])        if len(rnn_vol_pred)  > 0 else 0.0,
         'avg_rnn_vol_pred':      float(np.mean(rnn_vol_pred))   if len(rnn_vol_pred)  > 0 else 0.0,
-        # SHAP
         'shap_importance':      shap_info['importance'],
         'shap_top_features':    shap_info['top_features'],
         'shap_method':          shap_info['method'],
-        # A6 — quantile + conformal uncertainty
         'quantile_alphas':      list(quantile_bundle['test_preds'].keys()),
         'quantile_available':   len(quantile_bundle['models']) > 0,
         'conformal_halfwidth':  float(conformal_hw),
         'conformal_alpha':      0.10,
-        # 3A — naive baselines (model must beat these)
         'naive_up_rate':        naive_up_rate,
         'naive_accuracy':       naive_accuracy,
         'naive_brier':          naive_brier,
-        'train_up_rate':        train_up_rate,  # calibration bias diagnostic
-        # 3B — conviction-precision gate
+        'train_up_rate':        train_up_rate,
         'conviction_precision': conviction_precision,
     }
 
@@ -1582,30 +1291,17 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                 'lgbm': lgbm_model, 'catboost': catboost_model, 'meta': meta,
                 'xgb_q10': quantile_bundle['models'].get(0.1),
                 'xgb_q90': quantile_bundle['models'].get(0.9),
+                'tree_calibrate': _tree_calibrate,   # Bug D: closure for live inference
+                'platt_calibrator': _platt_cal,       # Bug D: Platt scaler for live RNN dir
             },
             scaler, features, metrics)
 
 
-# ============================================================
-# Prediction Functions
-# ============================================================
 
 def hybrid_predict_next_day(models: dict, scaler: MinMaxScaler,
                             last_data_window: pd.DataFrame, features: list,
                             lookback: int = None) -> float:
-    """
-    Predict next day return using trained hybrid models.
-
-    Args:
-        models: Dictionary with 'xgb', 'rnn', optionally 'lgbm' and 'meta'
-        scaler: Fitted MinMaxScaler
-        last_data_window: DataFrame with last `lookback` rows of feature values
-        features: List of feature names
-        lookback: Number of timesteps for RNN (default: ModelConfig.LOOKBACK_PERIOD)
-
-    Returns:
-        Predicted return value
-    """
+    """Predict the next-day return using the trained hybrid ensemble."""
     lookback = lookback or ModelConfig.LOOKBACK_PERIOD
 
     x_latest        = last_data_window[features].iloc[-1:].values
@@ -1616,8 +1312,7 @@ def hybrid_predict_next_day(models: dict, scaler: MinMaxScaler,
     window_scaled = scaler.transform(window_data)
     x_3d          = window_scaled.reshape((1, lookback, len(features)))
     rnn_outputs   = models['rnn'].predict(x_3d, verbose=0)
-    # Multi-task model returns list [return_out, direction_out, volatility_out]
-    # Single-output legacy model returns a 2D array — handle both
+    # Multi-task RNN returns a list; single-output legacy model returns a 2D array
     if isinstance(rnn_outputs, list):
         rnn_pred = float(rnn_outputs[0][0][0])
     else:
@@ -1631,8 +1326,6 @@ def hybrid_predict_next_day(models: dict, scaler: MinMaxScaler,
     if models.get('catboost') is not None:
         catboost_pred = models['catboost'].predict(x_latest_scaled)[0]
 
-    # Use meta-learner if available; stack input matches training order
-    # [xgb, lgbm, catboost, rnn]
     if models.get('meta') is not None:
         cb_val = catboost_pred if catboost_pred is not None else xgb_pred
         lg_val = lgbm_pred     if lgbm_pred     is not None else xgb_pred
@@ -1657,57 +1350,18 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
                           regime: str = 'normal',
                           n_paths: int = 200) -> pd.DataFrame:
     """
-    Regime-conditioned probabilistic price forecast with uncertainty bands.
+    Monte Carlo price forecast: bootstraps historical returns, applies a drift
+    derived from directional_prob, and scales volatility by regime.
+    Returns P5/P25/median/P75/P95 fan columns (+ 'Predicted Price' = median).
 
-    WHY the old recursive approach produced straight lines:
-        Adding synthetic OHLCV rows where Open=High=Low=Close=predicted_price
-        means ATR→0, BB_width→0, CMF→0, Williams_R stabilises, Vol_Ratio
-        converges — the model receives the same feature vector every step and
-        predicts the same tiny return, producing a flat line.
-
-    THIS APPROACH instead:
-        1.  Gets the model's one-step directional conviction (directional_prob)
-            and converts it to a per-day drift in log-return space.
-        2.  Bootstraps actual historical log returns from df_proc to get a
-            realistic return distribution (fat tails, autocorrelation, etc.)
-        3.  Runs n_paths forward simulations, each path sampling a new random
-            sequence of historical returns + applying the drift.
-        4.  Applies regime-based volatility scaling:
-              trending     → +20% vol (momentum amplifies moves)
-              mean_rev     → -15% vol (range-bound compression)
-              high_vol     → +40% vol (crisis-like regime)
-              normal       → baseline
-        5.  Returns P5 / P25 / median / P75 / P95 paths as columns for a fan
-            chart, plus the median as 'Predicted Price' for backward compat.
-
-    This is statistically honest: the drift comes from the model's signal, the
-    variance comes from the actual historical return distribution, and the fan
-    naturally widens with time (uncertainty grows with horizon).
-
-    Args:
-        models:           Trained model dict (used for step-1 anchor prediction)
-        scaler:           Fitted MinMaxScaler
-        last_known_data:  Last ≥30 rows of OHLCV + features
-        features:         Feature name list
-        days:             Forecast horizon
-        df_proc_full:     Full processed DataFrame (source of historical returns)
-        directional_prob: Blended P(up) from calibration in [0, 1]
-        regime:           Current market regime string
-        n_paths:          Monte Carlo paths (default 200, ≈0.1s vectorised)
-
-    Returns:
-        DataFrame with columns:
-            'Predicted Price', 'Daily Change (%)',
-            'P5', 'P25', 'P75', 'P95'  (uncertainty band prices)
+    Avoids the recursive-prediction artefact (flat-line) by using actual return
+    bootstrap rather than feeding synthetic OHLCV rows back through the feature
+    pipeline.
     """
     custom_business_day = CustomBusinessDay(calendar=IndiaHolidayCalendar())
     current_price = float(last_known_data['Close'].iloc[-1])
     last_date     = last_known_data.index[-1]
 
-    # ── Step 1: Single-step model prediction as anchor ────────────────────
-    # Use the actual model for the FIRST day to anchor the forecast direction.
-    # After that the probabilistic simulation takes over (features would
-    # degrade for recursive steps anyway).
     aux_cols = [
         'Sentiment', 'Multi_Sentiment', 'Sentiment_Confidence',
         'FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg',
@@ -1725,9 +1379,6 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
     except Exception:
         anchor_return = 0.0
 
-    # ── Step 2: Historical return distribution ───────────────────────────
-    # Source: actual log returns from processed data (real distribution, not
-    # Gaussian assumption). Fallback to last_known_data if df_proc unavailable.
     if df_proc_full is not None and 'Log_Ret' in df_proc_full.columns:
         hist_returns = df_proc_full['Log_Ret'].dropna().values
     else:
@@ -1736,17 +1387,11 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
         ).dropna().values
 
     if len(hist_returns) < 20:
-        hist_returns = np.zeros(100)  # Degenerate fallback
+        hist_returns = np.zeros(100)
 
-    # ── Step 3: Drift from directional conviction ────────────────────────
-    # directional_prob = 0.5 → no drift (neutral)
-    # directional_prob = 0.65 → mild bullish drift equal to +0.3 × mean |return|
-    # directional_prob = 0.35 → mild bearish drift
-    # Capped at ±0.5 × mean|ret| to avoid unrealistically large drifts.
     mean_abs_ret  = float(np.mean(np.abs(hist_returns)))
     drift_per_day = np.clip((directional_prob - 0.5) * 2.0, -0.5, 0.5) * mean_abs_ret
 
-    # ── Step 4: Regime volatility scaling ───────────────────────────────
     vol_scale = {
         'trending':      1.20,
         'mean_reverting':0.85,
@@ -1754,38 +1399,28 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
         'normal':        1.00,
     }.get(str(regime), 1.00)
 
-    # ── Step 5: Vectorised Monte Carlo paths ────────────────────────────
-    # Shape: (n_paths, days)
-    # Bootstrap-sample entire sequences from historical returns
     sample_idx  = np.random.randint(0, len(hist_returns), size=(n_paths, days))
-    sampled_ret = hist_returns[sample_idx] * vol_scale   # (n_paths, days)
+    sampled_ret = hist_returns[sample_idx] * vol_scale
 
-    # Day-1: spread paths around the model's point prediction with ½ historical
-    # volatility so the fan opens at h=1 rather than collapsing to zero width.
-    # Days 2+: apply the full drift. This prevents the "P5=P95=price" artefact
-    # on the first forecast bar while keeping the point estimate unbiased.
+    # Day-1: anchor to model's point estimate with ½ historical vol so the fan
+    # opens at h=1 instead of collapsing to zero width.
     day1_vol = float(np.std(hist_returns[-60:])) if len(hist_returns) >= 60 else float(np.std(hist_returns)) if len(hist_returns) > 1 else 0.005
     sampled_ret[:, 0]  = np.random.normal(anchor_return, day1_vol * 0.5, n_paths)
-    sampled_ret[:, 1:] = sampled_ret[:, 1:] + drift_per_day  # Drift from day 2 onward
+    sampled_ret[:, 1:] = sampled_ret[:, 1:] + drift_per_day
 
-    # Cumulative log return → price paths
-    cum_log_ret  = np.cumsum(sampled_ret, axis=1)        # (n_paths, days)
-    price_paths  = current_price * np.exp(cum_log_ret)   # (n_paths, days)
+    cum_log_ret  = np.cumsum(sampled_ret, axis=1)
+    price_paths  = current_price * np.exp(cum_log_ret)
 
-    # ── Step 6: Percentile extraction ───────────────────────────────────
     p5   = np.percentile(price_paths, 5,  axis=0)
     p25  = np.percentile(price_paths, 25, axis=0)
     p50  = np.percentile(price_paths, 50, axis=0)
     p75  = np.percentile(price_paths, 75, axis=0)
     p95  = np.percentile(price_paths, 95, axis=0)
 
-    # Per-day P(price > anchor): fraction of MC paths that end above the
-    # prediction-date close at each horizon.  This is the only honest
-    # directional probability for days 2+ — derived from the full path
-    # distribution rather than stamping day-1's number across all horizons.
-    prob_up_per_day = (price_paths > current_price).mean(axis=0)  # (days,)
+    # Fraction of MC paths ending above anchor at each horizon — more honest
+    # than stamping day-1's directional prob across all future days.
+    prob_up_per_day = (price_paths > current_price).mean(axis=0)
 
-    # ── Step 7: Build future date index ─────────────────────────────────
     future_dates = []
     d = last_date
     for _ in range(days):
@@ -1809,22 +1444,7 @@ def run_ablation_study(df: pd.DataFrame, sentiment_features: dict,
                        fii_dii_data: pd.DataFrame = None,
                        vix_data: pd.DataFrame = None,
                        multi_source_sentiment: dict = None) -> dict:
-    """
-    Run ablation study to measure contribution of each feature group.
-
-    Tests model performance with different data sources removed
-    to quantify the contribution of each component.
-
-    Args:
-        df: DataFrame with OHLCV data
-        sentiment_features: Dictionary with sentiment data
-        fii_dii_data: DataFrame with FII/DII data
-        vix_data: DataFrame with VIX data
-        multi_source_sentiment: Dictionary from multi-source sentiment
-
-    Returns:
-        Dictionary with ablation results for each configuration
-    """
+    """Measure accuracy delta when each feature group is removed."""
     ablation_results = {}
 
     _, _, _, _, _, metrics_full = create_hybrid_model(
@@ -1872,15 +1492,7 @@ def run_ablation_study(df: pd.DataFrame, sentiment_features: dict,
 
 
 def adjust_predictions_for_market_closures(predictions_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Adjust predictions to show steady values on market closed days.
-
-    Args:
-        predictions_df: DataFrame with predictions
-
-    Returns:
-        Adjusted DataFrame
-    """
+    """Forward-fill predicted prices on NSE non-trading days."""
     india_bd = CustomBusinessDay(calendar=IndiaHolidayCalendar())
 
     business_days = pd.date_range(

@@ -47,8 +47,23 @@ def log_prediction(
     if not bundle.points:
         return 0
 
+    # Drop forecast points whose target_date is already in the past relative
+    # to made_at. yfinance returns the same close for the anchor day and any
+    # earlier target, so logging stale points produces actual_price ==
+    # anchor_price → meaningless directional hit (always 0 for non-flat).
+    made_date = bundle.made_at.astimezone(UTC).date()
+    points_to_log = [p for p in bundle.points if p.target_date >= made_date]
+    if not points_to_log:
+        return 0
+
+    # Only the earliest forward target is a genuine directional call; later
+    # points are MC scenario paths. Restrict prob_up to day-1 so calibration
+    # metrics (ECE, Brier) aren't inflated by repeated identical probabilities.
+    earliest_target = min(p.target_date for p in points_to_log)
+
     rows = []
-    for p in bundle.points:
+    for p in points_to_log:
+        is_day1 = (p.target_date == earliest_target)
         rows.append(
             {
                 "ticker":           bundle.ticker,
@@ -60,17 +75,14 @@ def log_prediction(
                 "ci_low":           float(p.ci_low) if p.ci_low is not None else None,
                 "ci_high":          float(p.ci_high) if p.ci_high is not None else None,
                 "confidence_level": float(p.confidence_level),
-                "prob_up":          float(p.prob_up) if p.prob_up is not None else None,
+                "prob_up":          float(p.prob_up) if (p.prob_up is not None and is_day1) else None,
                 "horizon_days":     int(bundle.horizon_days),
                 "model_version":    bundle.model_version,
                 "user_id":          user_id,
             }
         )
 
-    # ignore_duplicates=True maps to `Prefer: resolution=ignore-duplicates`
-    # which makes PostgREST silently skip rows that would violate the
-    # UNIQUE(ticker, made_at, target_date) constraint — same semantics as
-    # `ON CONFLICT DO NOTHING`.
+    # ignore_duplicates maps to Prefer: resolution=ignore-duplicates — same as ON CONFLICT DO NOTHING.
     resp = (
         get_admin_client()
         .table(_TABLE)
@@ -88,7 +100,6 @@ def log_from_future_df(
     model_version: str,
     user_id: str | None = None,
 ) -> int:
-    """Adapter for the Streamlit / `prediction_service` path."""
     if future_df is None or len(future_df) == 0:
         return 0
 
@@ -115,10 +126,11 @@ def log_from_future_df(
         else:
             direction = "flat"
 
-        # Only day-0 (the next trading day) has a genuine calibrated directional
-        # probability. Days 1-N are Monte Carlo scenario paths — mark prob_up as
-        # None so the ledger does not compute spurious calibration metrics on them.
-        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)) if i == 0 else None
+        # Set prob_up uniformly on every point. log_prediction restricts it to
+        # the earliest forward-dated row (the genuine day-1 call) — pinning it
+        # to i=0 here would lose the prob entirely when log_prediction filters
+        # out today's already-past close (i=0) and leaves i=1 as day-1.
+        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5))
 
         points.append(
             PredictionPoint(
@@ -290,28 +302,45 @@ def accuracy_window(
 
     client = get_admin_client()
 
-    count_q = (
+    # Bug 4 fix: dedupe by (ticker, target_date) and keep the FIRST prediction
+    # (MIN made_at) per pair. PostgREST doesn't expose GROUP BY, so we pull the
+    # candidate rows ordered by made_at ASC and drop later duplicates client-side.
+    # The earlier code counted every prediction for the same target as an
+    # independent sample — they aren't, they share an outcome — and `recent_rows`
+    # used to keep MAX(made_at) which is the easier (closest-to-target) call.
+    #
+    # Day-1 restriction: pre-filter the rows to `prob_up IS NOT NULL` before
+    # deduping. Without that, the first-seen row for any target_date is
+    # systematically the earliest *bundle* covering it — which means that
+    # target appears as day-N (prob_up=NULL). The downstream `prob_up IS NOT
+    # NULL` hit filter then rejects every selected row and directional
+    # accuracy collapses to None.
+    fetch_q = (
         client.table(_TABLE)
-        .select("id", count="exact")
+        .select(
+            "ticker,target_date,made_at,pred_dir,pred_price,anchor_price,"
+            "actual_price,prob_up,hit"
+        )
         .gte("target_date", cutoff.isoformat())
+        .not_.is_("prob_up", "null")
+        .order("made_at", desc=False)
     )
     if ticker:
-        count_q = count_q.eq("ticker", ticker)
+        fetch_q = fetch_q.eq("ticker", ticker)
     if user_id:
-        count_q = count_q.eq("user_id", user_id)
-    total = count_q.execute().count or 0
+        fetch_q = fetch_q.eq("user_id", user_id)
+    raw = fetch_q.execute().data or []
 
-    data_q = (
-        client.table(_TABLE)
-        .select("pred_dir,pred_price,anchor_price,actual_price,prob_up,hit")
-        .gte("target_date", cutoff.isoformat())
-        .not_.is_("actual_price", "null")
-    )
-    if ticker:
-        data_q = data_q.eq("ticker", ticker)
-    if user_id:
-        data_q = data_q.eq("user_id", user_id)
-    rows = data_q.execute().data or []
+    seen: set[tuple[str, str]] = set()
+    deduped = []
+    for r in raw:
+        key = (r.get("ticker"), str(r.get("target_date")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(r)
+    total = len(deduped)
+    rows = [r for r in deduped if r.get("actual_price") is not None]
 
     if not rows:
         return AccuracyWindow(
@@ -371,14 +400,34 @@ def recent_rows(
     limit: int = 200,
     user_id: str | None = None,
 ) -> list[LedgerRow]:
+    """Return most recent ledger rows, deduped to one entry per
+    (ticker, target_date) pair — keeping the FIRST prediction (MIN made_at).
+
+    Bug 4 fix: matches the dedup policy in `accuracy_window`. The first
+    prediction is the honest test (longest distance to target); keeping
+    MAX(made_at) silently picked the easiest call.
+    """
+    # Pull ascending by made_at so the dedup keeps the earliest record per pair.
     q = get_admin_client().table(_TABLE).select("*")
     if ticker:
         q = q.eq("ticker", ticker)
     if user_id:
         q = q.eq("user_id", user_id)
-    q = q.order("made_at", desc=True).order("id", desc=True).limit(limit)
-    rows = q.execute().data or []
-    return [_row_to_dto(r) for r in rows]
+    # Over-fetch so post-dedup we still hit `limit`. Hard cap at 5x to bound the trip.
+    q = q.order("made_at", desc=False).order("id", desc=False).limit(limit * 5)
+    raw = q.execute().data or []
+
+    seen: set[tuple[str, str]] = set()
+    deduped = []
+    for r in raw:
+        key = (r.get("ticker"), str(r.get("target_date")))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(r)
+
+    deduped.sort(key=lambda r: (r.get("made_at") or "", r.get("id") or 0), reverse=True)
+    return [_row_to_dto(r) for r in deduped[:limit]]
 
 
 # ───────────────────────── helpers ───────────────────────────────────────

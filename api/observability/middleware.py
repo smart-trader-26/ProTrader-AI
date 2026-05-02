@@ -1,18 +1,9 @@
 """
-Request-id correlation middleware (B7.2).
+Request-ID correlation middleware (B7.2).
 
-Generates a unique ``request_id`` per HTTP request and binds it to
-structlog's context vars so every log line from that request carries the
-same ID. Also sets the ``X-Request-ID`` response header for client-side
-correlation.
-
-If the client sends ``X-Request-ID``, it is reused (useful for tracing
-across API gateway → backend → Celery worker).
-
-Usage — add to FastAPI:
-
-    from api.observability.middleware import RequestIdMiddleware
-    app.add_middleware(RequestIdMiddleware)
+Binds a unique ``request_id`` to structlog context vars per request and echoes
+it in the ``X-Request-ID`` response header. Reuses the header when the client
+sends one (useful for tracing across gateway → backend → Celery worker).
 """
 
 from __future__ import annotations
@@ -28,13 +19,9 @@ _REQUEST_ID_HEADER = "X-Request-ID"
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
-    """Assign and propagate a per-request correlation ID."""
-
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         request_id = request.headers.get(_REQUEST_ID_HEADER) or str(uuid.uuid4())
 
-        # Bind into structlog context — every log line inside this request
-        # will carry ``request_id``.
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(
             request_id=request_id,

@@ -109,9 +109,11 @@ def log_from_future_df(
             direction = "down"
         else:
             direction = "flat"
-        # Only day-0 has a genuine calibrated probability; days 1-N are
-        # scenario paths and should not pollute calibration metrics.
-        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5)) if i == 0 else None
+        # Set prob_up uniformly on every point. log_prediction restricts it to
+        # the earliest forward-dated row (the genuine day-1 call) — pinning it
+        # to i=0 here would lose the prob entirely when log_prediction filters
+        # out today's already-past close (i=0) and leaves i=1 as day-1.
+        day_prob = max(0.0, min(1.0, float(prob_up) if prob_up is not None else 0.5))
         points.append(
             PredictionPoint(
                 target_date=d,
@@ -148,14 +150,23 @@ def log_prediction(
     if not bundle.points:
         return 0
 
-    # Only the earliest-target-date point is a genuine directional call;
-    # later points are MC scenario paths.  Store prob_up only for day-1 so
-    # accuracy_window's calibration metrics (ECE, Brier) are not inflated
-    # by repeated identical or MC-derived probabilities for the same forecast.
-    earliest_target = min(p.target_date for p in bundle.points)
+    # Drop any forecast points that fall before the run date.  The hybrid model
+    # includes the last historical close (e.g. Apr 30) as "day-0" in future_df,
+    # but that date is already in the past when the prediction runs on May 1.
+    # If we log it, backfill_actuals resolves actual_price == anchor_price → hit=0
+    # for every non-flat call, poisoning directional accuracy.
+    made_date = bundle.made_at.astimezone(UTC).date()
+    points_to_log = [p for p in bundle.points if p.target_date >= made_date]
+    if not points_to_log:
+        return 0
+
+    # Only the earliest forward target is a genuine directional call; later
+    # points are MC scenario paths.  Restrict prob_up to day-1 so
+    # accuracy_window calibration (ECE, Brier) is not inflated.
+    earliest_target = min(p.target_date for p in points_to_log)
 
     rows = []
-    for p in bundle.points:
+    for p in points_to_log:
         is_day1 = (p.target_date == earliest_target)
         rows.append(
             (
@@ -299,26 +310,56 @@ def accuracy_window(
     db_path: Path | None = None,
     now: date | None = None,
 ) -> AccuracyWindow:
-    """Rolling accuracy over the last `days` (by target_date). Resolved rows only."""
+    """Rolling accuracy over the last `days` (by target_date). Resolved rows only.
+
+    Bug 4 fix: dedupe by (ticker, target_date) and keep the FIRST prediction
+    (MIN made_at). The schema previously let several predictions for the same
+    target_date be counted as independent samples — they aren't, they share an
+    outcome. Worse, the earlier `recent_rows` view kept MAX(made_at), which is
+    the prediction made closest to target — systematically the easier call.
+    Keeping MIN(made_at) here gives an honest accuracy of the model's first
+    look at each target.
+
+    Day-1 restriction: the dedup subquery filters to `prob_up IS NOT NULL` so
+    the join always picks a genuine day-1 directional call. Without that
+    filter, MIN(made_at) systematically picks the earliest *bundle* covering a
+    target — typically a multi-day-ahead forecast where that target appears as
+    day-N (prob_up=NULL). The downstream `prob_up IS NOT NULL` hit filter then
+    rejects every selected row and `directional_accuracy` collapses to None.
+    """
     now = now or date.today()
     cutoff = (now - timedelta(days=days)).isoformat()
 
-    where = "target_date >= ?"
+    where = "target_date >= ? AND prob_up IS NOT NULL"
     params: list = [cutoff]
     if ticker:
         where += " AND ticker = ?"
         params.append(ticker)
 
     with _connect(db_path) as conn:
+        # Total = unique (ticker, target_date) pairs that had a day-1 call.
         total = conn.execute(
-            f"SELECT COUNT(*) AS n FROM predictions WHERE {where}",
+            f"SELECT COUNT(*) AS n FROM ("
+            f"  SELECT 1 FROM predictions WHERE {where} "
+            f"  GROUP BY ticker, target_date"
+            f")",
             params,
         ).fetchone()["n"]
         rows = conn.execute(
             f"""
-            SELECT pred_dir, pred_price, anchor_price, actual_price, prob_up, hit
-              FROM predictions
-             WHERE {where} AND actual_price IS NOT NULL
+            SELECT p.pred_dir, p.pred_price, p.anchor_price,
+                   p.actual_price, p.prob_up, p.hit
+              FROM predictions p
+              INNER JOIN (
+                  SELECT ticker, target_date, MIN(made_at) AS first_made_at
+                    FROM predictions
+                   WHERE {where}
+                GROUP BY ticker, target_date
+              ) first_call
+                ON p.ticker      = first_call.ticker
+               AND p.target_date = first_call.target_date
+               AND p.made_at     = first_call.first_made_at
+             WHERE p.actual_price IS NOT NULL
             """,
             params,
         ).fetchall()
@@ -380,9 +421,12 @@ def recent_rows(
 ) -> list[LedgerRow]:
     """Return the most recent ledger rows, one per (ticker, target_date).
 
-    Multiple prediction runs on the same day produce duplicate (ticker, target_date)
-    rows with different made_at timestamps. We keep only the latest made_at per
-    pair so the Accuracy table doesn't show the same target date 4 times.
+    Bug 4 fix: keep the FIRST prediction (MIN made_at) for each
+    (ticker, target_date) pair, not the latest. Multiple runs on the same
+    target inflate apparent accuracy when we cherry-pick the call made
+    closest to target — the model has less time to drift, so MAX(made_at)
+    systematically over-states the win rate. The first call is the honest
+    test, so this view (and `accuracy_window`) both pin to MIN.
     """
     where = ""
     params: list = []
@@ -395,14 +439,14 @@ def recent_rows(
             SELECT p.*
             FROM predictions p
             INNER JOIN (
-                SELECT ticker, target_date, MAX(made_at) AS latest_made_at
+                SELECT ticker, target_date, MIN(made_at) AS first_made_at
                 FROM predictions
                 {where}
                 GROUP BY ticker, target_date
-            ) latest
-            ON p.ticker = latest.ticker
-            AND p.target_date = latest.target_date
-            AND p.made_at = latest.latest_made_at
+            ) first_call
+            ON p.ticker = first_call.ticker
+            AND p.target_date = first_call.target_date
+            AND p.made_at = first_call.first_made_at
             ORDER BY p.made_at DESC, p.id DESC
             LIMIT ?
             """,
@@ -455,6 +499,29 @@ def _parse_date(s: str) -> date:
 
 def _parse_datetime(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def migrate_delete_stale_predictions(db_path: Path | None = None) -> int:
+    """One-time cleanup: delete ledger rows whose target_date is strictly
+    before the UTC date of made_at.
+
+    These rows were logged before `log_prediction` filtered out past-dated
+    forecast points. yfinance returns the same close for the prediction's
+    anchor day and the (already past) target day, so `actual_price ==
+    anchor_price` and the directional comparison is meaningless — every such
+    row contributes a guaranteed-zero hit (and a bogus calibration sample) to
+    the rolling accuracy metrics.
+
+    Idempotent: rows that satisfy `target_date >= DATE(made_at)` are not
+    touched. Returns the number of rows deleted.
+    """
+    with _connect(db_path) as conn:
+        result = conn.execute(
+            "DELETE FROM predictions WHERE target_date < DATE(made_at)"
+        )
+        deleted = result.rowcount
+        conn.commit()
+    return deleted
 
 
 def migrate_nullify_non_day1_prob_up(db_path: Path | None = None) -> int:

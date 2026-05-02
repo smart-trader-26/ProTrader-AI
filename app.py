@@ -496,7 +496,7 @@ if show_analysis and df_stock is not None and not df_stock.empty:
             with cr1:
                 dir_prob = metrics.get('last_directional_prob', None)
                 tuning   = metrics.get('threshold_tuning', {}) or {}
-                tau_pct  = float(tuning.get('optimal_threshold', 0.5)) * 100
+                tau_pct  = float(tuning.get('tau_star', 0.5)) * 100
                 tau_auc  = float(tuning.get('auc', 0.5))
                 if dir_prob is not None:
                     # Use the per-ticker learned threshold (A1.5) instead of fixed 55/45.

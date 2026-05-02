@@ -17,9 +17,12 @@ rolling 30-day accuracy badge to the response (`bundle.accuracy_30d`).
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, date, datetime, timedelta
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 from models.hybrid_model import create_hybrid_model, hybrid_predict_prices
 from schemas.prediction import (
@@ -149,9 +152,9 @@ def predict(
     if log_to_ledger:
         try:
             ledger_service.log_prediction(bundle, anchor_price=last_close)
-        except Exception:
-            # Never let a ledger failure break a prediction — they're independent.
-            pass
+        except Exception as _exc:  # Bug O: log instead of silently swallow
+            logger.warning("Ledger write failed for %s: %s: %s",
+                           ticker, type(_exc).__name__, _exc)
 
     # A7.5 — attach the rolling 30-day accuracy for this ticker, if resolved
     # rows exist. For a cold ticker this is `n_resolved=0` and the UI hides it.

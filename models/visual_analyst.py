@@ -1,8 +1,6 @@
 """
-Advanced Pattern Detection System with Multi-Timeframe Scanning.
-Uses ZigZag indicator + scipy peak detection with adaptive thresholds.
-Includes volume-weighted S/R, multi-timeframe confluence, and Hurst-based
-pattern reliability scoring. Fallback mechanisms ensure output always exists.
+Chart pattern detection: ZigZag swing detection, volume-weighted S/R,
+multi-timeframe confluence, and Hurst-based confidence adjustment.
 """
 
 import numpy as np
@@ -48,23 +46,11 @@ def _hurst_exponent_pa(prices: np.ndarray) -> float:
 
 
 class PatternAnalyst:
-    """
-    Advanced pattern detection with multi-timeframe scanning and adaptive thresholds.
-    
-    Key Features:
-    - Multi-timeframe scanning (order 3, 5, 7) to catch patterns at all scales
-    - Adaptive thresholds that relax if no patterns found
-    - Channel, flag, and rounding bottom detection
-    - Micro-pattern detection for consolidating markets
-    - Fallback mechanism: always tries to find something useful
-    """
     
     def __init__(self, order: int = 3):
         self.order = order
         self.min_pattern_height = 0.01  # 1% minimum pattern height
         self.max_patterns_per_type = 3
-        
-        # Multi-timeframe orders: small catches minor swings, large catches major ones
         self.scan_orders = [3, 5, 7]
         
         # Initialize Roboflow Client
@@ -73,7 +59,6 @@ class PatternAnalyst:
             self.vision_client = RoboflowClient(api_key=ROBOFLOW_API_KEY)
             
     def _generate_chart_image(self, df: pd.DataFrame, window: int = 60) -> Optional[bytes]:
-        """Generate a chart image for vision analysis."""
         try:
             df_slice = df.tail(window).copy()
             if df_slice.empty:
@@ -97,7 +82,6 @@ class PatternAnalyst:
             return None
 
     def analyze_patterns_with_vision(self, df: pd.DataFrame) -> List[Dict]:
-        """Use Roboflow Vision API to detect patterns."""
         if not self.vision_client:
             return []
             
@@ -168,22 +152,8 @@ class PatternAnalyst:
     def _zigzag_indicator(self, close: pd.Series, high: pd.Series = None,
                           low: pd.Series = None, threshold: float = 0.03) -> Tuple[np.ndarray, np.ndarray]:
         """
-        ZigZag indicator: identifies swing highs/lows where price reverses >= threshold%.
-
-        This is threshold-based (3% default for daily data), making it trader-aligned.
-        More robust than window-based argrelextrema:
-        - Threshold-based: catches large swings regardless of local noise
-        - O(n) time complexity
-        - Naturally adaptive to volatility
-
-        Args:
-            close: Close price series
-            high:  High price series (optional; uses close if None)
-            low:   Low price series (optional; uses close if None)
-            threshold: Minimum reversal % to mark a swing (0.03 = 3%)
-
-        Returns:
-            (peaks_idx, troughs_idx) as numpy arrays of integer positions
+        ZigZag indicator: marks swing highs/lows where price reverses >= threshold%.
+        Threshold-based so it catches large swings regardless of local noise; O(n).
         """
         if high is None:
             high = close
@@ -224,39 +194,30 @@ class PatternAnalyst:
 
     def find_peaks_and_troughs(self, prices: pd.Series, order: int = None,
                                 use_zigzag: bool = True) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Find peaks and troughs using ZigZag indicator (primary) with scipy fallback.
-
-        ZigZag is used first because it is threshold-based and more trader-aligned.
-        Falls back to scipy find_peaks if ZigZag returns too few points.
-        """
+        """ZigZag primary; falls back to scipy find_peaks when ZigZag returns too few points."""
         prices_arr  = prices.values
         use_order   = order if order is not None else self.order
         price_range = prices_arr.max() - prices_arr.min()
         if price_range == 0:
             return np.array([]), np.array([])
 
-        # Primary: ZigZag indicator
         if use_zigzag and len(prices) >= 10:
-            # Threshold scales with order: order=3→2%, order=5→2.5%, order=7→3%
+            # threshold scales with order: order=3→2%, order=5→2.5%, order=7→3%
             threshold = 0.015 + (use_order - 3) * 0.005
             threshold = max(threshold, 0.015)
             peaks, troughs = self._zigzag_indicator(prices, threshold=threshold)
             if len(peaks) >= 2 or len(troughs) >= 2:
                 return peaks, troughs
 
-        # Fallback: scipy find_peaks (for very low-volatility or short series)
+        # scipy fallback for very low-volatility or short series
         min_prominence = price_range * 0.005
         peaks,   _ = find_peaks( prices_arr, prominence=min_prominence, distance=use_order)
         troughs, _ = find_peaks(-prices_arr, prominence=min_prominence, distance=use_order)
         return peaks, troughs
     
-    def _validate_pattern_quality(self, df: pd.DataFrame, start_idx: int, end_idx: int, 
+    def _validate_pattern_quality(self, df: pd.DataFrame, start_idx: int, end_idx: int,
                                    pattern_height: float, current_price: float,
                                    relaxed: bool = False) -> bool:
-        """
-        Validate pattern quality. If relaxed=True, uses much looser criteria.
-        """
         min_height = self.min_pattern_height if not relaxed else 0.005  # 0.5% when relaxed
         
         if pattern_height < current_price * min_height:
@@ -277,15 +238,8 @@ class PatternAnalyst:
     def _check_volume_confirmation(self, df: pd.DataFrame, breakout_idx: int,
                                     pattern_type: str = '') -> bool:
         """
-        Volume confirmation at breakout/reversal.
-
-        For breakout patterns (Triangle, Channel, Wedge):
-            Requires breakout bar volume > 1.5× 20-day average.
-
-        For reversal patterns (Double Top/Bottom, H&S):
-            Checks if reversal bar volume > 1.2× 20-day average.
-
-        Returns True if volume confirms, False if not (or if Volume data missing).
+        Check volume at breakout/reversal: >1.5× 20-day avg for breakout patterns,
+        >1.2× for reversals. Returns True when Volume column is missing (can't reject).
         """
         if 'Volume' not in df.columns:
             return True  # No volume data → assume confirmed
@@ -307,10 +261,6 @@ class PatternAnalyst:
             return True
     
     def detect_double_top(self, df: pd.DataFrame, order: int = None, relaxed: bool = False) -> List[Dict]:
-        """
-        Detect Double Top pattern with adaptive tolerance.
-        Scans with given order for multi-timeframe capability.
-        """
         patterns = []
         window = 120 if relaxed else 90
         df_analysis = df.tail(window)
@@ -371,12 +321,10 @@ class PatternAnalyst:
                 'keypoints': kp,
             })
         
-        # Return best patterns
         patterns.sort(key=lambda x: x['Confidence'], reverse=True)
         return patterns[:self.max_patterns_per_type]
     
     def detect_double_bottom(self, df: pd.DataFrame, order: int = None, relaxed: bool = False) -> List[Dict]:
-        """Detect Double Bottom pattern with adaptive tolerance."""
         patterns = []
         window = 120 if relaxed else 90
         df_analysis = df.tail(window)
@@ -440,7 +388,6 @@ class PatternAnalyst:
         return patterns[:self.max_patterns_per_type]
     
     def detect_head_and_shoulders(self, df: pd.DataFrame, order: int = None, relaxed: bool = False) -> List[Dict]:
-        """Detect Head & Shoulders with adaptive validation."""
         patterns = []
         window = 120 if relaxed else 90
         df_analysis = df.tail(window)
@@ -516,7 +463,6 @@ class PatternAnalyst:
         return patterns[:self.max_patterns_per_type]
     
     def detect_inverse_head_and_shoulders(self, df: pd.DataFrame, order: int = None, relaxed: bool = False) -> List[Dict]:
-        """Detect Inverse H&S with adaptive validation."""
         patterns = []
         window = 120 if relaxed else 90
         df_analysis = df.tail(window)
@@ -592,7 +538,6 @@ class PatternAnalyst:
         return patterns[:self.max_patterns_per_type]
     
     def detect_trend(self, df: pd.DataFrame, window: int = 20) -> Dict:
-        """Detect current trend using multiple confirmation methods."""
         prices = df['Close'].tail(window)
         
         x = np.arange(len(prices))
@@ -648,13 +593,9 @@ class PatternAnalyst:
     
     def detect_support_resistance(self, df: pd.DataFrame, lookback: int = 90) -> Dict:
         """
-        Detect significant S/R levels using volume-weighted clustering.
-
-        Improvements over price-only clustering:
-        - S/R strength = touch_count × avg_volume_at_touches / 20D_avg_volume
-        - High-volume touches are far stronger than low-volume ones
-        - Round number detection (₹50, ₹100, ₹500, ₹1000 increments)
-          flagged as psychological S/R — common in Indian retail markets
+        S/R levels via volume-weighted clustering. Strength = touch_count × vol_ratio.
+        Also flags round-number levels (₹50/100/500/1000 increments) as psychological S/R,
+        common in Indian retail markets.
         """
         df_slice      = df.tail(lookback).copy()
         prices        = df_slice['Close']
@@ -665,16 +606,14 @@ class PatternAnalyst:
         if avg_vol == 0 or np.isnan(avg_vol):
             avg_vol = 1.0
 
-        # Collect candidate S/R prices from ZigZag swing points
         all_peak_prices   = []
         all_trough_prices = []
 
-        # Use ZigZag swings (more meaningful than multi-order scipy)
         zz_peaks, zz_troughs = self._zigzag_indicator(prices, threshold=0.02)
         all_peak_prices.extend([float(prices.iloc[i]) for i in zz_peaks])
         all_trough_prices.extend([float(prices.iloc[i]) for i in zz_troughs])
 
-        # Supplement with scipy for low-volatility stocks
+        # supplement with scipy for low-volatility stocks
         for ord_val in [3, 5]:
             pk, tr = find_peaks(prices.values, prominence=np.ptp(prices.values) * 0.005, distance=ord_val)
             tk, _ = find_peaks(-prices.values, prominence=np.ptp(prices.values) * 0.005, distance=ord_val)
@@ -682,10 +621,6 @@ class PatternAnalyst:
             all_trough_prices.extend([float(prices.iloc[i]) for i in tk])
 
         def volume_weighted_cluster(candidate_prices: list, tol: float = 0.005) -> list:
-            """
-            Cluster price levels within tol% of each other.
-            Strength = touch_count × avg_vol_at_touches / 20D_avg_vol
-            """
             if not candidate_prices:
                 return []
 
@@ -711,12 +646,10 @@ class PatternAnalyst:
                 if n_touches >= 1:
                     results.append({'price': price_level, 'strength': strength, 'touches': n_touches})
 
-            # Merge overlapping clusters (within tol)
             merged = []
             results.sort(key=lambda x: x['price'])
             for item in results:
                 if merged and abs(item['price'] - merged[-1]['price']) / merged[-1]['price'] < tol:
-                    # Keep stronger one
                     if item['strength'] > merged[-1]['strength']:
                         merged[-1] = item
                 else:
@@ -730,8 +663,7 @@ class PatternAnalyst:
         resistance_levels = [c['price'] for c in resistance_clusters]
         support_levels    = [c['price'] for c in support_clusters]
 
-        # --- Round Number Detection ---
-        # ₹50 increments near current price (within ±15%)
+        # ₹50/100/500/1000 round numbers near current price (psychological S/R)
         round_number_levels = []
         for increment in [50, 100, 500, 1000]:
             if current_price < 50 and increment > 50:
@@ -742,12 +674,11 @@ class PatternAnalyst:
                 if rn > 0 and abs(rn - current_price) / current_price < 0.15:
                     round_number_levels.append({
                         'price': float(rn),
-                        'strength': 0.5,  # Moderate strength
+                        'strength': 0.5,
                         'touches': 0,
                         'is_round_number': True
                     })
 
-        # Merge round numbers into S/R
         for rn in round_number_levels:
             if rn['price'] > current_price * 1.002:
                 resistance_clusters.append(rn)
@@ -771,10 +702,6 @@ class PatternAnalyst:
         }
     
     def detect_triangle_pattern(self, df: pd.DataFrame, order: int = None) -> List[Dict]:
-        """
-        Detect Triangle Patterns with relaxed R² requirements.
-        Tries multiple window sizes for better detection.
-        """
         patterns = []
         
         for window in [30, 40, 50]:
@@ -790,7 +717,6 @@ class PatternAnalyst:
             if len(peak_idx) < 2 or len(trough_idx) < 2:
                 continue
             
-            # Use last 2-4 peaks/troughs
             n_points = min(4, len(peak_idx), len(trough_idx))
             recent_peaks = highs.iloc[peak_idx[-n_points:]]
             recent_troughs = lows.iloc[trough_idx[-n_points:]]
@@ -801,20 +727,16 @@ class PatternAnalyst:
             x_troughs = np.arange(len(recent_troughs))
             slope_sup, _, r_sup, _, _ = linregress(x_troughs, recent_troughs.values)
             
-            # Relaxed R² requirement (0.3 instead of 0.6)
-            min_r2 = 0.3
+            min_r2 = 0.3  # 0.6 was too strict; 0.3 catches more real patterns
             if r_res**2 < min_r2 or r_sup**2 < min_r2:
                 continue
             
-            # Normalize slopes by price for comparability
             price_scale = current_price / 100
             norm_slope_res = slope_res / price_scale
             norm_slope_sup = slope_sup / price_scale
             
-            # Ascending Triangle: Flat resistance, rising support
-            if abs(norm_slope_res) < 0.3 and norm_slope_sup > 0.1:
+            if abs(norm_slope_res) < 0.3 and norm_slope_sup > 0.1:  # Ascending Triangle
                 confidence = (r_res**2 + r_sup**2) / 2 * 100
-                # Bonus for convergence tightness
                 range_pct = (recent_peaks.max() - recent_troughs.min()) / current_price * 100
                 confidence = min(confidence + range_pct, 95)
                 patterns.append({
@@ -824,9 +746,8 @@ class PatternAnalyst:
                     'Target': round(current_price * 1.05, 2),
                     'Status': 'Forming'
                 })
-                
-            # Descending Triangle: Falling resistance, flat support
-            elif norm_slope_res < -0.1 and abs(norm_slope_sup) < 0.3:
+
+            elif norm_slope_res < -0.1 and abs(norm_slope_sup) < 0.3:  # Descending Triangle
                 confidence = (r_res**2 + r_sup**2) / 2 * 100
                 range_pct = (recent_peaks.max() - recent_troughs.min()) / current_price * 100
                 confidence = min(confidence + range_pct, 95)
@@ -837,9 +758,8 @@ class PatternAnalyst:
                     'Target': round(current_price * 0.95, 2),
                     'Status': 'Forming'
                 })
-                
-            # Symmetrical Triangle: Converging slopes
-            elif norm_slope_res < -0.05 and norm_slope_sup > 0.05:
+
+            elif norm_slope_res < -0.05 and norm_slope_sup > 0.05:  # Symmetrical Triangle
                 confidence = (r_res**2 + r_sup**2) / 2 * 100
                 range_pct = (recent_peaks.max() - recent_troughs.min()) / current_price * 100
                 confidence = min(confidence + range_pct, 95)
@@ -852,17 +772,15 @@ class PatternAnalyst:
                     'Status': 'Forming'
                 })
         
-        # Deduplicate (keep best per type)
         seen_types = {}
         for p in sorted(patterns, key=lambda x: x['Confidence'], reverse=True):
             base_type = p['Pattern'].split(' (')[0]
             if base_type not in seen_types:
                 seen_types[base_type] = p
-        
+
         return list(seen_types.values())
 
     def detect_wedge_pattern(self, df: pd.DataFrame, order: int = None) -> List[Dict]:
-        """Detect Rising/Falling Wedges with multiple windows."""
         patterns = []
         
         for window in [30, 40, 50]:
@@ -885,8 +803,7 @@ class PatternAnalyst:
             if r_res**2 < 0.3 or r_sup**2 < 0.3:
                 continue
             
-            # Rising Wedge: Both slopes positive, support steeper (converging)
-            if slope_res > 0 and slope_sup > 0 and slope_sup > slope_res * 0.5:
+            if slope_res > 0 and slope_sup > 0 and slope_sup > slope_res * 0.5:  # Rising Wedge
                 confidence = (r_res**2 + r_sup**2) / 2 * 100
                 patterns.append({
                     'Pattern': f'Rising Wedge ({window}D)',
@@ -895,9 +812,7 @@ class PatternAnalyst:
                     'Target': round(lows.iloc[trough_idx[-n_points]], 2),
                     'Status': 'Forming'
                 })
-                    
-            # Falling Wedge: Both slopes negative, resistance steeper (converging)
-            elif slope_res < 0 and slope_sup < 0 and slope_res < slope_sup * 0.5:
+            elif slope_res < 0 and slope_sup < 0 and slope_res < slope_sup * 0.5:  # Falling Wedge
                 confidence = (r_res**2 + r_sup**2) / 2 * 100
                 patterns.append({
                     'Pattern': f'Falling Wedge ({window}D)',
@@ -907,19 +822,14 @@ class PatternAnalyst:
                     'Status': 'Forming'
                 })
         
-        # Deduplicate
         seen_types = {}
         for p in sorted(patterns, key=lambda x: x['Confidence'], reverse=True):
             base_type = p['Pattern'].split(' (')[0]
             if base_type not in seen_types:
                 seen_types[base_type] = p
         return list(seen_types.values())
-    
+
     def detect_channel_pattern(self, df: pd.DataFrame) -> List[Dict]:
-        """
-        Detect Price Channels (Ascending, Descending, Horizontal).
-        NEW pattern type for consolidating/trending markets.
-        """
         patterns = []
         
         for window in [30, 50]:
@@ -929,13 +839,11 @@ class PatternAnalyst:
             lows = df_analysis['Low']
             current_price = prices.iloc[-1]
             
-            # Fit regression lines to highs and lows
             x = np.arange(len(df_analysis))
             
             slope_h, intercept_h, r_h, _, _ = linregress(x, highs.values)
             slope_l, intercept_l, r_l, _, _ = linregress(x, lows.values)
             
-            # Both lines must be reasonably parallel (slopes within 50% of each other)
             if abs(slope_h) > 0 and abs(slope_l) > 0:
                 slope_ratio = min(abs(slope_h), abs(slope_l)) / max(abs(slope_h), abs(slope_l))
             else:
@@ -944,11 +852,9 @@ class PatternAnalyst:
             if slope_ratio < 0.3:
                 continue
             
-            # Both lines need decent fit
             if r_h**2 < 0.3 or r_l**2 < 0.3:
                 continue
             
-            # Calculate channel width
             channel_width = (highs.mean() - lows.mean()) / current_price * 100
             
             avg_slope = (slope_h + slope_l) / 2
@@ -965,7 +871,6 @@ class PatternAnalyst:
             else:
                 pattern_name = 'Horizontal Channel'
                 pattern_type = 'Range-Bound'
-                # Target is the channel boundaries
                 upper = intercept_h + slope_h * len(x)
                 lower = intercept_l + slope_l * len(x)
                 if current_price < (upper + lower) / 2:
@@ -976,7 +881,6 @@ class PatternAnalyst:
             confidence = (r_h**2 + r_l**2) / 2 * 80 + slope_ratio * 20
             confidence = min(confidence, 95)
             
-            # Position within channel
             upper_now = intercept_h + slope_h * (len(x) - 1)
             lower_now = intercept_l + slope_l * (len(x) - 1)
             position_pct = (current_price - lower_now) / (upper_now - lower_now) * 100 if upper_now != lower_now else 50
@@ -990,19 +894,15 @@ class PatternAnalyst:
                 'Channel_Width': f'{round(channel_width, 1)}%'
             })
         
-        # Deduplicate
         seen_types = {}
         for p in sorted(patterns, key=lambda x: x['Confidence'], reverse=True):
             base_type = p['Pattern'].split(' (')[0]
             if base_type not in seen_types:
                 seen_types[base_type] = p
         return list(seen_types.values())
-    
+
     def detect_consolidation(self, df: pd.DataFrame) -> List[Dict]:
-        """
-        Detect Consolidation / Range-Bound patterns.
-        Useful when no classical patterns exist — tells user the market is coiling.
-        """
+        """Price coiling in a tight range — useful when no classical pattern fires."""
         patterns = []
         df_analysis = df.tail(20)
         prices = df_analysis['Close']
@@ -1012,15 +912,12 @@ class PatternAnalyst:
         price_range = (prices.max() - prices.min()) / current_price * 100
         volatility = prices.pct_change().std() * 100
         
-        if price_range < 5:  # Less than 5% range in 20 days
-            # Bollinger Band squeeze indicator
+        if price_range < 5:
             ma20 = prices.mean()
             std20 = prices.std()
             bb_width = (2 * std20 / ma20) * 100
             
-            confidence = max(40, 90 - price_range * 10)  # Tighter range = higher confidence
-            
-            # Determine likely breakout direction from trend
+            confidence = max(40, 90 - price_range * 10)
             x = np.arange(len(prices))
             slope, _, _, _, _ = linregress(x, prices.values)
             
@@ -1046,10 +943,6 @@ class PatternAnalyst:
         return patterns
     
     def detect_higher_high_lower_low(self, df: pd.DataFrame) -> List[Dict]:
-        """
-        Detect Higher Highs / Higher Lows (uptrend) or Lower Highs / Lower Lows (downtrend).
-        Simple but very reliable structural pattern.
-        """
         patterns = []
         df_analysis = df.tail(40)
         prices = df_analysis['Close']
@@ -1060,15 +953,11 @@ class PatternAnalyst:
         if len(peak_idx) < 3 or len(trough_idx) < 3:
             return patterns
         
-        # Check last 3 peaks and troughs
         recent_peaks = [prices.iloc[idx] for idx in peak_idx[-3:]]
         recent_troughs = [prices.iloc[idx] for idx in trough_idx[-3:]]
-        
-        # Higher Highs and Higher Lows = Uptrend
+
         hh = all(recent_peaks[i] > recent_peaks[i-1] for i in range(1, len(recent_peaks)))
         hl = all(recent_troughs[i] > recent_troughs[i-1] for i in range(1, len(recent_troughs)))
-        
-        # Lower Highs and Lower Lows = Downtrend
         lh = all(recent_peaks[i] < recent_peaks[i-1] for i in range(1, len(recent_peaks)))
         ll = all(recent_troughs[i] < recent_troughs[i-1] for i in range(1, len(recent_troughs)))
         
@@ -1116,7 +1005,6 @@ class PatternAnalyst:
         return patterns
 
     def _run_detection_pass(self, df: pd.DataFrame, order: int, relaxed: bool = False) -> List[Dict]:
-        """Run all pattern detectors with given parameters."""
         all_patterns = []
         all_patterns.extend(self.detect_double_top(df, order=order, relaxed=relaxed))
         all_patterns.extend(self.detect_double_bottom(df, order=order, relaxed=relaxed))
@@ -1125,10 +1013,7 @@ class PatternAnalyst:
         return all_patterns
 
     def _get_weekly_ohlcv(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Resample daily OHLCV to weekly. No API call — computed from existing data.
-        Used for multi-timeframe confluence detection.
-        """
+        """Resample daily OHLCV to weekly for multi-timeframe confluence."""
         try:
             if not isinstance(df.index, pd.DatetimeIndex):
                 return pd.DataFrame()
@@ -1145,23 +1030,11 @@ class PatternAnalyst:
 
     def analyze_all_patterns(self, df: pd.DataFrame, _weekly_call: bool = False) -> Dict:
         """
-        Run comprehensive pattern analysis with:
-        1. ZigZag-based swing detection (primary)
-        2. Multi-timeframe confluence (daily + weekly)
-        3. Hurst exponent confidence adjustment
-        4. Volume confirmation flagging
-        5. Auto-fallback to relaxed parameters if needed
-
-        Args:
-            df: Daily OHLCV DataFrame
-            _weekly_call: Internal flag to prevent infinite recursion on weekly resampling
-
-        Returns:
-            Dict with patterns, trend, S/R, bias, Hurst, market_character
+        Full pattern scan: multi-timeframe swing detection, Hurst confidence adjustment,
+        volume confirmation, and weekly confluence. `_weekly_call` prevents recursion.
         """
         all_patterns = []
 
-        # === Hurst Exponent (uses last 120 closes, < 0.5s) ===
         H = _hurst_exponent_pa(df['Close'].values[-120:] if len(df) >= 120 else df['Close'].values)
         if H > 0.55:
             market_character = 'Trending'
@@ -1170,30 +1043,25 @@ class PatternAnalyst:
         else:
             market_character = 'Random Walk'
 
-        # === PASS 1: Multi-timeframe classical pattern scan ===
         for scan_order in self.scan_orders:
             all_patterns.extend(self._run_detection_pass(df, order=scan_order, relaxed=False))
 
-        # === PASS 2: Geometric patterns (triangles, wedges, channels) ===
         all_patterns.extend(self.detect_triangle_pattern(df))
         all_patterns.extend(self.detect_wedge_pattern(df))
         all_patterns.extend(self.detect_channel_pattern(df))
 
-        # === PASS 3: Structural patterns (always run) ===
         all_patterns.extend(self.detect_higher_high_lower_low(df))
         all_patterns.extend(self.detect_consolidation(df))
 
-        # === PASS 4: Fallback — if fewer than 2 high-confidence patterns ===
+        # Relax parameters when fewer than 2 high-confidence patterns found
         high_conf = [p for p in all_patterns if p and p.get('Confidence', 0) >= 50]
         if len(high_conf) < 2:
             for scan_order in [2, 3, 5]:
                 all_patterns.extend(self._run_detection_pass(df, order=scan_order, relaxed=True))
 
-        # === PASS 5: Vision patterns (Roboflow) ===
         vision_patterns = self.analyze_patterns_with_vision(df)
         all_patterns.extend(vision_patterns)
 
-        # === Filter and deduplicate ===
         valid_patterns = [p for p in all_patterns if p and p.get('Confidence', 0) >= 40]
 
         seen = {}
@@ -1204,7 +1072,6 @@ class PatternAnalyst:
 
         daily_patterns = list(seen.values())
 
-        # === Multi-Timeframe Confluence (weekly resampling, ~2-3s) ===
         weekly_pattern_names = set()
         if not _weekly_call:
             weekly_df = self._get_weekly_ohlcv(df)
@@ -1219,18 +1086,15 @@ class PatternAnalyst:
                 except Exception:
                     weekly_pattern_names = set()
 
-        # === Apply Hurst Adjustment + Volume Confirmation + Confluence ===
         for pattern in daily_patterns:
             ptype = pattern.get('Type', '')
             conf  = pattern.get('Confidence', 50)
 
-            # Volume confirmation (uses last bar of df as proxy breakout idx)
             vol_confirmed = self._check_volume_confirmation(df, len(df) - 1, ptype)
             pattern['volume_confirmed'] = vol_confirmed
             if vol_confirmed:
                 conf = min(conf + 8, 99)
 
-            # Multi-timeframe confluence boost
             base_name = pattern['Pattern'].split(' (')[0]
             if base_name in weekly_pattern_names:
                 conf = min(conf * 1.4, 99)
@@ -1238,30 +1102,26 @@ class PatternAnalyst:
             else:
                 pattern['timeframe_confluence'] = False
 
-            # Hurst confidence adjustment:
-            # Reversal patterns (Double Top/Bottom, H&S) more reliable when H < 0.5 (mean-reverting)
-            # Continuation/Trend patterns more reliable when H > 0.5 (trending)
+            # Reversal patterns score higher when H<0.5 (mean-reverting); trend patterns
+            # score higher when H>0.5. Opposing regime discounts by 20%.
             if 'Reversal' in ptype:
                 if H < 0.45:
-                    conf = min(conf * 1.20, 99)  # Mean-reverting → reversals more likely
+                    conf = min(conf * 1.20, 99)
                 elif H > 0.60:
-                    conf = conf * 0.80            # Strongly trending → reversals less likely
+                    conf = conf * 0.80
             elif any(t in ptype for t in ['Continuation', 'Trend', 'Structure']):
                 if H > 0.55:
-                    conf = min(conf * 1.20, 99)   # Trending → continuation more likely
+                    conf = min(conf * 1.20, 99)
                 elif H < 0.40:
-                    conf = conf * 0.80            # Mean-reverting → continuation less likely
+                    conf = conf * 0.80
 
             pattern['Confidence'] = round(float(conf), 1)
 
-        # Re-sort after adjustments
         daily_patterns.sort(key=lambda x: x.get('Confidence', 0), reverse=True)
 
-        # === Trend and S/R ===
         trend     = self.detect_trend(df)
         sr_levels = self.detect_support_resistance(df)
 
-        # === Bias ===
         bullish_count = sum(1 for p in daily_patterns if 'Bullish' in p.get('Type', ''))
         bearish_count = sum(1 for p in daily_patterns if 'Bearish' in p.get('Type', ''))
 

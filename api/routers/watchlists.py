@@ -109,8 +109,7 @@ def create_watchlist(
     _require_db()
     client = get_user_client(user.access_token)
 
-    # RLS policy on `watchlists.user_id = auth.uid()` forces us to include
-    # user_id in the insert — PostgREST rejects rows that don't match.
+    # user_id must be in the insert — RLS policy rejects rows without it.
     try:
         resp = (
             client.table("watchlists")
@@ -142,9 +141,7 @@ def delete_watchlist(
     _require_db()
     client = get_user_client(user.access_token)
 
-    # Tickers go via the ON DELETE CASCADE on watchlist_id — Postgres
-    # handles the child rows once the parent is gone.
-    resp = client.table("watchlists").delete().eq("id", wl_id).execute()
+    resp = client.table("watchlists").delete().eq("id", wl_id).execute()  # ON DELETE CASCADE removes tickers
     if not resp.data:
         raise HTTPException(status_code=404, detail="watchlist not found")
 
@@ -173,7 +170,6 @@ def add_ticker(
         raise HTTPException(status_code=404, detail="watchlist not found")
 
     ticker = body.ticker.strip().upper()
-    # Idempotent upsert on the composite PK (watchlist_id, ticker).
     client.table("watchlist_tickers").upsert(
         {"watchlist_id": wl_id, "ticker": ticker},
         on_conflict="watchlist_id,ticker",
@@ -204,9 +200,8 @@ def remove_ticker(
     _require_db()
     client = get_user_client(user.access_token)
 
-    # RLS on watchlist_tickers joins through watchlist_id → watchlists.user_id;
-    # a user can't delete rows belonging to someone else even without this
-    # check, but we 404 explicitly for a cleaner error.
+    # RLS on watchlist_tickers chains through watchlist_id → user_id, so cross-user
+    # deletes are impossible. The 404 here is just for a cleaner error message.
     resp = (
         client.table("watchlist_tickers")
         .delete()

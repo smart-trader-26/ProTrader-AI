@@ -171,3 +171,6 @@ outputs/
 model_weights/
 weights/
 # Note: models/ is now a source code directory, not ignored
+
+# slop-detector: governance config (contains codebase complexity surface — keep private)
+.slopconfig.yaml
