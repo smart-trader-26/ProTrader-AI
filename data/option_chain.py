@@ -199,7 +199,10 @@ def extract_option_features(snap: OptionChainSnapshot | None) -> dict[str, float
         [np.sum(np.maximum(strikes - spot_k, 0) * df["PE_OI"].to_numpy()) for spot_k in strikes]
     )
     total_pain = call_pain + put_pain
-    max_pain_strike = float(strikes[int(np.argmin(total_pain))])
+    if total_pain.sum() > 0:
+        max_pain_strike = float(strikes[int(np.argmin(total_pain))])
+    else:
+        max_pain_strike = float(strikes[int(np.argmin(np.abs(strikes - spot)))])
     max_pain_distance = float((spot - max_pain_strike) / spot)
 
     # ATM row (strike nearest spot)

@@ -193,8 +193,166 @@ def generate_ai_analysis(stock_symbol: str, current_price: float,
         except Exception as e:
              st.warning(f"Gemini error: {e}")
              
-    return generate_fallback_analysis(stock_symbol, current_price, predicted_prices, 
+    return generate_fallback_analysis(stock_symbol, current_price, predicted_prices,
                                       metrics, sentiment_summary, technical_indicators)
+
+
+def generate_claude_expert_analysis_prompt(
+    stock_symbol: str,
+    current_price: float,
+    predicted_prices,
+    metrics: dict,
+    fundamentals: dict,
+    sentiment_summary: dict,
+    technical_indicators: dict,
+    fii_dii_data=None,
+    vix_data=None,
+    patterns: list = None,
+) -> str:
+    """
+    Build a top-class expert analysis prompt for pasting into claude.ai.
+
+    Called when both DeepSeek and Gemini are unavailable. Returns the full
+    prompt string — the UI renders it in a copyable text area.
+    """
+    import textwrap
+
+    company = stock_symbol.replace(".NS", "").replace(".BO", "").upper()
+
+    if not predicted_prices.empty:
+        price_target = predicted_prices['Predicted Price'].iloc[-1]
+        forecast_days = len(predicted_prices)
+    else:
+        price_target = current_price
+        forecast_days = 0
+    forecast_return = ((price_target - current_price) / current_price) * 100
+
+    # Sentiment text
+    sentiment_text = "Neutral"
+    if sentiment_summary:
+        pos = sum(1 for s in sentiment_summary.values() for l, _ in s if l == "positive")
+        neg = sum(1 for s in sentiment_summary.values() for l, _ in s if l == "negative")
+        total = pos + neg
+        if total > 0:
+            ratio = pos / total
+            if ratio > 0.6:
+                sentiment_text = f"Bullish ({pos}/{total} positive articles)"
+            elif ratio < 0.4:
+                sentiment_text = f"Bearish ({neg}/{total} negative articles)"
+            else:
+                sentiment_text = f"Mixed ({pos} positive, {neg} negative)"
+
+    # FII/DII
+    fii_text, dii_text = "N/A", "N/A"
+    if fii_dii_data is not None and not fii_dii_data.empty:
+        last = fii_dii_data.iloc[-1]
+        fii_text = f"₹{last.get('FII_Net', 0)/1e7:+.1f} Cr (last session)"
+        dii_text = f"₹{last.get('DII_Net', 0)/1e7:+.1f} Cr (last session)"
+
+    # VIX
+    vix_str = "N/A"
+    try:
+        if vix_data is not None and not vix_data.empty:
+            vix_str = f"{float(vix_data['Close'].iloc[-1]):.2f}"
+    except Exception:
+        pass
+
+    # Patterns
+    pattern_str = "None detected."
+    if patterns:
+        pattern_str = "; ".join(
+            f"{p.get('Pattern','?')} ({p.get('Type','?')}, {p.get('Confidence','?')}% conf)"
+            for p in patterns[:4]
+        )
+
+    # Model confidence tier
+    acc = metrics.get('accuracy', 50)
+    if acc >= 65:
+        model_tier = "Research-grade (≥65% directional accuracy)"
+    elif acc >= 55:
+        model_tier = "Production-grade (55–65% directional accuracy)"
+    else:
+        model_tier = "Uncertain (<55% directional accuracy — weight technicals/fundamentals more)"
+
+    hurst = metrics.get('hurst_exponent')
+    hurst_str = f"{hurst:.3f} ({'Trending' if hurst > 0.55 else 'Mean-Reverting' if hurst < 0.45 else 'Random Walk'})" if hurst else "N/A"
+    rnn_vol = metrics.get('last_rnn_vol_pred')
+    vol_str = f"{rnn_vol:.4f} (GRU next-day vol forecast)" if rnn_vol else "N/A"
+    prob = metrics.get('last_directional_prob', 50)
+
+    prompt = textwrap.dedent(f"""
+        ROLE
+        ────
+        You are a senior portfolio manager at a tier-1 Indian equity fund (AUM > ₹50,000 Cr).
+        A hybrid ML model just completed its analysis on {company}. Your task is to deliver
+        a professional, decisive trading brief. No disclaimers. Assume I am a registered
+        professional trader.
+
+        ════════════════════════════════════════
+        MODEL OUTPUT: {company}
+        ════════════════════════════════════════
+        Current price           : ₹{current_price:,.2f}
+        {forecast_days}-day target (median)  : ₹{price_target:,.2f}  ({forecast_return:+.2f}%)
+        Bullish probability     : {prob:.1f}%
+        Walk-forward accuracy   : {acc:.1f}%  → {model_tier}
+        Hurst exponent          : {hurst_str}
+        GRU next-day volatility : {vol_str}
+        RMSE                    : {metrics.get('rmse', 0):.4f}
+
+        ════════════════════════════════════════
+        TECHNICALS
+        ════════════════════════════════════════
+        RSI (14)      : {technical_indicators.get('RSI', 'N/A'):.1f if isinstance(technical_indicators.get('RSI'), float) else technical_indicators.get('RSI', 'N/A')}
+        MACD Histogram: {technical_indicators.get('MACD_Histogram', 'N/A'):.4f if isinstance(technical_indicators.get('MACD_Histogram'), float) else 'N/A'}
+        Price vs MA20 : {technical_indicators.get('Price_vs_MA20', 0):+.4f}
+        5D Volatility : {technical_indicators.get('Volatility_5D', 0)*100:.2f}%
+        Patterns      : {pattern_str}
+
+        ════════════════════════════════════════
+        FUNDAMENTALS
+        ════════════════════════════════════════
+        Forward P/E   : {fundamentals.get('Forward P/E', 'N/A')}
+        Price/Book    : {fundamentals.get('Price/Book', 'N/A')}
+        PEG Ratio     : {fundamentals.get('PEG Ratio', 'N/A')}
+        Market Cap    : {fundamentals.get('MarketCap', 'N/A')}
+        Debt/Equity   : {fundamentals.get('Debt/Equity', 'N/A')}
+        ROE           : {fundamentals.get('ROE', 'N/A')}
+
+        ════════════════════════════════════════
+        MACRO / INSTITUTIONAL
+        ════════════════════════════════════════
+        India VIX     : {vix_str}  {"(Elevated — favour smaller size)" if vix_str != "N/A" and float(vix_str) > 18 else "(Normal)" if vix_str != "N/A" else ""}
+        FII Net Flow  : {fii_text}
+        DII Net Flow  : {dii_text}
+        News Sentiment: {sentiment_text}
+
+        ════════════════════════════════════════
+        OUTPUT FORMAT (strict markdown, max 350 words)
+        ════════════════════════════════════════
+
+        ### 🎯 Verdict: [STRONG BUY / BUY / HOLD / SELL / STRONG SELL]
+        **Conviction:** [High / Medium / Low]
+        **Model Override:** [Yes — trust fundamentals/technicals more / No — model is reliable]
+
+        ### 🧠 Rationale (3 bullet points max)
+        - **Primary driver:** [single most important factor — cite the number]
+        - **Confirming signal:** [second signal pointing the same way]
+        - **Key concern:** [main bear-case argument with specific data point]
+
+        ### ⚠️ Critical Risks
+        - [Specific risk with data point]
+        - [Macro/flow risk]
+
+        ### 💰 Trade Plan
+        - **Entry zone:** ₹[low] – ₹[high]
+        - **Target 1 (1.5R):** ₹[price]  ({'+' if forecast_return > 0 else ''}[%])
+        - **Target 2 (2.5R):** ₹[price]  ({'+' if forecast_return > 0 else ''}[%])
+        - **Stop loss:** ₹[price]  (-[%])
+        - **Position size:** [Full / Half / Quarter] — [one-line reason]
+        - **Time horizon:** [specific number] trading days
+    """).strip()
+
+    return prompt
 
 
 def generate_fallback_analysis(stock_symbol: str, current_price: float,

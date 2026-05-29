@@ -43,6 +43,14 @@ from services.stock_service import get_history_df
 
 MODEL_VERSION = "hybrid-v1-blend"
 
+# Rolling ECE above this threshold with at least _ECE_MIN_SAMPLES resolved
+# predictions → bundle.calibration_gated = True. Predictions are not blocked
+# (user still needs to see them) but are clearly flagged as unreliable.
+# 15% is 3× the "trustworthy" threshold of 5% — a deliberate safety margin so
+# we only gate when calibration is actively misleading, not just imperfect.
+_ECE_GATE_THRESHOLD = 0.15
+_ECE_MIN_SAMPLES = 10
+
 # A2.4/A2.5 — default convex weight applied to v2's prob_up in the late blend.
 # Stacker gets (1 - weight). Overridable via V2_BLEND_WEIGHT env / call arg.
 # Kept conservative since the weight is fixed, not learned — the ledger will
@@ -81,6 +89,7 @@ def predict(
         vix_data=vix_data,
         multi_source_sentiment=multi_source_sentiment,
         enable_automl=enable_automl,
+        ticker=ticker,
     )
 
     future = hybrid_predict_prices(
@@ -166,6 +175,48 @@ def predict(
             directional_accuracy=win.directional_accuracy,
             brier_score=win.brier_score,
         )
+
+        # ECE gate — warn loudly when rolling calibration is actively misleading.
+        # Only fires once we have enough samples to make ECE meaningful.
+        if (
+            win.ece is not None
+            and win.n_resolved >= _ECE_MIN_SAMPLES
+            and win.ece > _ECE_GATE_THRESHOLD
+        ):
+            logger.warning(
+                "Calibration gate triggered for %s: rolling ECE=%.1f%% "
+                "(n=%d resolved). Predictions are DIAGNOSTIC ONLY — "
+                "do not trade until ECE drops below %.0f%%.",
+                ticker,
+                win.ece * 100,
+                win.n_resolved,
+                _ECE_GATE_THRESHOLD * 100,
+            )
+            try:
+                bundle.calibration_gated = True
+            except Exception:
+                pass
+        else:
+            try:
+                bundle.calibration_gated = False
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # P3-11 — trading suspension gate.
+    # LiveMonitor.is_trading_suspended() reads a tiny JSON flag file (~1ms).
+    # Predictions are NOT blocked (we still log and return them) but the
+    # bundle is flagged so the UI can surface a warning to the user.
+    try:
+        from services.live_monitor import LiveMonitor
+        if LiveMonitor.is_trading_suspended():
+            bundle.trading_suspended = True
+            logger.warning(
+                "Trading suspended for %s — rolling 60-day Sharpe < 0. "
+                "Prediction is DIAGNOSTIC ONLY. Resume via LiveMonitor.resume_trading().",
+                ticker,
+            )
     except Exception:
         pass
 
@@ -467,9 +518,9 @@ def _compute_pattern_conviction(df: "pd.DataFrame") -> float:
                 continue
             conf = float(p.get("Confidence", 50)) / 100.0
             ptype = str(p.get("Type", ""))
-            if "Bearish" in ptype:
+            if "Bullish" in ptype:
                 score += conf
-            elif "Bullish" in ptype:
+            elif "Bearish" in ptype:
                 score -= conf
         return float(max(-1.0, min(1.0, score)))
     except Exception:

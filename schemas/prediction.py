@@ -158,3 +158,9 @@ class PredictionBundle(BaseModel):
     # 3B — conviction-precision gate
     conviction_precision: ConvictionPrecision | None = None
 
+    # P1-5 — ECE calibration gate flag
+    calibration_gated: bool = False
+
+    # P3-11 — trading suspension flag (set by LiveMonitor when 60d Sharpe < 0)
+    trading_suspended: bool = False
+

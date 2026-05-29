@@ -50,11 +50,14 @@ def extract_intraday_features(df: pd.DataFrame) -> dict[str, float]:
 
     # Session-scope calcs: restrict to the latest trading day in the frame.
     last_day = df.index[-1].date() if hasattr(df.index[-1], "date") else None
-    session = df[df.index.date == last_day] if last_day else df
+    if last_day is not None and hasattr(df.index, "date"):
+        session = df[df.index.date == last_day]
+    else:
+        session = df
 
     vwap = _session_vwap(session)
     vwap_distance = 0.0
-    if not vwap.empty and vwap.iloc[-1] > 0:
+    if not vwap.empty and pd.notna(vwap.iloc[-1]) and vwap.iloc[-1] > 0:
         vwap_distance = float((close.iloc[-1] - vwap.iloc[-1]) / vwap.iloc[-1])
         vwap_distance = float(np.clip(vwap_distance, -0.1, 0.1))
 
@@ -102,7 +105,7 @@ def _session_vwap(session: pd.DataFrame) -> pd.Series:
     vol = session["Volume"].replace(0, np.nan)
     cum_vol = vol.cumsum()
     cum_pv = (tp * vol).cumsum()
-    return (cum_pv / cum_vol).fillna(method="ffill").fillna(session["Close"])
+    return (cum_pv / cum_vol).ffill().fillna(session["Close"])
 
 
 def _opening_range_breakout(session: pd.DataFrame, minutes: int = 15) -> int:

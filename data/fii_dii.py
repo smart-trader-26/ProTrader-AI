@@ -586,18 +586,18 @@ def fetch_fii_dii_apis_internal(ticker=None, start_date=None, end_date=None) -> 
             df['FII_Cumulative'] = df['FII_Net'].cumsum()
             df['DII_Cumulative'] = df['DII_Net'].cumsum()
             return df
-            
-        # Try Gemini fallback for raw JSON
-        if GEMINI_AVAILABLE and isinstance(json_data, (list, dict)):
-            import json
-            raw_json_text = json.dumps(json_data)
-            df = _parse_fii_dii_with_gemini(raw_json_text)
-            if df is not None and not df.empty:
-                return df
+
+        # Intentionally NOT falling back to Gemini here. When the NSE API returns
+        # valid JSON but all records fail date-parsing, letting Gemini re-interpret
+        # the same payload produces plausible-looking but fabricated values that
+        # corrupt the model's institutional-flow features. Returning None is safer:
+        # the model treats missing FII/DII as zeroed-out neutral features.
+        # (Gemini is still used in parse_manual_fii_dii_input where the user
+        #  explicitly pastes raw text — that path is intentional and stays.)
 
     except Exception:
         pass
-        
+
     return None
 
 
@@ -695,7 +695,7 @@ def extract_fii_dii_features(fii_dii_data: pd.DataFrame, lookback: int = 5) -> d
         'dii_net_5d': dii_net_sum,
         'fii_trend': 1 if recent_data['FII_Net'].mean() > 0 else -1,
         'dii_trend': 1 if recent_data['DII_Net'].mean() > 0 else -1,
-        'institutional_divergence': abs(fii_net_sum + dii_net_sum)
+        'institutional_divergence': abs(fii_net_sum - dii_net_sum)
     }
     
     return features

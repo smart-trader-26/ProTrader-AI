@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { PredictionBundle, PredictionJobAccepted, StockHistory, FiiDiiRow } from "@/lib/types";
+import type { PredictionBundle, PredictionJobAccepted, StockHistory, FiiDiiRow, TechnicalSnapshot } from "@/lib/types";
 import Stat from "@/components/Stat";
 import ProgressLoader from "@/components/ProgressLoader";
 import HorizontalBarChart from "../charts/HorizontalBarChart";
@@ -12,6 +12,30 @@ import { apiPost, apiGet, waitForJob } from "@/lib/api-client";
 import usePersistedState from "@/lib/usePersistedState";
 import { formatINR, formatPercent, formatRatio, toneFor } from "@/lib/format";
 import { FII_DII_STORAGE_KEY } from "./FiiDiiTab";
+import AiAnalysisPanel from "./AiAnalysisPanel";
+import SignalSynthesisPanel from "./SignalSynthesisPanel";
+const FII_DII_SAVED_AT_KEY = "fii_dii:saved_at:v1";
+
+interface LlmSentimentScores {
+  combined_signal: number;
+  mean_sentiment: number;
+  mean_materiality: number;
+  mean_novelty: number;
+  top_headline: string;
+}
+
+function isFiiDiiStale(): boolean {
+  try {
+    const savedAt = localStorage.getItem(FII_DII_SAVED_AT_KEY);
+    if (!savedAt) return true;
+    // IST "YYYY-MM-DD"
+    const now = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+    const today = now.toISOString().slice(0, 10);
+    return savedAt < today;
+  } catch {
+    return false;
+  }
+}
 
 interface Props {
   ticker: string;
@@ -45,6 +69,7 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
   );
   const [run, setRun] = useState<RunState>(INITIAL_STATE);
   const [busy, setBusy] = useState(false);
+  const [technicals, setTechnicals] = useState<TechnicalSnapshot | null>(null);
 
   // FII/DII inline-prompt state
   const [fiiDiiModalOpen, setFiiDiiModalOpen] = useState(false);
@@ -55,9 +80,19 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
   // Pending prediction horizon when waiting for FII/DII modal
   const pendingHorizonRef = useRef<number>(horizon);
 
-  /** Read FII/DII rows from localStorage (written by FiiDiiTab). */
+  // LLM pre-prediction sentiment scoring modal
+  const [llmModalOpen, setLlmModalOpen] = useState(false);
+  const [llmPrompt, setLlmPrompt] = useState("");
+  const [llmPasteText, setLlmPasteText] = useState("");
+  const [llmPasteError, setLlmPasteError] = useState<string | null>(null);
+  const [llmCopied, setLlmCopied] = useState(false);
+  // FII/DII rows held while waiting for user to complete LLM modal
+  const pendingLlmFiiDiiRef = useRef<FiiDiiRow[] | null>(null);
+
+  /** Read FII/DII rows from localStorage (written by FiiDiiTab). Returns null if stale or missing. */
   function loadSavedFiiDiiRows(): FiiDiiRow[] | null {
     try {
+      if (isFiiDiiStale()) return null;
       const raw = localStorage.getItem(FII_DII_STORAGE_KEY);
       if (!raw) return null;
       const rows = JSON.parse(raw) as FiiDiiRow[];
@@ -131,7 +166,7 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
     }
   }
 
-  async function _doRunPredict(fiiDiiRows: FiiDiiRow[] | null) {
+  async function _doRunPredict(fiiDiiRows: FiiDiiRow[] | null, llmScores: LlmSentimentScores | null = null) {
     setBusy(true);
     setRun({ startedAt: Date.now(), finishedAt: null, phase: "queued", error: null });
     setBundle(null);
@@ -141,6 +176,12 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
       };
       if (fiiDiiRows && fiiDiiRows.length > 0) {
         body.fii_dii_rows = fiiDiiRows;
+      }
+      if (llmScores) {
+        body.llm_sentiment_signal  = llmScores.combined_signal;
+        body.llm_mean_sentiment    = llmScores.mean_sentiment;
+        body.llm_mean_materiality  = llmScores.mean_materiality;
+        body.llm_top_headline      = llmScores.top_headline;
       }
       const accepted = await apiPost<PredictionJobAccepted>(
         `/api/v1/stocks/${ticker}/predict`,
@@ -152,6 +193,11 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
       });
       setBundle(result);
       setRun((s) => ({ ...s, phase: "succeeded", finishedAt: Date.now() }));
+      // Fetch technicals for AiAnalysisPanel + SignalSynthesisPanel
+      try {
+        const tech = await apiGet<TechnicalSnapshot>(`/api/v1/stocks/${ticker}/technicals`);
+        setTechnicals(tech);
+      } catch { /* non-fatal */ }
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       setRun((s) => ({ ...s, error: message, phase: "failed", finishedAt: Date.now() }));
@@ -160,23 +206,76 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
     }
   }
 
+  /**
+   * Step 2 of the pre-prediction pipeline: after FII/DII data is resolved,
+   * try to score LLM sentiment BEFORE starting the model job.
+   * - ANTHROPIC_API_KEY set → auto-scores in ~3s, runs immediately.
+   * - Not set → shows a modal so the user can paste into claude.ai first.
+   * - Timeout / error → skips LLM and runs without sentiment scores.
+   */
+  async function _afterFiiDii(fiiDiiRows: FiiDiiRow[] | null) {
+    // Show loading state while fetching/scoring headlines
+    setBusy(true);
+    setRun({ startedAt: Date.now(), finishedAt: null, phase: "scoring sentiment…", error: null });
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8_000);
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const resp = await fetch(
+        `${API_BASE}/api/v1/stocks/${ticker}/sentiment/llm-alpha?max_headlines=10`,
+        { signal: ctrl.signal },
+      );
+      clearTimeout(timer);
+      if (resp.ok) {
+        const d = await resp.json() as {
+          available: boolean; needs_manual_input: boolean; manual_prompt: string;
+          combined_signal: number; mean_sentiment: number; mean_materiality: number;
+          mean_novelty: number; top_headline: string; headlines_scored: number;
+        };
+        if (!d.needs_manual_input && d.available && d.headlines_scored > 0) {
+          // Auto-scored via ANTHROPIC_API_KEY — feed directly into prediction
+          await _doRunPredict(fiiDiiRows, {
+            combined_signal: d.combined_signal,
+            mean_sentiment:  d.mean_sentiment,
+            mean_materiality: d.mean_materiality,
+            mean_novelty:    d.mean_novelty,
+            top_headline:    d.top_headline,
+          });
+          return;
+        }
+        if (d.needs_manual_input && d.manual_prompt) {
+          // No API key — release the busy lock and show the LLM modal
+          setBusy(false);
+          setRun(INITIAL_STATE);
+          pendingLlmFiiDiiRef.current = fiiDiiRows;
+          setLlmPrompt(d.manual_prompt);
+          setLlmPasteText("");
+          setLlmPasteError(null);
+          setLlmModalOpen(true);
+          return;
+        }
+      }
+    } catch { /* timeout / network — skip LLM step and run without scores */ }
+    // Fall-through: no LLM scores available — release busy and run directly
+    setBusy(false);
+    setRun(INITIAL_STATE);
+    await _doRunPredict(fiiDiiRows, null);
+  }
+
   async function runPredict(e: React.FormEvent) {
     e.preventDefault();
     pendingHorizonRef.current = horizon;
 
-    // Check if FII/DII data is already saved from the FII/DII tab
+    // Step 1: Check if FII/DII data is already saved from the FII/DII tab
     const savedRows = loadSavedFiiDiiRows();
     if (savedRows) {
-      // Great — data available, run immediately
-      await _doRunPredict(savedRows);
+      await _afterFiiDii(savedRows);
       return;
     }
 
     // No FII/DII data — try to auto-fetch quickly (timeout 4s)
     let autoFetchedRows: FiiDiiRow[] | null = null;
     try {
-      // Use apiGet so the request goes to http://localhost:8000, not Next.js.
-      // Wrap in a race with a 4s timeout using AbortController.
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 4000);
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -186,20 +285,22 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
         const data = await resp.json();
         if (data?.rows?.length) {
           autoFetchedRows = data.rows as FiiDiiRow[];
-          // Save for future runs
-          try { localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(autoFetchedRows)); } catch {}
+          try {
+            localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(autoFetchedRows));
+            window.dispatchEvent(new CustomEvent("fii-dii-updated"));
+          } catch {}
         }
       }
     } catch {
-      // NSE throttled or timeout — show the modal
+      // NSE throttled or timeout — show the FII/DII modal
     }
 
     if (autoFetchedRows) {
-      await _doRunPredict(autoFetchedRows);
+      await _afterFiiDii(autoFetchedRows);
       return;
     }
 
-    // NSE throttled and no saved data — prompt user
+    // NSE throttled and no saved data — prompt user for FII/DII first
     pendingFiiDiiRowsRef.current = null;
     setFiiDiiPasteText("");
     setFiiDiiPasteError(null);
@@ -213,15 +314,56 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
       setFiiDiiPasteError("Could not parse. Use tab-separated: Date | FII Buy | FII Sell | FII Net | DII Net");
       return;
     }
-    try { localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(rows)); } catch {}
+    try {
+      localStorage.setItem(FII_DII_STORAGE_KEY, JSON.stringify(rows));
+      window.dispatchEvent(new CustomEvent("fii-dii-updated"));
+    } catch {}
     setFiiDiiModalOpen(false);
-    _doRunPredict(rows);
+    _afterFiiDii(rows);
   }
 
   function handleFiiDiiModalSkip() {
     setFiiDiiModalOpen(false);
-    // Run without FII/DII — model will use zeros for those features
-    _doRunPredict(null);
+    _afterFiiDii(null);
+  }
+
+  async function handleLlmModalSubmit() {
+    setLlmPasteError(null);
+    if (!llmPasteText.trim()) {
+      setLlmPasteError("Please paste Claude's JSON response.");
+      return;
+    }
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const resp = await fetch(
+        `${API_BASE}/api/v1/stocks/${ticker}/sentiment/llm-alpha/manual`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ manual_response: llmPasteText }),
+        },
+      );
+      if (!resp.ok) throw new Error(`Status ${resp.status}`);
+      const d = await resp.json() as {
+        combined_signal: number; mean_sentiment: number;
+        mean_materiality: number; mean_novelty: number; top_headline: string;
+      };
+      setLlmModalOpen(false);
+      await _doRunPredict(pendingLlmFiiDiiRef.current, {
+        combined_signal:  d.combined_signal,
+        mean_sentiment:   d.mean_sentiment,
+        mean_materiality: d.mean_materiality,
+        mean_novelty:     d.mean_novelty,
+        top_headline:     d.top_headline,
+      });
+    } catch (e) {
+      setLlmPasteError(e instanceof Error ? e.message : "Failed to parse Claude response. Check the JSON format.");
+    }
+  }
+
+  function handleLlmModalSkip() {
+    setLlmModalOpen(false);
+    _doRunPredict(pendingLlmFiiDiiRef.current, null);
   }
 
 
@@ -301,6 +443,63 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
         </div>
       )}
 
+      {/* LLM sentiment scoring modal — scores headlines BEFORE the model runs */}
+      {llmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface border border-border rounded-xl shadow-2xl max-w-xl w-full p-6 space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">🧠 LLM Sentiment Scoring</h3>
+              <p className="text-sm text-muted mt-1">
+                Score these headlines <strong>before the prediction runs</strong> — the scores are fed into
+                the model as sentiment features (better than keyword-only FinBERT). Copy the prompt,
+                paste into{" "}
+                <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="text-accent underline">
+                  claude.ai
+                </a>
+                {" "}(free), then paste Claude&apos;s JSON array back here.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <textarea readOnly className="input w-full h-52 font-mono text-xs resize-y" value={llmPrompt} />
+              <button
+                type="button"
+                className="btn text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(llmPrompt);
+                  setLlmCopied(true);
+                  setTimeout(() => setLlmCopied(false), 2000);
+                }}
+              >
+                {llmCopied ? "Copied!" : "Copy prompt"}
+              </button>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted">Paste Claude&apos;s JSON response:</p>
+              <textarea
+                className="input w-full h-28 font-mono text-xs resize-y"
+                placeholder={'[{"i":1,"novelty":0.8,"materiality":0.7,"sentiment":0.6},{"i":2,...}]'}
+                value={llmPasteText}
+                onChange={(e) => setLlmPasteText(e.target.value)}
+              />
+              {llmPasteError && <p className="text-xs text-bear">{llmPasteError}</p>}
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={handleLlmModalSkip} className="btn text-sm">
+                Skip — run without LLM
+              </button>
+              <button
+                type="button"
+                onClick={handleLlmModalSubmit}
+                className="btn btn-primary text-sm"
+                disabled={!llmPasteText.trim()}
+              >
+                Use scores &amp; run prediction
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="panel">
         {ohlcv && ohlcv.bars.length > 0 ? (
           <div className="flex items-baseline justify-between mb-2">
@@ -366,9 +565,43 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
           active={busy}
           phase={run.phase}
           startedAt={run.startedAt}
-          estimatedSeconds={45}
+          estimatedSeconds={150}
+          steps={[
+            { key: "scoring sentiment…", label: "LLM sentiment" },
+            { key: "queued", label: "Queued" },
+            { key: "started", label: "Loading data" },
+            { key: "running", label: "Fitting ensemble" },
+            { key: "succeeded", label: "Done" },
+          ]}
           error={run.error}
         />
+
+        {bundle?.trading_suspended && (
+          <div className="panel border border-bear bg-bear/10 text-sm text-bear flex gap-2 items-start">
+            <span className="text-lg leading-none mt-0.5">⛔</span>
+            <div>
+              <p className="font-semibold">Trading Suspended</p>
+              <p className="text-xs text-muted mt-0.5">
+                Rolling 60-day Sharpe fell below 0 for 3 consecutive days. The model is in diagnostic-only
+                mode. Do not trade on these signals until live Sharpe recovers.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {bundle?.calibration_gated && (
+          <div className="panel border border-yellow-500 bg-yellow-500/10 text-sm text-yellow-400 flex gap-2 items-start">
+            <span className="text-lg leading-none mt-0.5">⚠️</span>
+            <div>
+              <p className="font-semibold">Calibration Gate Active</p>
+              <p className="text-xs text-muted mt-0.5">
+                Rolling ECE exceeds 15% on ≥10 resolved predictions. Stated probabilities are
+                unreliable — the model is systematically over- or under-confident. Check the
+                Accuracy tab for details.
+              </p>
+            </div>
+          </div>
+        )}
 
         {bundle && (
           <>
@@ -552,6 +785,12 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
               </div>
             )}
 
+            <AiAnalysisPanel ticker={ticker} bundle={bundle} technicals={technicals} />
+
+            <SignalSynthesisPanel ticker={ticker} bundle={bundle} technicals={technicals} />
+
+            <ClaudePromptPanel bundle={bundle} ticker={ticker} lastClose={lastClose} />
+
             {bundle.shap_top_features && bundle.shap_top_features.length > 0 && (
               <ShapPanel features={bundle.shap_top_features} method={bundle.shap_method} />
             )}
@@ -652,6 +891,186 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
           </>
         )}
       </section>
+    </div>
+  );
+}
+
+// ─── Claude expert prompt panel ─────────────────────────────────────────────
+
+function buildClaudePrompt(bundle: PredictionBundle, ticker: string, lastClose: number | null): string {
+  const company = ticker.replace(/\.(NS|BO)$/, "").toUpperCase();
+  const lastPoint = bundle.points[bundle.points.length - 1];
+  const target = lastPoint?.pred_price ?? lastClose ?? 0;
+  const anchor = bundle.anchor_price ?? lastClose ?? 0;
+  const forecastReturn = anchor ? ((target - anchor) / anchor) * 100 : 0;
+  const acc = (bundle.walkforward?.accuracy ?? 0) * 100;
+  const prob = bundle.last_directional_prob ?? 50;
+  const tau = bundle.threshold_tuning?.tau_star ?? 0.55;
+
+  const hurst = bundle.hurst_exponent;
+  const hurstStr = hurst != null
+    ? `${hurst.toFixed(3)} — ${hurst > 0.55 ? "Trending (momentum biased)" : hurst < 0.45 ? "Mean-Reverting (fade extremes)" : "Random Walk (no regime edge)"}`
+    : "N/A";
+  const modelTier = acc >= 65 ? "Research-grade (≥65%)"
+    : acc >= 55 ? "Production-grade (55–65%)"
+    : "Uncertain (<55% — down-weight model signal)";
+
+  // SHAP breakdown
+  const shapFeatures = bundle.shap_top_features ?? [];
+  const topShap = shapFeatures.slice(0, 6)
+    .map((f) => `  ${f.feature.padEnd(22)} ${f.importance >= 0 ? "+" : ""}${f.importance.toFixed(4)}`)
+    .join("\n");
+  const bullDrivers = shapFeatures.filter((f) => f.importance > 0).map((f) => f.feature).join(", ") || "none";
+  const bearDrivers = shapFeatures.filter((f) => f.importance < 0).map((f) => f.feature).join(", ") || "none";
+
+  // Confidence interval (day 1)
+  const ci1 = bundle.points[0];
+  const ciStr = ci1?.ci_low != null && ci1?.ci_high != null
+    ? `₹${ci1.ci_low.toFixed(2)} – ₹${ci1.ci_high.toFixed(2)}`
+    : "N/A";
+  const hwStr = bundle.conformal_halfwidth != null
+    ? `±₹${bundle.conformal_halfwidth.toFixed(2)} (use for stop sizing)`
+    : "N/A";
+
+  // Conviction precision
+  const cp = bundle.conviction_precision;
+  const convStr = cp?.n_high_bull && cp.n_high_bull > 0
+    ? `${cp.bull_precision != null ? (cp.bull_precision * 100).toFixed(1) + "%" : "?"} on ${cp.n_high_bull} high-conviction calls ≥${(cp.threshold * 100).toFixed(0)}% — ${cp.bull_precision != null && cp.bull_precision >= 0.55 ? "✓ Go" : "✗ No-go"}`
+    : "Insufficient history";
+
+  // v2 blend
+  const v2 = bundle.v2_blend?.used
+    ? `P(up) ${bundle.v2_blend.v2_prob != null ? (bundle.v2_blend.v2_prob * 100).toFixed(1) : "?"}% · weight ${(bundle.v2_blend.weight_v2 * 100).toFixed(0)}% · ${bundle.v2_blend.n_headlines} headlines`
+    : "not used";
+
+  // Forecast trajectory (first 5 days)
+  const trajectory = bundle.points.slice(0, 5)
+    .map((p, i) => `  Day ${i + 1} (${p.target_date}): ₹${p.pred_price.toFixed(2)}  P(up)=${p.prob_up != null ? (p.prob_up * 100).toFixed(1) + "%" : "?"}`)
+    .join("\n");
+
+  // Gate warnings
+  const gates = [
+    bundle.trading_suspended ? "⛔ TRADING SUSPENDED — 60-day Sharpe < 0. DIAGNOSTIC ONLY." : "",
+    bundle.calibration_gated ? "⚠️ CALIBRATION GATE — rolling ECE > 15%. Stated probabilities unreliable." : "",
+  ].filter(Boolean).join("\n");
+
+  const eceStr = bundle.calibration
+    ? `${(bundle.calibration.ece * 100).toFixed(1)}% (${bundle.calibration.ece <= 0.05 ? "Trustworthy ✓" : bundle.calibration.ece <= 0.10 ? "Fair" : "Poorly calibrated ✗"})`
+    : "N/A";
+
+  return `ROLE
+────
+You are a senior portfolio manager at a tier-1 Indian equity fund (AUM > ₹50,000 Cr).
+A hybrid ML model (XGBoost + LightGBM + CatBoost + GRU-128 + Ridge meta-stacker,
+${bundle.walkforward?.n_windows ?? "52+"}× walk-forward windows) just finished on ${company}.
+Deliver a precise, decisive trading brief. No disclaimers. I am a registered professional trader.
+${gates ? `\n${gates}\n` : ""}
+════════════════════════════════════════════════════════
+MODEL OUTPUT  —  ${company}  |  ₹${anchor.toFixed(2)}
+════════════════════════════════════════════════════════
+${bundle.horizon_days}-day target (median)   : ₹${target.toFixed(2)}  (${forecastReturn >= 0 ? "+" : ""}${forecastReturn.toFixed(2)}%)
+90% confidence interval  : ${ciStr}
+Conformal halfwidth      : ${hwStr}
+Bullish probability P(up): ${prob.toFixed(1)}%  (threshold τ* = ${(tau * 100).toFixed(1)}%)
+Verdict                  : ${prob / 100 >= tau ? "BUY" : prob / 100 <= 1 - tau ? "SELL" : "HOLD"} (${prob / 100 >= tau || prob / 100 <= 1 - tau ? "outside indifference band" : "inside indifference band"})
+Walk-forward accuracy    : ${acc.toFixed(1)}%  —  ${modelTier}
+Hurst exponent           : ${hurstStr}
+Market regime            : ${bundle.regime ?? "N/A"}${bundle.regime_detail ? ` — ${bundle.regime_detail}` : ""}
+ECE (calibration)        : ${eceStr}
+Brier score              : ${bundle.calibration ? bundle.calibration.brier_score.toFixed(4) + " (random baseline = 0.25)" : "N/A"}
+RMSE (stacked)           : ${bundle.rmse_breakdown?.stacked?.toFixed(4) ?? "N/A"}
+v2 sentiment blend       : ${v2}
+Conviction precision     : ${convStr}
+
+════════════════════════════════════════════════════════
+SHAP FEATURE IMPORTANCE (top 6 drivers)
+════════════════════════════════════════════════════════
+${topShap || "  N/A"}
+
+  Bullish contributors : ${bullDrivers}
+  Bearish headwinds    : ${bearDrivers}
+
+════════════════════════════════════════════════════════
+FORECAST TRAJECTORY
+════════════════════════════════════════════════════════
+${trajectory || "  N/A"}
+
+════════════════════════════════════════════════════════
+YOUR TASK — output in STRICT markdown below, max 400 words
+════════════════════════════════════════════════════════
+
+### 🎯 Verdict: [STRONG BUY / BUY / HOLD / SELL / STRONG SELL]
+**Conviction:** [High / Medium / Low]
+**Model Override:** [Yes — cite the reason / No — model is reliable]
+
+### 🧠 Rationale (3 bullets max — each must cite a specific number from above)
+- **Primary driver:** [top SHAP feature name + its signal direction + numeric value]
+- **Confirming signal:** [second layer pointing same way]
+- **Key concern:** [main bear case with exact data point]
+
+### ⚠️ Critical Risks
+- [Risk + data point — ECE reliability, regime shift, or gate warning if active]
+- [External / macro risk — VIX level, FII trend, option signal if available]
+
+### 💰 Trade Plan (calculate levels precisely)
+- **Entry zone:** ₹${(anchor * 0.997).toFixed(2)} – ₹${(anchor * 1.003).toFixed(2)}
+- **Stop loss:** ₹[entry minus conformal halfwidth ${hwStr}; must be below nearest support]
+- **Target 1 (1.5R):** ₹[entry + 1.5 × risk]
+- **Target 2 (2.5R):** ₹[entry + 2.5 × risk]
+- **Position size:** [Full / Half / Quarter] — [one phrase tied to conviction + ECE]
+- **Hold period:** ${bundle.horizon_days} trading days`.trim();
+}
+
+function ClaudePromptPanel({
+  bundle,
+  ticker,
+  lastClose,
+}: {
+  bundle: PredictionBundle;
+  ticker: string;
+  lastClose: number | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const prompt = open ? buildClaudePrompt(bundle, ticker, lastClose) : "";
+
+  function handleCopy() {
+    navigator.clipboard.writeText(buildClaudePrompt(bundle, ticker, lastClose)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="panel">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold">🤖 Claude Expert Prompt</p>
+          <p className="text-xs text-muted mt-0.5">
+            Paste into claude.ai for a professional trading brief based on this model output.
+          </p>
+        </div>
+        <button
+          className="btn text-sm"
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? "Hide prompt" : "Show prompt"}
+        </button>
+      </div>
+      {open && (
+        <div className="mt-3 space-y-2">
+          <textarea
+            readOnly
+            className="input w-full h-64 font-mono text-xs resize-y"
+            value={prompt}
+          />
+          <div className="flex gap-2 justify-end">
+            <button className="btn btn-primary text-sm" onClick={handleCopy}>
+              {copied ? "Copied!" : "Copy to clipboard"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -61,6 +61,9 @@ export default function ProgressLoader({
           {!error && startedAt && elapsed < estimatedSeconds && (
             <> · ~{Math.max(0, Math.round(estimatedSeconds - elapsed))}s left</>
           )}
+          {!error && startedAt && elapsed >= estimatedSeconds && (
+            <> · running longer than expected…</>
+          )}
         </span>
       </div>
       <div className="h-2 w-full rounded-full bg-border overflow-hidden">
@@ -104,13 +107,16 @@ export default function ProgressLoader({
 function phaseToIndex(phase: string | null, steps: { key: string; label: string }[]): number {
   if (!phase) return 0;
   const p = phase.toLowerCase();
-  // Map common Celery / in-process states onto the 5 visible steps.
-  if (p === "queued" || p === "pending") return 0;
-  if (p === "started" || p === "running" || p === "fetching") return 2;
-  if (p === "calibrating" || p === "scoring") return 3;
+  // First try exact key match against caller-supplied steps
+  const exact = steps.findIndex((s) => s.key.toLowerCase() === p);
+  if (exact >= 0) return exact;
+  // Built-in fallback mapping for common Celery / in-process phases
+  if (p === "queued" || p === "pending") return Math.min(1, steps.length - 1);
+  if (p.includes("sentiment") || p.includes("scoring sentiment")) return Math.min(0, steps.length - 1);
+  if (p === "started" || p === "running" || p === "fetching") return Math.min(2, steps.length - 1);
+  if (p === "calibrating" || p === "scoring") return Math.min(3, steps.length - 1);
   if (p === "succeeded" || p === "done" || p === "finished") return steps.length - 1;
   if (p === "failed") return Math.max(0, steps.length - 1);
-  // Unknown phase — keep some forward motion.
   return 1;
 }
 

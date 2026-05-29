@@ -36,6 +36,10 @@ from schemas.prediction import PredictionBundle, PredictionPoint
 
 DEFAULT_DB_PATH = Path("data/ledger/predictions.sqlite")
 
+# Half-width of the "flat" band used when scoring flat predictions.
+# A flat call is a HIT iff the actual price stays within ±0.5% of the anchor.
+_FLAT_BAND = 0.005
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS predictions (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -273,12 +277,17 @@ def backfill_actuals(
                             anchor_cache[made_date] = anchor
 
                     hit: int | None
-                    if np.isnan(anchor):
+                    if anchor is None or np.isnan(anchor) or anchor <= 0:
                         hit = None
                     elif row["pred_dir"] == "up":
                         hit = 1 if actual > anchor else 0
                     elif row["pred_dir"] == "down":
                         hit = 1 if actual < anchor else 0
+                    elif row["pred_dir"] == "flat":
+                        # Flat is a hit iff actual price stays within ±0.5% of
+                        # the anchor. Division is safe: anchor passed isnan check
+                        # above and stock prices are always positive.
+                        hit = 1 if abs(actual / anchor - 1.0) <= _FLAT_BAND else 0
                     else:
                         hit = None
 

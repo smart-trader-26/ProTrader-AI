@@ -102,7 +102,7 @@ FinBERT, Ensemble learning, Conformal prediction, Explainable AI
 
 The application of artificial intelligence to financial forecasting has
 accelerated rapidly, driven by the availability of high-frequency data and
-large pre-trained language models \cite{r1}. Despite measurable progress, three
+large pre-trained language models \cite{r1,r8}. Despite measurable progress, three
 persistent gaps remain: (i) most systems fuse at most two modalities, ignoring
 complementary signal from institutional order-flow and macroeconomic state;
 (ii) probabilistic outputs are rarely calibrated, making confidence scores
@@ -112,9 +112,9 @@ cross-market generalisation.
 The Indian National Stock Exchange (NSE) is a particularly demanding testbed,
 combining Foreign Institutional Investors (FIIs), Domestic Institutional
 Investors (DIIs), and over a hundred million retail participants whose decisions
-are shaped by news in both English and Hindi. Nti et al.\ \cite{r2} and Long
-et al.\ \cite{r3} demonstrated that fusing heterogeneous modalities lifts
-accuracy above single-source baselines, but neither study addresses the Indian
+are shaped by news in both English and Hindi. Nti et al.\ \cite{r2}, Long
+et al.\ \cite{r3}, and Fu and Zhang \cite{r4} demonstrated that fusing heterogeneous modalities lifts
+accuracy above single-source baselines, but none of these studies addresses the Indian
 institutional-flow channel, multilingual sentiment noise, or calibrated
 uncertainty. Hybrid sentiment-indicator models have been advanced by Moodi et al.\
 \cite{r5} and Farhadi et al.\ \cite{r6}. For explainability, Guo et al.\
@@ -153,14 +153,15 @@ and Economic Times RSS. Articles arriving after 15:30~IST are aligned to the nex
 session; duplicates are removed by 50-character title prefix.
 \textbf{Stream 3 (Institutional Flows):} FII and DII daily net cash flows (INR Cr)
 are drawn from NSE bhavcopy and entered with a one-day lag to preclude look-ahead.
-\textbf{Stream 4 (Macro State):} India VIX, INR/USD, front-month Brent crude, and
-gold spot are retrieved via yfinance; 1-day and 5-day log-returns are clipped to
-$[\pm0.20]$ and $[\pm0.40]$ to suppress data-glitch outliers.
+\textbf{Stream 4 (Macro State):} India VIX is encoded as a normalised level
+($(V\!-\!15)/25$, clipped to $[\pm1]$) and 1-day change (clipped to $[\pm0.50]$);
+INR/USD, front-month Brent crude, and gold spot are retrieved via yfinance with
+1-day and 5-day log-returns clipped to $[\pm0.20]$ and $[\pm0.40]$.
 
 \subsection{Feature Engineering (RO1, RO2)}
 
-From the four streams a joint feature vector $\mathbf{x}_{t}\!\in\!\mathbb{R}^{36}$
-is constructed. The 27 price-volume technical features are listed in
+From the four streams a joint feature vector $\mathbf{x}_{t}\!\in\!\mathbb{R}^{32}$
+is constructed. The 18 price-volume technical features are listed in
 Table~\ref{tab:features}. Key groups are: log-return and multi-horizon variants
 ($h\!\in\!\{2,5,10,20\}$~days); 14-period Wilder RSI and Bollinger Band \%B
 (equation~\eqref{eq:rsi}); 12/26/9-period MACD signal and histogram;
@@ -184,22 +185,25 @@ winsorised at the 1st/99th percentile and min-max scaled on the training fold on
 \toprule
 \textbf{Group} & \textbf{Feature(s)} & \textbf{Window} \\
 \midrule
-Returns      & Log\_Ret, Ret\_2D/5D/10D/20D         & 1--20d \\
-Volatility   & Volatility\_5D, ATR\_Norm             & 5, 14d \\
+Returns      & Log\_Ret, Ret\_2D/5D/10D/20D               & 1--20d \\
+Volatility   & Volatility\_5D, ATR\_Norm                 & 5, 14d \\
 Momentum     & RSI\_Norm, MACD\_Norm, MACD\_Hist,
-               BB\_PctB, Williams\_R                & 14, 12/26/9, 20d \\
-Volume       & Vol\_Ratio, OBV\_Slope, CMF\_20, MA\_Div & 5--20d \\
-Divergence   & RSI\_Bear\_Div, RSI\_Bull\_Div        & 10d \\
-Sentiment    & FinBERT polarity $s_t$ (wtd.\ mean)   & 1d \\
-Inst.\ Flow  & FII\_Net, DII\_Net (lagged, $z$-scored) & 1d \\
-Macro        & VIX\_Ret, INR\_Ret, Crude\_Ret, Gold\_Ret & 1d, 5d \\
+               BB\_PctB, Williams\_R                    & 14, 12/26/9, 20d \\
+Volume       & Vol\_Ratio, OBV\_Slope, CMF\_20, MA\_Div  & 5--20d \\
+Divergence   & RSI\_Bear\_Div, RSI\_Bull\_Div            & 10d \\
+Pattern      & Pattern\_Target\_Dist (signed, norm.)      & variable \\
+Sentiment    & FinBERT polarity $s_t$ (wtd.\ mean)       & 1d \\
+Inst.\ Flow  & FII\_Net, DII\_Net, FII\_5D\_Avg,
+               DII\_5D\_Avg (lagged, norm.)              & 1d, 5d \\
+VIX          & VIX\_Norm, VIX\_Chg (India VIX)          & 1d \\
+Macro        & INR\_Ret, Crude\_Ret, Gold\_Ret           & 1d, 5d \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{FinBERT Sentiment Pipeline (RO2)}
 
-Headlines from Stream~2 are scored by a FinBERT pipeline \cite{r12}
+Headlines from Stream~2 are scored by a FinBERT pipeline \cite{r12,r31}
 (\texttt{ProsusAI/finbert}, PyTorch) yielding per-headline probabilities
 $(p_+,p_0,p_-)$. Raw polarity is $\tilde{s}^{(i)}=p_+^{(i)}-p_-^{(i)}$.
 A curated keyword-override layer corrects FinBERT's tendency to over-predict
@@ -241,12 +245,13 @@ regressor \cite{r17}:
 \label{eq:isotonic}
 \end{equation}
 where $\mathcal{M}$ is the class of non-decreasing step functions.
-Calibration quality is measured by ECE over $M=15$ equal-frequency bins and the
+Calibration quality is measured by ECE over $M=10$ equal-frequency bins and the
 Brier score \cite{r34}. A per-ticker decision threshold $\tau^*$ maximises
 Youden's~J on the 2023 validation fold.
 
 Prediction intervals follow the split-conformalized quantile regression (CQR)
-procedure of Romano et al.\ \cite{r26}. Two quantile XGBoost regressors are
+procedure of Romano et al.\ \cite{r26}, grounded in the conformal prediction
+framework of Vovk et al.\ \cite{r18} and surveyed in Angelopoulos and Bates \cite{r33}. Two quantile XGBoost regressors are
 trained at $\alpha_q\!\in\!\{0.10,0.90\}$; non-conformity scores
 $e_t=\max(\hat{q}_{0.10}(\mathbf{x}_t)-r_{t+1},\,r_{t+1}-\hat{q}_{0.90}(\mathbf{x}_t))$
 are computed on the calibration set $\mathcal{C}$ of size $n_c$. The
@@ -264,19 +269,21 @@ XGBoost-component attribution under the stacker:
 $\phi_j^{\mathrm{XGB}\to\mathrm{stack}}=\beta_{\mathrm{XGB}}\cdot\phi_j^{\mathrm{XGB}}$.
 Mean absolute values are ranked globally across the 2024 holdout.
 
-\textbf{Hurst regime detection.} The Hurst exponent is estimated from the
+\textbf{Hurst regime detection.} The Hurst exponent \cite{r19} is estimated from the
 trailing 120~closes via R/S analysis. Regimes: $H>0.55$ trending, $H<0.45$
 mean-reverting, otherwise random-walk. In mean-reverting regimes the stacker
 probability is shrunk 10\% toward 0.5 (tuned on the 2023 validation set).
 
-\textbf{Granger-causality.} For each of the 50 tickers, we test whether lagged
+\textbf{Granger-causality.} Following Granger \cite{r30}, for each of the 50 tickers we test whether lagged
 sentiment $\{s_{t-j}\}$ Granger-causes $r_{t+\ell}$ via:
 \begin{equation}
 r_{t+\ell}=\alpha_0+\sum_{i=1}^{p}\alpha_i r_{t+\ell-i}+\sum_{j=0}^{p}\gamma_j s_{t-j}+\varepsilon_t
 \label{eq:granger}
 \end{equation}
 Null: $\gamma_0=\cdots=\gamma_p=0$. Lag $p$ chosen by AIC per ticker. Per-ticker
-$p$-values are combined via Fisher's method.
+$p$-values are combined via Fisher's method. The sum starts at $j=0$ because
+$s_t$ is scored before the 15:30~IST close and is therefore available without
+look-ahead as a predictor of next-day returns $r_{t+1}$.
 
 \subsection{Cross-Market Transfer Learning (RO4)}
 
@@ -311,12 +318,12 @@ $\approx$12{,}300 ticker-days. A separate 30-stock, sector-balanced S\&P~500
 subset over 2024 serves as the cross-market dataset.
 
 \textbf{Baselines.} (i)~Buy-and-hold equal-weighted NIFTY~50; (ii)~ARIMA(1,1,1);
-(iii)~two-layer LSTM on 27 technical features; (iv)~XGBoost (27 features, no
+(iii)~two-layer LSTM on 18 technical features; (iv)~XGBoost (18 features, no
 calibration); (v)~LSTM~+~FinBERT, our reimplementation of the hybrid of
 Moodi et al.\ \cite{r5}.
 
 \textbf{Evaluation metrics.} Directional accuracy, Brier score, ECE
-($M=15$ bins), annualised Sharpe ($\sqrt{252}\,\bar{r}/\hat\sigma_r$), Sortino,
+($M=10$ bins), annualised Sharpe ($\sqrt{252}\,\bar{r}/\hat\sigma_r$),
 maximum drawdown (MDD), and DM test $p$-value \cite{r21} with
 Harvey--Leybourne--Newbold small-sample correction \cite{r29}.
 Block-bootstrap (1{,}000 resamples, block length~5) provides 95\% CIs for
@@ -413,7 +420,7 @@ DM$^*$ and $p$-value are relative to buy-and-hold. ``---'' = not applicable.}
 \textbf{Model} & \textbf{Dir.\ Acc.} & \textbf{Brier} & \textbf{ECE}
   & \textbf{Sharpe} & \textbf{MDD} & \textbf{DM$^*$ ($p$)} \\
 \midrule
-Buy-and-hold (NIFTY~50)   & 51.2\% & ---   & ---    & 0.78 & $-19.1\%$ & --- \\
+Buy-and-hold (NIFTY~50)   & 51.2\% & ---   & ---    & 0.78 & $-23.8\%$ & --- \\
 ARIMA(1,1,1)               & 51.9\% & 0.249 & 11.4\% & 0.42 & $-21.6\%$ & $-0.62$ (0.54) \\
 LSTM (technical only)      & 53.4\% & 0.241 & 10.8\% & 0.81 & $-17.9\%$ & $-1.12$ (0.26) \\
 XGBoost only (no calib.)   & 54.3\% & 0.236 & 10.2\% & 0.92 & $-16.4\%$ & $-1.44$ (0.15) \\
@@ -557,7 +564,7 @@ reduces ECE by 0.9~pp (Table~\ref{tab:xai}c), validating the multilingual extens
   xmin=0, xmax=0.215,
   enlarge y limits=0.08,
   ytick={0,1,2,3,4,5,6,7,8,9},
-  yticklabels={OBV Slope, Vol.\ Ratio, VIX Ret., MACD, BB\,\%B,
+  yticklabels={OBV Slope, Vol.\ Ratio, MACD, VIX Ret., BB\,\%B,
                CMF-20, MACD Hist., FII Net, RSI, FinBERT~$s_t$},
   tick label style={font=\scriptsize},
   label style={font=\scriptsize},
@@ -567,7 +574,7 @@ reduces ECE by 0.9~pp (Table~\ref{tab:xai}c), validating the multilingual extens
   legend style={at={(0.98,0.02)},anchor=south east,font=\tiny,draw=none}
 ]
 \addplot[fill=blue!30,draw=blue!55] coordinates {
-  (0.047,0)(0.059,1)(0.076,2)(0.068,3)(0.087,4)
+  (0.047,0)(0.059,1)(0.068,2)(0.076,3)(0.087,4)
   (0.098,5)(0.124,6)(0.131,7)(0.147,8)};
 \addplot[fill=orange!65,draw=orange!85] coordinates {
   (0,0)(0,1)(0,2)(0,3)(0,4)(0,5)(0,6)(0,7)(0,8)(0.182,9)};
@@ -721,12 +728,10 @@ data streams contribute uniquely. Sentiment provides the largest marginal gain
 ($-3.4$~pp when removed), but FII/DII flows ($-1.9$~pp) and macroeconomic state
 ($-1.2$~pp) deliver statistically non-redundant lift, extending the multi-source
 thesis of Nti et al.\ \cite{r2} and Long et al.\ \cite{r3} to the Indian
-institutional-flow channel. Notably, removing sentiment costs 0.27~Sharpe but
-only 1.6~pp of ECE, revealing that the LLM channel carries distinct
-\emph{discriminative} information rather than merely calibrating information;
-removing FII/DII costs only 0.16~Sharpe but 0.5~pp ECE, indicating that the
-institutional channel is more useful for confidence estimation than for raw
-direction.
+institutional-flow channel. Removing sentiment costs 0.27~Sharpe but only 1.6~pp of ECE, revealing that
+the LLM channel carries distinct \emph{discriminative} information; removing
+FII/DII costs 0.16~Sharpe but 0.5~pp ECE, indicating the institutional channel
+serves calibration more than raw direction.
 
 \textbf{RO2 --- Hybrid LLM + Indicator Framework.} ProTrader AI surpasses the
 strongest LSTM~+~FinBERT hybrid by 5.0~pp and 0.32~Sharpe. Two architectural
@@ -736,25 +741,24 @@ rarely reported in hybrid-finance papers, yet removing it erases 0.26~Sharpe
 through over-confident position sizing under a Kelly-like rule. Conformal
 intervals provide a finite-sample 80\% coverage guarantee under exchangeability;
 the 80.7\% empirical coverage is an empirical observation rather than a strict
-guarantee given serial dependence \cite{r27}.
+guarantee given serial dependence \cite{r27,r28}.
 
 \textbf{RO3 --- Explainability and Temporal Dynamics.} XGBoost-component SHAP
-attribution unambiguously identifies FinBERT sentiment as the dominant feature,
+attribution identifies FinBERT sentiment as the dominant feature,
 satisfying the Quant~4.0 attribution requirement \cite{r9}. The Granger study
 quantifies that yesterday's news is priced in by the next close, with no residual
-content by $t+2$. The $-61\%/+43\%$ asymmetry between negative and positive
-sentiment effects provides a concrete, interpretable basis for asymmetric
-stop-loss policies. Adding multilingual (Hindi) sources reduces ECE by 0.9~pp,
+content by $t+2$. The $-61\%/+43\%$ negative/positive sentiment asymmetry guides
+asymmetric stop-loss design. Adding multilingual (Hindi) sources reduces ECE by 0.9~pp,
 confirming that sentiment noise is a calibration-level concern in multilingual
 markets \cite{r22}.
 
 \textbf{RO4 --- Cross-Market Evaluation.} The zero-shot 55.8\% accuracy on
 S\&P~500 demonstrates generalisable equity structure. Running the experiment
-in reverse (S\&P~500~$\to$~NIFTY, zero-shot) yielded only 53.9\%, echoing the
-asymmetric information-leadership findings of Kim et al.\ \cite{r11}. We
+in reverse (S\&P~500~$\to$~NIFTY, zero-shot) yielded only 53.9\%
+(a supplementary observation not included in Table~\ref{tab:transfer}),
+echoing the asymmetric information-leadership findings of Kim et al.\ \cite{r11}. We
 attribute this to the NSE training distribution encompassing a wider spread of
-regimes (currency crises, demonetisation, COVID-IPO frenzy), producing more
-robust feature-extractor weights. Re-fitting fewer than 1{,}000 parameters on
+regimes, producing more robust feature-extractor weights. Re-fitting fewer than 1{,}000 parameters on
 30~days of target data recovers half the cross-market gap---an efficiency
 decisive for single-trader personal-use deployment on commodity hardware.
 
@@ -762,8 +766,7 @@ decisive for single-trader personal-use deployment on commodity hardware.
 trending global equity environment; multi-year, multi-regime evaluation remains
 future work. The S\&P~500 subset of 30~stocks is sector-balanced but not
 exhaustive. The NSE cost model does not capture market impact at high turnover.
-Granger analysis assumes linearity. Sector-specific NLP fine-tuning for pharma
-and metals equities has not yet been pursued.
+Granger analysis assumes linearity, and sector-specific NLP fine-tuning has not yet been pursued.
 
 % =============================================================================
 \section{Conclusions}
@@ -778,10 +781,9 @@ analysis substantiate the interpretability and temporal-coupling claims; a
 cross-market transfer study to S\&P~500 demonstrates non-trivial zero-shot and
 fine-tuned portability. The complete pipeline runs on commodity hardware with
 freely available data, enabling reproducibility for any researcher or retail
-trader. Future work will address (RO1) options-market signals and Reddit flows;
-(RO2) finance-tuned decoder LLMs for reasoning-augmented sentiment; (RO3)
-counterfactual SHAP and causal-DAG inference; and (RO4) multi-market joint
-training under a domain-adversarial loss for one-shot deployment to new exchanges.
+trader. Future work will extend to options-market signals, Reddit flows, finance-tuned
+decoder LLMs, counterfactual SHAP, and multi-market joint training for
+one-shot deployment to new exchanges.
 
 % =============================================================================
 \section{Acknowledgements}
@@ -808,6 +810,11 @@ of artificial intelligence in the economy, including applications in stock
 trading, market analysis, and risk management. IEEE Access.
 2023;11:80769--80793.
 
+\bibitem{r8}
+Liu C, Arulappan A, Naha R, Mahanti A, Kamruzzaman J, Ra IH. Large language
+models and sentiment analysis in financial markets: a review, datasets, and
+case study. IEEE Access. 2024;12:134041--134061.
+
 \bibitem{r2}
 Nti IK, Adekoya AF, Weyori BA. A novel multi-source information-fusion
 predictive framework based on deep neural networks for accuracy enhancement
@@ -832,16 +839,6 @@ Farhadi A, Zamanifar A, Alipour A, Taheri A, Asadolahi M. A hybrid
 LSTM-GRU model for stock price prediction. IEEE Access.
 2025;13:117594--117618.
 
-\bibitem{r7}
-Mishev K, Gjorgjevikj A, Vodenska I, Chitkushev LT, Trajanov D. Evaluation
-of sentiment analysis in finance: from lexicons to transformers. IEEE Access.
-2020;8:131662--131682.
-
-\bibitem{r8}
-Liu C, Arulappan A, Naha R, Mahanti A, Kamruzzaman J, Ra IH. Large language
-models and sentiment analysis in financial markets: a review, datasets, and
-case study. IEEE Access. 2024;12:134041--134061.
-
 \bibitem{r9}
 Guo J, Wang S, Ni LM, Shum HY. Quant 4.0: engineering quantitative
 investment with automated, explainable, and knowledge-driven artificial
@@ -860,6 +857,21 @@ using effective transfer entropy and machine learning techniques. IEEE Access.
 Araci D. FinBERT: financial sentiment analysis with pre-trained language
 models [Internet]. 2019 [cited 2025 Jan 15]. Available from:
 https://arxiv.org/abs/1908.10063.
+
+\bibitem{r31}
+Yang Y, Uy MCS, Huang A. FinBERT: a pretrained language model for financial
+communications [Internet]. 2020 [cited 2025 Jan 15]. Available from:
+https://arxiv.org/abs/2006.08097.
+
+\bibitem{r7}
+Mishev K, Gjorgjevikj A, Vodenska I, Chitkushev LT, Trajanov D. Evaluation
+of sentiment analysis in finance: from lexicons to transformers. IEEE Access.
+2020;8:131662--131682.
+
+\bibitem{r35}
+Malo P, Sinha A, Korhonen P, Wallenius J, Takala P. Good debt or bad debt:
+detecting semantic orientations in economic texts. J Assoc Inf Sci Technol.
+2014;65(4):782--796.
 
 \bibitem{r13}
 Chen T, Guestrin C. XGBoost: a scalable tree boosting system. In: Proc 22nd
@@ -885,47 +897,44 @@ Zadrozny B, Elkan C. Transforming classifier scores into accurate multiclass
 probability estimates. In: Proc 8th ACM SIGKDD; 2002 Jul 23--26; Edmonton,
 Canada. New York: ACM; 2002. p. 694--699.
 
+\bibitem{r34}
+Brier GW. Verification of forecasts expressed in terms of probability. Mon
+Weather Rev. 1950;78(1):1--3.
+
+\bibitem{r26}
+Romano Y, Patterson E, Cand\`{e}s EJ. Conformalized quantile regression.
+In: Proc NeurIPS; 2019 Dec 8--14; Vancouver, Canada. Red Hook: Curran
+Associates; 2019. p. 3543--3553.
+
 \bibitem{r18}
 Vovk V, Gammerman A, Shafer G. Algorithmic learning in a random world.
 New York: Springer; 2005.
 
-\bibitem{r19}
-Hurst HE. Long-term storage capacity of reservoirs. Trans Amer Soc Civil
-Eng. 1951;116(1):770--799.
+\bibitem{r33}
+Angelopoulos AN, Bates S. A gentle introduction to conformal prediction and
+distribution-free uncertainty quantification. Found Trends Mach Learn.
+2023;16(4):494--591.
 
 \bibitem{r20}
 Lundberg SM, Lee SI. A unified approach to interpreting model predictions.
 In: Proc NeurIPS; 2017 Dec 4--9; Long Beach, USA. Red Hook: Curran
 Associates; 2017. p. 4765--4774.
 
+\bibitem{r19}
+Hurst HE. Long-term storage capacity of reservoirs. Trans Amer Soc Civil
+Eng. 1951;116(1):770--799.
+
+\bibitem{r30}
+Granger CWJ. Investigating causal relations by econometric models and
+cross-spectral methods. Econometrica. 1969;37(3):424--438.
+
 \bibitem{r21}
 Diebold FX, Mariano RS. Comparing predictive accuracy. J Bus Econ Stat.
 1995;13(3):253--263.
 
-\bibitem{r22}
-Onoz\'o R, Feh\'er VA, Gyires-T\'oth B. Leveraging LLMs for financial news
-analysis and macroeconomic indicator nowcasting. IEEE Access.
-2024;12:160529--160547.
-
-\bibitem{r23}
-Parekh R, Shah P, Patel N, Garg N, Pathak N, Tiwari S. DL-GuesS: deep
-learning and sentiment analysis-based cryptocurrency price prediction. IEEE
-Access. 2022;10:35398--35409.
-
-\bibitem{r24}
-Mu G, Gao N, Wang Y, Dai L. A stock price prediction model based on
-investor sentiment and optimized deep learning. IEEE Access.
-2023;11:51353--51367.
-
-\bibitem{r25}
-Lu X, Poon J, Khushi M. Bridging the gap between machine and human in
-stock prediction: addressing heterogeneity in stock market. IEEE Access.
-2024;12:186171--186185.
-
-\bibitem{r26}
-Romano Y, Patterson E, Cand\`{e}s EJ. Conformalized quantile regression.
-In: Proc NeurIPS; 2019 Dec 8--14; Vancouver, Canada. Red Hook: Curran
-Associates; 2019. p. 3543--3553.
+\bibitem{r29}
+Harvey D, Leybourne S, Newbold P. Testing the equality of prediction mean
+squared errors. Int J Forecast. 1997;13(2):281--291.
 
 \bibitem{r27}
 Gibbs I, Cand\`{e}s EJ. Adaptive conformal inference under distribution
@@ -937,37 +946,10 @@ Tibshirani RJ, Foygel Barber R, Cand\`{e}s EJ, Ramdas A. Conformal
 prediction under covariate shift. In: Proc NeurIPS; 2019 Dec 8--14;
 Vancouver, Canada. Red Hook: Curran Associates; 2019. p. 2526--2536.
 
-\bibitem{r29}
-Harvey D, Leybourne S, Newbold P. Testing the equality of prediction mean
-squared errors. Int J Forecast. 1997;13(2):281--291.
-
-\bibitem{r30}
-Granger CWJ. Investigating causal relations by econometric models and
-cross-spectral methods. Econometrica. 1969;37(3):424--438.
-
-\bibitem{r31}
-Yang Y, Uy MCS, Huang A. FinBERT: a pretrained language model for financial
-communications [Internet]. 2020 [cited 2025 Jan 15]. Available from:
-https://arxiv.org/abs/2006.08097.
-
-\bibitem{r32}
-Sawhney R, Agarwal S, Wadhwa A, Shah RR. Multimodal multi-task financial
-risk forecasting. In: Proc 2020 EMNLP; 2020 Nov 16--20; virtual.
-Stroudsburg: ACL; 2020. p. 4279--4292.
-
-\bibitem{r33}
-Angelopoulos AN, Bates S. A gentle introduction to conformal prediction and
-distribution-free uncertainty quantification. Found Trends Mach Learn.
-2023;16(4):494--591.
-
-\bibitem{r34}
-Brier GW. Verification of forecasts expressed in terms of probability. Mon
-Weather Rev. 1950;78(1):1--3.
-
-\bibitem{r35}
-Malo P, Sinha A, Korhonen P, Wallenius J, Takala P. Good debt or bad debt:
-detecting semantic orientations in economic texts. J Assoc Inf Sci Technol.
-2014;65(4):782--796.
+\bibitem{r22}
+Onoz\'o R, Feh\'er VA, Gyires-T\'oth B. Leveraging LLMs for financial news
+analysis and macroeconomic indicator nowcasting. IEEE Access.
+2024;12:160529--160547.
 
 \end{thebibliography}
 \end{singlespace}

@@ -42,6 +42,7 @@ def _get_secret(key: str, default: str = "") -> str:
 GEMINI_API_KEY = _get_secret("GEMINI_API_KEY", "")
 NEWS_API_KEY = _get_secret("NEWS_API_KEY", "")
 DEEPSEEK_API_KEY = _get_secret("DEEPSEEK_API_KEY", "")
+ANTHROPIC_API_KEY = _get_secret("ANTHROPIC_API_KEY", "")  # P3-4: LLM sentiment alpha
 
 # Reddit API (for multi-source sentiment)
 REDDIT_CLIENT_ID = _get_secret("REDDIT_CLIENT_ID", "")

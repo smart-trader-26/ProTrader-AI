@@ -149,7 +149,7 @@ def extract_volatility_features(vix_data: pd.DataFrame, stock_data: pd.DataFrame
             else:
                 vix_ma20_val = float(vix_ma20) if pd.notna(vix_ma20) else None
             
-            if vix_ma20_val and vix_ma20_val != 0:
+            if vix_ma20_val is not None and vix_ma20_val > 0 and not np.isnan(vix_ma20_val):
                 features['vix_vs_ma20'] = features['vix_current'] / vix_ma20_val
         
         # VIX trend (comparing last 5 days avg to previous 5 days)

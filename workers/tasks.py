@@ -44,8 +44,6 @@ def _predict_sync(**kwargs):
     import pandas as pd
 
     # Convert fii_dii_payload (list of dicts) back to a DataFrame.
-    # The router serialises FiiDiiInputRow objects to dicts for Celery
-    # compatibility; we restore the DataFrame here before calling predict().
     fii_dii_payload = kwargs.pop("fii_dii_payload", None)
     fii_dii_df: pd.DataFrame | None = None
     if fii_dii_payload:
@@ -54,8 +52,6 @@ def _predict_sync(**kwargs):
             fii_dii_df["date"] = pd.to_datetime(fii_dii_df["date"])
             fii_dii_df = fii_dii_df.set_index("date").sort_index()
 
-            # Normalise column names: frontend sends snake_case (fii_net, dii_net, …)
-            # but hybrid_model.py expects PascalCase (FII_Net, DII_Net, …).
             col_map = {
                 "fii_buy":  "FII_Buy_Value",
                 "fii_sell": "FII_Sell_Value",
@@ -66,20 +62,37 @@ def _predict_sync(**kwargs):
             }
             fii_dii_df.rename(columns=col_map, inplace=True)
 
-            # Derive cumulative columns if not already present
             if "FII_Net" in fii_dii_df.columns and "FII_Cumulative" not in fii_dii_df.columns:
                 fii_dii_df["FII_Cumulative"] = fii_dii_df["FII_Net"].cumsum()
             if "DII_Net" in fii_dii_df.columns and "DII_Cumulative" not in fii_dii_df.columns:
                 fii_dii_df["DII_Cumulative"] = fii_dii_df["DII_Net"].cumsum()
 
-            # Safety: if FII_Net / DII_Net still missing, discard the frame so the
-            # model falls back to zeros rather than raising a KeyError.
             if "FII_Net" not in fii_dii_df.columns or "DII_Net" not in fii_dii_df.columns:
                 fii_dii_df = None
         except Exception:
             fii_dii_df = None
 
-    return prediction_service.predict(fii_dii_data=fii_dii_df, **kwargs)
+    # Extract LLM sentiment scores collected by the user BEFORE prediction ran.
+    # Map to the sentiment_features keys that hybrid_model.py recognises.
+    llm_sentiment_signal = kwargs.pop("llm_sentiment_signal", None)
+    llm_mean_sentiment   = kwargs.pop("llm_mean_sentiment",   None)
+    llm_mean_materiality = kwargs.pop("llm_mean_materiality", None)
+    kwargs.pop("llm_top_headline", None)  # informational only
+
+    sentiment_features: dict | None = None
+    if llm_mean_sentiment is not None:
+        sentiment_features = {
+            "Sentiment":            float(llm_mean_sentiment),     # Feature 19 — primary sentiment
+            "Sentiment_Confidence": float(llm_mean_materiality or 0.5),  # Feature 21 — materiality as confidence proxy
+        }
+        if llm_sentiment_signal is not None:
+            sentiment_features["Multi_Sentiment"] = float(llm_sentiment_signal)  # Feature 20
+
+    return prediction_service.predict(
+        fii_dii_data=fii_dii_df,
+        sentiment_features=sentiment_features,
+        **kwargs,
+    )
 
 
 

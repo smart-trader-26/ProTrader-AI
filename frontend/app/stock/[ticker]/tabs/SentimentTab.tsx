@@ -8,6 +8,7 @@ import type {
   SourceBreakdown,
 } from "@/lib/types";
 import V2EnsemblePanel from "./V2EnsemblePanel";
+import LlmAlphaPanel from "./LlmAlphaPanel";
 
 const CAT_COLOR: Record<string, string> = {
   earnings: "#22c55e",
@@ -67,6 +68,8 @@ export default async function SentimentTab({ ticker }: { ticker: string }) {
       <NewsEventBreakdown items={agg.event_breakdown} />
 
       <V2EnsemblePanel ticker={ticker} />
+
+      <LlmAlphaPanel ticker={ticker} />
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Headlines by source</h2>

@@ -71,6 +71,28 @@ export default function FiiDiiTab() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Listen for FII/DII data written to localStorage by the OverviewTab modal.
+  // The 'storage' event only fires on OTHER tabs, so we use a custom event.
+  useEffect(() => {
+    function handleFiiDiiUpdated() {
+      try {
+        const saved = localStorage.getItem(FII_DII_STORAGE_KEY);
+        if (!saved) return;
+        const rows = JSON.parse(saved);
+        if (!rows?.length) return;
+        const bundle = buildBundle(rows);
+        setData(bundle);
+        setError(false);
+        setStale(isDataStale());
+        setLoading(false);
+        setPasteMode(false);
+      } catch {}
+    }
+    window.addEventListener("fii-dii-updated", handleFiiDiiUpdated);
+    return () => window.removeEventListener("fii-dii-updated", handleFiiDiiUpdated);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function parsePaste(raw: string): FiiDiiBundle | null {
     try {
       // Try JSON first

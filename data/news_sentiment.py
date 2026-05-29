@@ -71,6 +71,38 @@ def _translate_to_english(text: str) -> str:
 
 
 # ==============================================
+# DOMAIN BLOCKLIST — non-financial sources
+# ==============================================
+# Tech / package-index domains that appear in GNews / NewsAPI results when a
+# ticker name collides with a software package name (e.g. "reliance" PyPI pkg).
+_NON_FINANCIAL_DOMAINS: frozenset[str] = frozenset({
+    "pypi.org", "github.com", "github.io", "stackoverflow.com",
+    "npmjs.com", "readthedocs.io", "readthedocs.org",
+    "en.wikipedia.org", "wikipedia.org",
+    "docs.python.org", "pkg.go.dev", "crates.io",
+    "rubygems.org", "packagist.org", "nuget.org",
+    "mvnrepository.com", "hub.docker.com", "registry.npmjs.org",
+})
+
+
+def _is_financial_domain(url: str) -> bool:
+    """Return True if the article URL is from an acceptable domain.
+
+    Unknown / unparseable URLs are allowed through — the relevance filter
+    downstream will catch off-topic content. We only block domains we *know*
+    are tech/package-index sources that can never carry stock market news.
+    """
+    if not url:
+        return True
+    try:
+        from urllib.parse import urlparse
+        domain = urlparse(url).netloc.lower().lstrip("www.")
+        return domain not in _NON_FINANCIAL_DOMAINS
+    except Exception:
+        return True
+
+
+# ==============================================
 # SENTIMENT MODEL CONFIGURATION
 # ==============================================
 SENTIMENT_MODEL = "ProsusAI/finbert"
@@ -119,16 +151,41 @@ CATEGORY_KEYWORDS = {
 # Triggered before model output: if a clear signal word is present AND the
 # model agrees (or is neutral), we boost confidence to 0.88+.
 BULLISH_KEYWORDS = [
+    # Universal
     "buy", "strong buy", "upgrade", "bullish", "surge", "rally", "soar",
     "record", "beat", "beats", "outperform", "positive", "growth", "win",
-    "wins", "high", "all-time high", "52-week high", "approve", "approved",
-    "expansion", "launch", "partnership",
+    "wins", "all-time high", "52-week high", "approve", "approved",
+    "expansion", "launch", "partnership", "dividend", "bonus",
+    # Indian-market specific
+    "nifty high", "sensex high", "upper circuit", "multibagger",
+    "qip", "fpo", "rights issue oversubscribed", "order win", "order inflow",
+    "robust demand", "strong volume", "export order", "jv announced",
+    "demerger value unlock", "promoter buying", "buyback", "share buyback",
+    "capex guidance", "roe improvement", "margin expansion", "ebitda beat",
+    "ncd", "rights issue", "preferential allotment", "block deal bought",
+    "ace investor", "stake increase", "pli benefit", "government order",
+    "ipo subscribed", "ipo oversubscribed", "analyst target raised",
+    "new high", "breakout", "bullish crossover", "golden cross",
+    "sebi approval", "nclt approval", "government incentive",
 ]
 BEARISH_KEYWORDS = [
+    # Universal
     "sell", "strong sell", "downgrade", "bearish", "drop", "crash",
     "plunge", "slump", "loss", "losses", "penalty", "fraud", "default",
     "miss", "misses", "decline", "warning", "cut", "disappoints",
     "probe", "investigation", "lawsuit", "fine", "raid",
+    # Indian-market specific
+    "lower circuit", "sebi ban", "sebi penalty", "sebi notice",
+    "ed raid", "cbi probe", "it raid", "income tax notice",
+    "npa", "bad loan", "stressed assets", "corporate governance",
+    "promoter pledge", "promoter selling", "block deal sold",
+    "margin call", "debt trap", "debt restructuring", "insolvency",
+    "nclt order against", "cci penalty", "rbi penalty",
+    "export ban", "import duty hike", "price cap", "windfall tax",
+    "supply disruption", "plant shutdown", "strike", "labour unrest",
+    "profit warning", "guidance cut", "revenue miss", "ebitda miss",
+    "write-off", "impairment", "goodwill impairment", "recall",
+    "death cross", "bearish crossover", "breakdown", "52-week low",
 ]
 
 
@@ -248,13 +305,17 @@ def _fetch_gnews_lib(stock_symbol: str, company_name: str = None) -> list:
         try:
             client = GNews(language=lang, country=country, period="7d", max_results=15)
             for art in client.get_news(f"{search_term} stock") or []:
+                article_url = art.get("url", "")
+                # Skip tech/package-index domains that collide with ticker names.
+                if not _is_financial_domain(article_url):
+                    continue
                 out.append(
                     {
                         "title": art.get("title", ""),
                         "description": art.get("description", ""),
                         "publishedAt": art.get("published date", ""),
                         "source": {"name": (art.get("publisher") or {}).get("title", label)},
-                        "url": art.get("url", ""),
+                        "url": article_url,
                         "language": lang,
                     }
                 )

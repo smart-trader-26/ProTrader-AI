@@ -68,15 +68,64 @@ def calculate_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
 def calculate_obv(df: pd.DataFrame) -> pd.Series:
     """
     Calculate On-Balance Volume.
-    
+
     Args:
         df: DataFrame with Close and Volume columns
-    
+
     Returns:
         Series of OBV values
     """
     obv = (np.sign(df['Close'].diff()) * df['Volume']).fillna(0).cumsum()
     return obv
+
+
+def calculate_adx(df: pd.DataFrame, period: int = 14) -> pd.Series:
+    """
+    Average Directional Index via Wilder's smoothing.
+    Returns values 0-100; >25 = strong trend, <20 = weak/ranging.
+    """
+    high, low, close = df['High'], df['Low'], df['Close']
+    tr = pd.concat([
+        high - low,
+        (high - close.shift(1)).abs(),
+        (low - close.shift(1)).abs(),
+    ], axis=1).max(axis=1)
+
+    up_move, down_move = high.diff(), -low.diff()
+    plus_dm = up_move.where((up_move > down_move) & (up_move > 0), 0.0)
+    minus_dm = down_move.where((down_move > up_move) & (down_move > 0), 0.0)
+
+    alpha = 1.0 / period  # Wilder's smoothing
+    tr_s = tr.ewm(alpha=alpha, adjust=False).mean()
+    plus_di = 100 * plus_dm.ewm(alpha=alpha, adjust=False).mean() / (tr_s + 1e-8)
+    minus_di = 100 * minus_dm.ewm(alpha=alpha, adjust=False).mean() / (tr_s + 1e-8)
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di + 1e-8)
+    return dx.ewm(alpha=alpha, adjust=False).mean()
+
+
+def calculate_aroon(df: pd.DataFrame, period: int = 25) -> tuple:
+    """
+    Aroon indicator — measures how recently the highest high / lowest low occurred.
+    Returns (aroon_up, aroon_down, aroon_oscillator), each in [-100, 100].
+    Aroon Up = 100 when the highest high is today; 0 when it was `period` bars ago.
+    """
+    n = period + 1
+    aroon_up = df['High'].rolling(n).apply(
+        lambda x: np.argmax(x) / period * 100, raw=True
+    )
+    aroon_down = df['Low'].rolling(n).apply(
+        lambda x: np.argmin(x) / period * 100, raw=True
+    )
+    return aroon_up, aroon_down, aroon_up - aroon_down
+
+
+def calculate_ema_slope(prices: pd.Series, span: int = 21, lookback: int = 5) -> pd.Series:
+    """
+    EMA slope: (EMA_t - EMA_{t-lookback}) / Close_t.
+    Sign = trend direction; magnitude = acceleration. Normalized by price.
+    """
+    ema = prices.ewm(span=span, adjust=False).mean()
+    return (ema - ema.shift(lookback)) / (prices + 1e-8)
 
 
 def calculate_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:

@@ -41,6 +41,32 @@ from config.settings import (
 # NewsAPI configuration
 NEWS_API_URL = "https://newsapi.org/v2/everything"
 
+# Domain filter is defined in data.news_sentiment (canonical location) and
+# imported here so both news paths share a single blocklist definition.
+from data.news_sentiment import _is_financial_domain  # noqa: E402
+
+
+def _build_newsapi_query(stock_symbol: str) -> str:
+    """Build a precise NewsAPI query that minimises non-financial false positives.
+
+    Priority:
+      1. Full company name from DataConfig.STOCK_NAME_MAPPING (most precise).
+      2. Longest keyword in STOCK_KEYWORDS (usually the company name).
+      3. Raw symbol as last resort.
+    Always appends 'NSE stock' so the financial context is part of the query,
+    pushing tech/package-index results out of the top results.
+    """
+    try:
+        from config.settings import DataConfig
+        full_name = DataConfig.STOCK_NAME_MAPPING.get(stock_symbol.upper(), "")
+        if full_name:
+            return f'"{full_name}" NSE stock'
+    except Exception:
+        pass
+    keywords = STOCK_KEYWORDS.get(stock_symbol.upper(), [stock_symbol])
+    best = max(keywords, key=len)
+    return f'"{best}" NSE stock India'
+
 
 # ==============================================
 # RSS FEED SOURCES (Most Reliable)
@@ -336,11 +362,11 @@ class MultiSourceSentiment:
             return []
         
         all_articles = []
-        
-        # Build search query
+
+        # Build precise financial query — avoids matching non-financial packages
+        # (e.g. the "reliance" PyPI package) that pollute raw keyword searches.
         if stock_symbol:
-            keywords = STOCK_KEYWORDS.get(stock_symbol.upper(), [stock_symbol])
-            query = " OR ".join(keywords[:3])  # Use top 3 keywords
+            query = _build_newsapi_query(stock_symbol)
         else:
             query = "stock market India NSE"
         
@@ -364,18 +390,24 @@ class MultiSourceSentiment:
                     description = article.get("description", "")
                     published = article.get("publishedAt", "")
                     source_name = article.get("source", {}).get("name", "NewsAPI")
-                    
+                    article_url = article.get("url", "")
+
+                    # Skip articles from tech/package-index domains.
+                    if not _is_financial_domain(article_url):
+                        continue
+
                     # Parse date
                     try:
                         pub_date = datetime.fromisoformat(published.replace("Z", "+00:00"))
                     except Exception:
                         pub_date = datetime.now()
-                    
+
                     all_articles.append({
                         'source': f"NewsAPI: {source_name}",
                         'title': title,
                         'summary': description[:500] if description else '',
                         'date': pub_date,
+                        'url': article_url,
                         'type': 'newsapi'
                     })
                     

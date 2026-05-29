@@ -45,7 +45,7 @@ export function useJobProgress<T>(
   jobId: string | null,
   opts: { timeoutMs?: number; typicalDurationMs?: number } = {},
 ): JobProgressResult<T> {
-  const { timeoutMs = 180_000, typicalDurationMs = TYPICAL_DURATION_MS } = opts;
+  const { timeoutMs = 0, typicalDurationMs = TYPICAL_DURATION_MS } = opts;
   const [phase, setPhase] = useState("queued");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<T | null>(null);
@@ -58,7 +58,7 @@ export function useJobProgress<T>(
     setIsRunning(true);
     startRef.current = Date.now();
 
-    const deadline = Date.now() + timeoutMs;
+    const deadline = timeoutMs > 0 ? Date.now() + timeoutMs : Infinity;
 
     while (Date.now() < deadline) {
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));

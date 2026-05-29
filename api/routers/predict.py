@@ -52,6 +52,13 @@ class PredictRequest(BaseModel):
     # If provided, this is passed directly as the fii_dii_data feature input to
     # the model, bypassing the auto-fetch. Rows should cover at least 30 days.
     fii_dii_rows: list[FiiDiiInputRow] | None = None
+    # Optional LLM sentiment scores collected BEFORE the prediction runs.
+    # When provided, these are fed into the model as sentiment features so the
+    # ensemble trains with LLM alpha rather than relying solely on FinBERT.
+    llm_sentiment_signal: float | None = None    # combined alpha (sentiment×novelty×materiality)
+    llm_mean_sentiment: float | None = None      # mean sentiment [-1..+1]
+    llm_mean_materiality: float | None = None    # mean materiality [0..1]
+    llm_top_headline: str | None = None          # highest-alpha headline (logged only)
 
 
 class PredictAccepted(BaseModel):
@@ -90,6 +97,10 @@ def enqueue_predict(
         n_paths=body.n_paths,
         log_to_ledger=body.log_to_ledger,
         fii_dii_payload=fii_dii_payload,
+        llm_sentiment_signal=body.llm_sentiment_signal,
+        llm_mean_sentiment=body.llm_mean_sentiment,
+        llm_mean_materiality=body.llm_mean_materiality,
+        llm_top_headline=body.llm_top_headline,
     )
     return PredictAccepted(
         job_id=job.id,

@@ -400,6 +400,94 @@ if show_analysis and df_stock is not None and not df_stock.empty:
         else:
             st.warning("No specific news found. Using technicals only.")
 
+        # ── P3-4: LLM Sentiment Alpha ──────────────────────────────────────────
+        _llm_sentiment_result = None
+        try:
+            from services.llm_sentiment_alpha import LLMSentimentAlpha
+
+            _llm_scorer = LLMSentimentAlpha()
+            _headlines = [
+                f"{a.get('title', '')} {a.get('description', '')}".strip()
+                for a in (filtered_news or [])
+                if a.get('title')
+            ][:10]
+
+            if _headlines:
+                # Check session state for a previously pasted response
+                _ss_key_resp = f"llm_manual_resp_{selected_stock}"
+                _ss_key_res  = f"llm_result_{selected_stock}"
+
+                if _ss_key_res in st.session_state:
+                    # Already scored this run
+                    _llm_sentiment_result = st.session_state[_ss_key_res]
+                else:
+                    _llm_result = _llm_scorer.score_ticker(selected_stock, _headlines)
+
+                    if _llm_result.needs_manual_input:
+                        st.subheader("🤖 LLM Sentiment Scoring (claude.ai)")
+                        st.markdown(
+                            "**No Claude API key configured.** Copy the prompt below, paste it into "
+                            "[claude.ai](https://claude.ai) (free account), then paste Claude's JSON "
+                            "response in the box below and click **Submit**."
+                        )
+
+                        with st.expander("📋 Prompt — copy and paste into claude.ai", expanded=True):
+                            st.code(_llm_result.manual_prompt, language="text")
+
+                        _pasted = st.text_area(
+                            "Paste Claude's JSON response here:",
+                            key=f"llm_paste_{selected_stock}",
+                            height=180,
+                            placeholder='[{"i":1,"novelty":0.8,"materiality":0.7,"sentiment":0.6}, ...]',
+                        )
+
+                        _col1, _col2 = st.columns([1, 4])
+                        with _col1:
+                            _submitted = st.button("Submit LLM Response", key=f"llm_submit_{selected_stock}")
+                        with _col2:
+                            _skipped = st.button("Skip (use keyword fallback)", key=f"llm_skip_{selected_stock}")
+
+                        if _submitted and _pasted.strip():
+                            _scored = _llm_scorer.score_ticker_from_manual_response(
+                                selected_stock, _headlines, _pasted
+                            )
+                            st.session_state[_ss_key_res] = _scored
+                            st.session_state[_ss_key_resp] = _pasted
+                            _llm_sentiment_result = _scored
+                            st.success(
+                                f"LLM alpha scored: combined signal = {_scored.combined_signal:+.3f} "
+                                f"(mean sentiment {_scored.mean_sentiment:+.3f}, "
+                                f"materiality {_scored.mean_materiality:.2f})"
+                            )
+                        elif _skipped:
+                            # Force keyword-fallback by passing dummy empty response
+                            _scored = _llm_scorer.score_ticker_from_manual_response(
+                                selected_stock, _headlines, ""
+                            )
+                            st.session_state[_ss_key_res] = _scored
+                            _llm_sentiment_result = _scored
+                            st.info(f"Keyword fallback used — combined signal = {_scored.combined_signal:+.3f}")
+                        else:
+                            # Neither submitted nor skipped — hold here
+                            st.stop()
+                    else:
+                        # API scored (or cached)
+                        _llm_sentiment_result = _llm_result
+                        st.session_state[_ss_key_res] = _llm_result
+                        st.success(
+                            f"LLM Sentiment Alpha — combined signal = {_llm_result.combined_signal:+.3f} "
+                            f"({'cached' if any(s.from_cache for s in _llm_result.individual_scores) else 'API'})"
+                        )
+
+                if _llm_sentiment_result and _llm_sentiment_result.available:
+                    st.caption(
+                        f"Top headline: {_llm_sentiment_result.top_headline} "
+                        f"(alpha = {_llm_sentiment_result.top_alpha:+.3f})"
+                    )
+        except Exception as _llm_exc:
+            st.warning(f"LLM sentiment alpha unavailable: {_llm_exc}")
+
+        # ── Blocking FII/DII gate before model ────────────────────────────────
         # Run Hybrid Model
         st.subheader("🤖 AI Price Forecast")
         with st.spinner("Running Hybrid AI Models (Sequential Train/Test)..."):
@@ -412,8 +500,15 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                 fii_dii_features = extract_fii_dii_features(fii_dii_data)
                 st.info(f"✅ Official NSE FII/DII data integrated | FII 5D Net: ₹{fii_dii_features['fii_net_5d']/1e7:.2f}Cr | DII 5D Net: ₹{fii_dii_features['dii_net_5d']/1e7:.2f}Cr")
             else:
-                fii_dii_data = pd.DataFrame()
-                st.warning("⚠️ FII/DII data unavailable. Using technical + sentiment only.")
+                # Hard blocking gate — model must NOT run without FII/DII data.
+                # The loading pipeline already tried auto-fetch + manual input.
+                # If we still have nothing here, re-show the manual input form and halt.
+                st.error(
+                    "⛔ FII/DII institutional data is required before the model can run. "
+                    "Please provide the data below and rerun the analysis."
+                )
+                render_manual_fii_dii_input()
+                st.stop()
             
             # Use pre-fetched VIX Data from session state
             vix_data = st.session_state.get('vix_data')
@@ -662,7 +757,56 @@ if show_analysis and df_stock is not None and not df_stock.empty:
                     )
             except Exception:
                 pass
-            
+
+            # P3-11 — Trading Suspension Gate
+            try:
+                from services.live_monitor import LiveMonitor
+                if LiveMonitor.is_trading_suspended():
+                    st.error(
+                        "⛔ **Trading Suspended** — Rolling 60-day Sharpe fell below 0 for "
+                        "3 consecutive days. Model is in **diagnostic-only mode**. "
+                        "Do not trade on these signals until live Sharpe recovers."
+                    )
+            except Exception:
+                pass
+
+            # P1-5 — ECE Calibration Gate
+            try:
+                acc30_ece = ledger_service.accuracy_window(selected_stock, days=30)
+                if (
+                    acc30_ece.n_resolved >= 10
+                    and acc30_ece.ece is not None
+                    and acc30_ece.ece > 0.15
+                ):
+                    st.warning(
+                        f"⚠️ **Calibration Gate Active** — Rolling ECE = {acc30_ece.ece * 100:.1f}% "
+                        f"on {acc30_ece.n_resolved} resolved predictions. "
+                        "Stated probabilities are unreliable. Check the 🎯 Accuracy tab."
+                    )
+            except Exception:
+                pass
+
+            # Conviction Precision (P3-B)
+            try:
+                _conv = metrics.get('conviction_precision') or {}
+                _bull_prec = _conv.get('bull_precision')
+                _n_high = _conv.get('n_high_bull', 0)
+                _tau_conv = _conv.get('threshold', 0.60)
+                if _bull_prec is not None and _n_high > 0:
+                    _prec_color = UIConfig.COLOR_BULLISH if _bull_prec >= 0.55 else UIConfig.COLOR_BEARISH
+                    _go_label = "✓ Go" if _bull_prec >= 0.55 else "✗ No-go"
+                    st.markdown(
+                        f"<div style='padding:8px 12px;border-left:4px solid {_prec_color};"
+                        f"background:rgba(255,255,255,0.03);margin-top:8px;border-radius:4px;"
+                        f"font-size:13px;'>"
+                        f"🎯 <b>Conviction Precision:</b> "
+                        f"<span style='color:{_prec_color};font-weight:600;'>{_bull_prec * 100:.1f}% ({_go_label})</span> "
+                        f"on {_n_high} high-conviction bull calls ≥{_tau_conv * 100:.0f}%.</div>",
+                        unsafe_allow_html=True,
+                    )
+            except Exception:
+                pass
+
             # AI Expert Analysis
             st.markdown("---")
             st.header("🤖 AI Expert Analysis")
@@ -732,7 +876,48 @@ if show_analysis and df_stock is not None and not df_stock.empty:
             analysis_mode = "✨ Powered by DeepSeek & Gemini" if gemini_used else "📝 Template Analysis"
             st.markdown(f"### 🧠 AI Expert Analysis <span style='font-size: 14px; color: {'#00ff88' if gemini_used else '#ffaa00'};'>({analysis_mode})</span>", unsafe_allow_html=True)
             st.markdown(gemini_analysis)
-            
+
+            # ── Claude Expert Analysis (when DeepSeek + Gemini unavailable) ────
+            if not gemini_used:
+                _claude_ea_key = f"claude_expert_{selected_stock}"
+                if _claude_ea_key in st.session_state:
+                    st.markdown("### 🤖 Claude Expert Analysis")
+                    st.markdown(st.session_state[_claude_ea_key])
+                else:
+                    try:
+                        from ui.ai_analysis import generate_claude_expert_analysis_prompt
+                        _claude_ea_prompt = generate_claude_expert_analysis_prompt(
+                            stock_symbol=selected_stock,
+                            current_price=current_price,
+                            predicted_prices=future_prices,
+                            metrics=metrics,
+                            fundamentals=fundamentals,
+                            sentiment_summary=daily_sentiment,
+                            technical_indicators=technical_indicators,
+                            fii_dii_data=st.session_state.get('fii_dii_data'),
+                            vix_data=st.session_state.get('vix_data'),
+                            patterns=st.session_state.get('pattern_analysis', {}).get('patterns'),
+                        )
+                        with st.expander("🤖 Get a richer analysis from Claude (free — no API key needed)", expanded=True):
+                            st.markdown(
+                                "DeepSeek and Gemini were unavailable. Get a full expert analysis "
+                                "by pasting the prompt below into **[claude.ai](https://claude.ai)** "
+                                "(free account), then paste the response here."
+                            )
+                            st.code(_claude_ea_prompt, language="text")
+                            _ea_pasted = st.text_area(
+                                "Paste Claude's response here:",
+                                key=f"claude_ea_paste_{selected_stock}",
+                                height=300,
+                                placeholder="### 🎯 Verdict: BUY\n**Conviction:** High\n...",
+                            )
+                            if st.button("Apply Expert Analysis", key=f"claude_ea_submit_{selected_stock}"):
+                                if _ea_pasted.strip():
+                                    st.session_state[_claude_ea_key] = _ea_pasted.strip()
+                                    st.rerun()
+                    except Exception as _ea_exc:
+                        st.caption(f"(Claude expert analysis prompt unavailable: {_ea_exc})")
+
             st.markdown("---")
             
             # Forecast Plot — probabilistic fan chart
@@ -868,9 +1053,78 @@ if show_analysis and df_stock is not None and not df_stock.empty:
             st.subheader("🎯 Model Accuracy: Actual vs Predicted Prices")
             accuracy_chart = create_accuracy_comparison_chart(df_stock, results_df, future_prices)
             st.plotly_chart(accuracy_chart, use_container_width=True)
-            
+
             with st.expander("📊 View Detailed Forecast Table"):
                 st.dataframe(future_prices.style.format("{:.2f}"))
+
+            # ── P3 Signal Synthesis via Claude ────────────────────────────────
+            st.markdown("---")
+            st.subheader("🧬 Full-Stack Signal Synthesis")
+            st.caption(
+                "All five signal layers (ML model · Technicals · Institutional flows · "
+                "Options alpha · LLM sentiment) synthesised into one actionable brief."
+            )
+            _synth_key = f"claude_synth_{selected_stock}"
+            if _synth_key in st.session_state:
+                st.markdown(st.session_state[_synth_key])
+            else:
+                try:
+                    from services.llm_sentiment_alpha import generate_signal_synthesis_prompt
+
+                    # Gather every signal we have
+                    _fii_feat = extract_fii_dii_features(fii_dii_data) if (fii_dii_data is not None and not fii_dii_data.empty) else {}
+                    _vix_val = float(vix_data['Close'].iloc[-1]) if (vix_data is not None and not vix_data.empty and 'Close' in vix_data.columns) else 15.0
+                    _opt = st.session_state.get('option_features') or {}
+                    _llm = _llm_sentiment_result
+                    _multi = st.session_state.get('multi_sentiment') or {}
+
+                    _synth_prompt = generate_signal_synthesis_prompt(
+                        ticker=selected_stock,
+                        current_price=float(current_price),
+                        forecast_return_pct=float(((future_prices['Predicted Price'].iloc[-1] - current_price) / current_price) * 100) if not future_prices.empty else 0.0,
+                        directional_prob=float(metrics.get('last_directional_prob', 50.0)),
+                        model_accuracy=float(metrics.get('accuracy', 50.0)),
+                        hurst=metrics.get('hurst_exponent'),
+                        rsi=float(df_proc['RSI_Norm'].iloc[-1] * 100) if 'RSI_Norm' in df_proc.columns else 50.0,
+                        macd_hist=float(df_proc['MACD_Histogram'].iloc[-1]) if 'MACD_Histogram' in df_proc.columns else 0.0,
+                        volatility_20d=float(df_proc['Volatility_20D'].iloc[-1]) if 'Volatility_20D' in df_proc.columns else 0.01,
+                        fii_net_5d_cr=float(_fii_feat.get('fii_net_5d', 0)) / 1e7,
+                        dii_net_5d_cr=float(_fii_feat.get('dii_net_5d', 0)) / 1e7,
+                        vix=_vix_val,
+                        llm_sentiment_signal=float(_llm.combined_signal) if _llm and _llm.available else 0.0,
+                        llm_mean_sentiment=float(_llm.mean_sentiment) if _llm and _llm.available else 0.0,
+                        llm_mean_materiality=float(_llm.mean_materiality) if _llm and _llm.available else 0.0,
+                        llm_top_headline=(_llm.top_headline if _llm and _llm.available else "N/A"),
+                        multi_sentiment_score=float(_multi.get('combined_sentiment', 0.0)),
+                        options_pcr_signal=float(_opt.get('pcr_signal', 0.0)),
+                        options_iv_skew_signal=float(_opt.get('iv_skew_signal', 0.0)),
+                        options_combined=float(_opt.get('combined_signal', 0.0)),
+                        shap_top_features=list(metrics.get('shap_importance', {}).keys())[:5] if metrics.get('shap_importance') else [],
+                        forecast_days=len(future_prices),
+                        regime=str(metrics.get('regime', 'normal')),
+                    )
+
+                    with st.expander("📋 Signal Synthesis Prompt — paste into claude.ai", expanded=True):
+                        st.markdown(
+                            "Copy the prompt below and paste it into **[claude.ai](https://claude.ai)** "
+                            "(free). Claude will synthesise all five signal layers into a unified "
+                            "trade brief with entry / target / stop."
+                        )
+                        st.code(_synth_prompt, language="text")
+
+                    _synth_pasted = st.text_area(
+                        "Paste Claude's synthesis response here:",
+                        key=f"synth_paste_{selected_stock}",
+                        height=350,
+                        placeholder="### Signal Alignment Score: 4/5 signals aligned\n...",
+                    )
+                    if st.button("Apply Signal Synthesis", key=f"synth_submit_{selected_stock}"):
+                        if _synth_pasted.strip():
+                            st.session_state[_synth_key] = _synth_pasted.strip()
+                            st.rerun()
+
+                except Exception as _synth_exc:
+                    st.caption(f"(Signal synthesis prompt unavailable: {_synth_exc})")
 
     # ==========================================
     # TAB 2: Dynamic Fusion

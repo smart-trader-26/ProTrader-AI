@@ -21,12 +21,15 @@ from __future__ import annotations
 import pandas as pd
 
 MACRO_TICKERS = {
-    "USDINR": "INR=X",
-    "Crude":  "CL=F",
-    "US10Y":  "^TNX",
-    "Gold":   "GC=F",
-    "SP500":  "^GSPC",
-    "USVIX":  "^VIX",
+    "USDINR":  "INR=X",
+    "Crude":   "CL=F",
+    "US10Y":   "^TNX",
+    "Gold":    "GC=F",
+    "SP500":   "^GSPC",
+    "USVIX":   "^VIX",
+    # NIFTY50 index — used to compute relative strength (ticker vs market)
+    # which is the key cross-sectional signal the per-ticker model was missing.
+    "NIFTY50": "^NSEI",
 }
 
 

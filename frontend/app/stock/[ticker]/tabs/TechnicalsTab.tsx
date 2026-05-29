@@ -2,6 +2,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import Stat from "@/components/Stat";
 import type { TechnicalSnapshot } from "@/lib/types";
 import { formatINR, formatPercent, formatRatio, toneFor } from "@/lib/format";
+import TradeSetupCalculator from "./TradeSetupCalculator";
 
 export default async function TechnicalsTab({ ticker }: { ticker: string }) {
   const snap = await safe<TechnicalSnapshot>(
@@ -118,6 +119,8 @@ export default async function TechnicalsTab({ ticker }: { ticker: string }) {
           </div>
         )}
       </section>
+
+      <TradeSetupCalculator snap={snap} />
     </div>
   );
 }

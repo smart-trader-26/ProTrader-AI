@@ -167,6 +167,38 @@ def create_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     df['RSI_Bear_Div'] = ((df['Close'] >= px_10h) & (df['RSI'] < rsi_10h)).astype(float).fillna(0)
     df['RSI_Bull_Div'] = ((df['Close'] <= px_10l) & (df['RSI'] > rsi_10l)).astype(float).fillna(0)
 
+    # ── P2-11: Trend-strength features (critical for Hurst=0.73 trending market) ──
+
+    # ADX via Wilder's smoothing — reuses true_range already computed above
+    _adx_alpha = 1.0 / 14
+    _up_move   = df['High'].diff()
+    _down_move = -df['Low'].diff()
+    _plus_dm   = _up_move.where((_up_move > _down_move) & (_up_move > 0), 0.0)
+    _minus_dm  = _down_move.where((_down_move > _up_move) & (_down_move > 0), 0.0)
+    _tr_s      = true_range.ewm(alpha=_adx_alpha, adjust=False).mean()
+    _plus_di   = 100 * _plus_dm.ewm(alpha=_adx_alpha, adjust=False).mean() / (_tr_s + 1e-8)
+    _minus_di  = 100 * _minus_dm.ewm(alpha=_adx_alpha, adjust=False).mean() / (_tr_s + 1e-8)
+    _dx        = 100 * (_plus_di - _minus_di).abs() / (_plus_di + _minus_di + 1e-8)
+    _adx       = _dx.ewm(alpha=_adx_alpha, adjust=False).mean()
+    df['ADX_Norm']    = (_adx / 100.0).clip(0, 1)
+    df['ADX_Trend']   = (_adx > 25).astype(float)  # 1 = strong trend gate
+    df['DI_Diff_Norm'] = ((_plus_di - _minus_di) / 100.0).clip(-1, 1)  # directional bias
+
+    # Aroon (25-period): measures how recently highest high / lowest low occurred
+    _aroon_n = 26
+    df['Aroon_Up']      = df['High'].rolling(_aroon_n).apply(lambda x: np.argmax(x) / 25 * 100, raw=True)
+    df['Aroon_Down']    = df['Low'].rolling(_aroon_n).apply(lambda x: np.argmin(x) / 25 * 100, raw=True)
+    df['Aroon_Osc_Norm'] = ((df['Aroon_Up'] - df['Aroon_Down']) / 100.0).clip(-1, 1)
+
+    # EMA slopes (trend direction + acceleration) normalized by price
+    _ema9  = df['Close'].ewm(span=9,  adjust=False).mean()
+    _ema21 = df['Close'].ewm(span=21, adjust=False).mean()
+    _ema50 = df['Close'].ewm(span=50, adjust=False).mean()
+    _px    = df['Close'] + 1e-8
+    df['EMA9_Slope']  = ((_ema9  - _ema9.shift(3))  / _px).clip(-0.1, 0.1)
+    df['EMA21_Slope'] = ((_ema21 - _ema21.shift(5))  / _px).clip(-0.1, 0.1)
+    df['EMA50_Slope'] = ((_ema50 - _ema50.shift(10)) / _px).clip(-0.1, 0.1)
+
     df.dropna(inplace=True)
 
     return df
@@ -202,39 +234,59 @@ def detect_market_regime(df: pd.DataFrame, vol_window: int = 20, trend_window: i
 
     abs_slope = abs(slope)
 
+    # P2-7: Use ADX as a hard gate for the trending regime when available.
+    # ADX > 25 confirms trend strength; ADX < 20 overrides a slope signal.
+    adx_val = None
+    if 'ADX_Norm' in df.columns and df['ADX_Norm'].notna().any():
+        adx_val = float(df['ADX_Norm'].iloc[-1]) * 100  # back to 0-100 scale
+
+    def _adx_confirms_trend() -> bool:
+        return adx_val is None or adx_val >= 20
+
+    def _adx_negates_trend() -> bool:
+        return adx_val is not None and adx_val < 18
+
     if vol_percentile > 85:
         direction = 'down-trending' if slope < 0 else 'up-trending'
         return {
             'type': 'high_volatility',
             'detail': f'Elevated volatility ({vol_percentile:.0f}th percentile), {direction}',
-            'hurst': round(H, 3)
+            'hurst': round(H, 3),
+            'adx': round(adx_val, 1) if adx_val is not None else None,
         }
     elif abs_slope > 0.002 and r_squared > 0.3:
-        if H >= 0.45:  # Hurst does not contradict → confirm as trending
+        if H >= 0.45 and _adx_confirms_trend():
             direction = 'Uptrend' if slope > 0 else 'Downtrend'
-            strength  = 'strong' if r_squared > 0.6 else 'moderate'
+            strength  = 'strong' if (r_squared > 0.6 and (adx_val or 0) > 25) else 'moderate'
+            adx_str   = f', ADX={adx_val:.0f}' if adx_val is not None else ''
             return {
                 'type': 'trending',
-                'detail': f'{direction} ({strength}, R²={r_squared:.2f}, H={H:.2f})',
-                'hurst': round(H, 3)
+                'detail': f'{direction} ({strength}, R²={r_squared:.2f}, H={H:.2f}{adx_str})',
+                'hurst': round(H, 3),
+                'adx': round(adx_val, 1) if adx_val is not None else None,
             }
-        else:  # H < 0.45 overrides slope → mean-reverting despite apparent slope direction
+        else:
+            reason = (f'ADX={adx_val:.0f}<18 negates slope'
+                      if _adx_negates_trend() else f'H={H:.2f}<0.45 overrides slope')
             return {
                 'type': 'mean_reverting',
-                'detail': f'Slope-trend overridden by Hurst (H={H:.2f}<0.45)',
-                'hurst': round(H, 3)
+                'detail': f'Slope-trend overridden by {reason}',
+                'hurst': round(H, 3),
+                'adx': round(adx_val, 1) if adx_val is not None else None,
             }
     elif vol_percentile < 30 and abs_slope < 0.001:
         return {
             'type': 'mean_reverting',
             'detail': f'Range-bound (vol {vol_percentile:.0f}th pctl, H={H:.2f})',
-            'hurst': round(H, 3)
+            'hurst': round(H, 3),
+            'adx': round(adx_val, 1) if adx_val is not None else None,
         }
     else:
         return {
             'type': 'normal',
             'detail': f'Normal conditions (vol {vol_percentile:.0f}th pctl, H={H:.2f})',
-            'hurst': round(H, 3)
+            'hurst': round(H, 3),
+            'adx': round(adx_val, 1) if adx_val is not None else None,
         }
 
 
@@ -290,19 +342,21 @@ def _conformal_halfwidth(y_true: np.ndarray, y_pred: np.ndarray,
 def _train_lightgbm(X_train: np.ndarray, y_train: np.ndarray,
                     X_test: np.ndarray) -> tuple:
     """Train LightGBM regressor. Returns (model, test_predictions)."""
+    # Regularisation scaled to dataset size: smaller leaves + L1/L2 to prevent
+    # the 35-feature model from memorising the ~150-row training window.
     params = dict(
-        n_estimators=200,
-        max_depth=5,
-        learning_rate=0.03,
-        num_leaves=31,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        min_child_samples=20,
-        reg_alpha=0.1,
-        reg_lambda=0.1,
+        n_estimators=300,
+        max_depth=4,
+        learning_rate=0.02,
+        num_leaves=15,
+        subsample=0.7,
+        colsample_bytree=0.7,
+        min_child_samples=10,
+        reg_alpha=0.5,
+        reg_lambda=2.0,
         n_jobs=-1,
         verbose=-1,
-        random_state=42
+        random_state=42,
     )
     model = lgb.LGBMRegressor(**params)
     model.fit(X_train, y_train)
@@ -315,19 +369,19 @@ def _train_catboost(X_train: np.ndarray, y_train: np.ndarray,
                     X_test: np.ndarray) -> tuple:
     """Train CatBoostRegressor with ordered boosting. Returns (model, test_predictions)."""
     model = CatBoostRegressor(
-        iterations=300,
-        depth=6,
+        iterations=350,
+        depth=4,               # shallower to prevent overfitting on small datasets
         learning_rate=0.03,
-        l2_leaf_reg=3,
-        min_data_in_leaf=20,
-        random_strength=0.3,
-        bagging_temperature=0.7,
+        l2_leaf_reg=6,         # stronger L2 (was 3)
+        min_data_in_leaf=8,    # consistent with LGBM min_child_samples=10
+        random_strength=0.5,
+        bagging_temperature=0.8,
         od_type='Iter',
         od_wait=40,
         verbose=0,
         random_seed=42,
         thread_count=-1,
-        allow_writing_files=False,   # avoid tmp file creation in Streamlit Cloud
+        allow_writing_files=False,
     )
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
@@ -336,65 +390,112 @@ def _train_catboost(X_train: np.ndarray, y_train: np.ndarray,
 
 
 def _generate_oof_predictions(X_train: np.ndarray, y_train: np.ndarray,
-                               n_folds: int = 5) -> tuple:
+                               n_folds: int = 5,
+                               purge_gap: int = 5,
+                               embargo_gap: int = 5) -> tuple:
     """
-    Expanding-window OOF predictions for the stacking meta-learner.
-    Each fold trains on all prior data, strictly chronological.
-    GRU OOF is approximated as lag-1 of XGB (training full GRU per fold is too slow).
+    Purged expanding-window OOF with embargo (P2-4, López de Prado AFML §7).
+
+    For each fold k:
+      - Train on indices [0, val_start - purge_gap)
+      - Validate on [val_start, val_end)
+      - Embargo: next fold cannot start until val_end + embargo_gap
+
+    Purge prevents the model from memorising the near-boundary signal that
+    was in its training window. Embargo prevents the validation residuals
+    from echoing into the next fold's training features (e.g. lagged returns).
+
     Returns (oof_xgb, oof_lgbm, oof_catboost) arrays aligned to y_train.
     """
     n = len(X_train)
-    min_train = max(int(n * 0.6), 30)
-    step = max((n - min_train) // n_folds, 5)
+    # At least 40% of data for the first training window; min 20 samples.
+    min_train = max(int(n * 0.40), 20 + purge_gap)
+    step      = max((n - min_train) // n_folds, 5)
 
     oof_xgb      = np.zeros(n)
     oof_lgbm     = np.zeros(n)
     oof_catboost = np.zeros(n)
 
+    # Stronger regularisation: small datasets overfit badly with default params.
     xgb_params = dict(
-        objective='reg:squarederror', n_estimators=100, max_depth=4,
-        learning_rate=0.05, subsample=0.8, colsample_bytree=0.8,
-        n_jobs=-1, verbosity=0
+        objective='reg:squarederror',
+        n_estimators=150,
+        max_depth=3,           # shallow — ~121 training rows
+        learning_rate=0.05,
+        subsample=0.7,
+        colsample_bytree=0.7,
+        min_child_weight=5,    # require ≥5 samples per leaf
+        gamma=0.1,
+        reg_alpha=0.5,
+        reg_lambda=2.0,
+        n_jobs=-1,
+        verbosity=0,
     )
     lgbm_params = dict(
-        n_estimators=150, max_depth=5, learning_rate=0.03,
-        num_leaves=31, min_child_samples=15, n_jobs=-1, verbose=-1
+        n_estimators=150,
+        max_depth=4,
+        learning_rate=0.03,
+        num_leaves=15,         # log2(15) ≈ 4 splits → matches max_depth=3 XGB
+        min_child_samples=5,
+        subsample=0.7,
+        colsample_bytree=0.7,
+        reg_alpha=0.5,
+        reg_lambda=2.0,
+        n_jobs=-1,
+        verbose=-1,
     )
     cb_params = dict(
-        iterations=150, depth=5, learning_rate=0.05,
-        l2_leaf_reg=3, min_data_in_leaf=15,
-        od_type='Iter', od_wait=20,
-        verbose=0, random_seed=42,
-        thread_count=-1, allow_writing_files=False
+        iterations=150,
+        depth=4,
+        learning_rate=0.05,
+        l2_leaf_reg=5,
+        min_data_in_leaf=5,
+        od_type='Iter',
+        od_wait=20,
+        verbose=0,
+        random_seed=42,
+        thread_count=-1,
+        allow_writing_files=False,
     )
 
-    for fold in range(n_folds):
-        train_end = min_train + fold * step
-        val_end   = min(train_end + step, n)
+    val_cursor = min_train  # next fold's validation starts here (respects embargo)
 
-        if train_end >= n or train_end >= val_end:
+    for fold in range(n_folds):
+        val_start = val_cursor
+        val_end   = min(val_start + step, n)
+
+        if val_start >= n or val_start >= val_end:
             break
 
+        # Purge: exclude the [val_start - purge_gap, val_start) rows from train
+        train_end = max(0, val_start - purge_gap)
+        if train_end < 15:
+            val_cursor = val_end + embargo_gap
+            continue
+
         Xtr, ytr = X_train[:train_end], y_train[:train_end]
-        Xval     = X_train[train_end:val_end]
+        Xval     = X_train[val_start:val_end]
 
         xm = xgb.XGBRegressor(**xgb_params)
         xm.fit(Xtr, ytr)
-        oof_xgb[train_end:val_end] = xm.predict(Xval)
+        oof_xgb[val_start:val_end] = xm.predict(Xval)
 
         if LGBM_AVAILABLE:
             lm = lgb.LGBMRegressor(**lgbm_params)
             lm.fit(Xtr, ytr)
-            oof_lgbm[train_end:val_end] = lm.predict(Xval)
+            oof_lgbm[val_start:val_end] = lm.predict(Xval)
         else:
-            oof_lgbm[train_end:val_end] = oof_xgb[train_end:val_end]
+            oof_lgbm[val_start:val_end] = oof_xgb[val_start:val_end]
 
         if CATBOOST_AVAILABLE:
             cm = CatBoostRegressor(**cb_params)
             cm.fit(Xtr, ytr)
-            oof_catboost[train_end:val_end] = cm.predict(Xval)
+            oof_catboost[val_start:val_end] = cm.predict(Xval)
         else:
-            oof_catboost[train_end:val_end] = oof_xgb[train_end:val_end]
+            oof_catboost[val_start:val_end] = oof_xgb[val_start:val_end]
+
+        # Embargo: skip the `embargo_gap` rows after this validation window
+        val_cursor = val_end + embargo_gap
 
     return oof_xgb, oof_lgbm, oof_catboost
 
@@ -591,7 +692,8 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                         multi_source_sentiment: dict = None,
                         enable_automl: bool = False,
                         option_features: dict = None,
-                        macro_features: pd.DataFrame = None) -> tuple:
+                        macro_features: pd.DataFrame = None,
+                        ticker: str = None) -> tuple:
     """
     Train the full hybrid ensemble (XGB + LGBM + CatBoost + multi-task LSTM/GRU +
     Ridge stacker) on OHLCV + sentiment + FII/DII + VIX + macro + option-chain data.
@@ -669,6 +771,33 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                 df_proc[col] = df_proc[col].ffill().fillna(0.0)
                 _macro_cols.append(col)
 
+    # P2-10 / cross-sectional relative strength: if NIFTY50 data is in macro_features
+    # (added via data/macro.py MACRO_TICKERS), derive relative-strength features.
+    # These are ALSO used by the cross-sectional model during inference so it sees
+    # the same features it was trained on.
+    _nifty_close_col = "NIFTY50_Close"   # column name produced by fetch_macro_series
+    if _nifty_close_col in df_proc.columns and df_proc[_nifty_close_col].notna().any():
+        _nifty_cl = df_proc[_nifty_close_col].ffill()
+        _nifty_1d  = np.log(_nifty_cl / _nifty_cl.shift(1)).fillna(0).clip(-0.1, 0.1)
+        _nifty_5d  = np.log(_nifty_cl / _nifty_cl.shift(5)).fillna(0).clip(-0.3, 0.3)
+        _nifty_20d = np.log(_nifty_cl / _nifty_cl.shift(20)).fillna(0).clip(-0.5, 0.5)
+
+        df_proc['Nifty_Ret']         = _nifty_1d
+        df_proc['Rel_Strength_5D']   = (df_proc['Ret_5D']  - _nifty_5d).clip(-0.3, 0.3)
+        df_proc['Rel_Strength_20D']  = (df_proc['Ret_20D'] - _nifty_20d).clip(-0.5, 0.5)
+
+        # Rolling 20-day beta: cov(ticker, nifty) / var(nifty) — systematic risk exposure
+        _ticker_1d = df_proc['Log_Ret']
+        _beta = (
+            _ticker_1d.rolling(20).cov(_nifty_1d)
+            / (_nifty_1d.rolling(20).var() + 1e-10)
+        ).clip(-3, 3).fillna(1.0)
+        df_proc['Beta_20D'] = _beta
+
+        for _rc in ['Nifty_Ret', 'Rel_Strength_5D', 'Rel_Strength_20D', 'Beta_20D']:
+            if _rc not in _macro_cols:
+                _macro_cols.append(_rc)
+
     # A4.3 — option-chain snapshot. Broadcast as a constant across all training rows;
     # near-zero weight on training, but lets the live prediction see PCR / IV-skew
     # without a separate inference path.
@@ -705,15 +834,19 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         for col in ['VIX_Norm', 'VIX_Change', 'VIX_High']:
             df_proc[col] = 0.0
 
-    # Walk-forward pattern target distance (Fix 5). Sampled every 20 bars, ffilled.
-    # Signed distance to nearest confirmed pattern target, normalised by close.
+    # Walk-forward pattern features (P2-9 + Fix 5). Sampled every 20 bars, ffilled.
+    # Pattern_Target_Dist: signed distance to nearest confirmed pattern target / close.
+    # Pattern_Bullish / Pattern_Bearish: binary flags for bullish / bearish confirmed patterns.
     _pattern_col = "Pattern_Target_Dist"
+    _BEARISH_TYPES = {"bearish", "bear", "double top", "head and shoulders", "head & shoulders"}
+    _BULLISH_TYPES = {"bullish", "bull", "double bottom", "inverse", "inv"}
     try:
         from models.visual_analyst import PatternAnalyst as _PA
         _pa_inst = _PA()
-        _close_arr = df_proc["Log_Ret"].cumsum()  # proxy index
         _step = max(20, len(df_proc) // 50)        # ~50 sample points
-        _ptgt_series: dict[int, float] = {}
+        _ptgt_series:    dict[int, float] = {}
+        _bullish_series: dict[int, float] = {}
+        _bearish_series: dict[int, float] = {}
         _min_bars_for_patterns = 60
         for _t in range(_min_bars_for_patterns, len(df_proc), _step):
             _sub_df = df[[c for c in ["Open", "High", "Low", "Close", "Volume"] if c in df.columns]].iloc[:_t]
@@ -728,19 +861,41 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                     _cur = float(df["Close"].iloc[_t - 1])
                     _dists = [(float(p["Target"]) - _cur) / _cur for p in _pats]
                     _ptgt_series[_t] = min(_dists, key=abs)
+                    # Classify each confirmed pattern by its Type string
+                    _bull_flag = 0.0
+                    _bear_flag = 0.0
+                    for _p in _pats:
+                        _ptype = str(_p.get("Type", "") + " " + _p.get("Pattern", "")).lower()
+                        if any(k in _ptype for k in _BULLISH_TYPES):
+                            _bull_flag = 1.0
+                        if any(k in _ptype for k in _BEARISH_TYPES):
+                            _bear_flag = 1.0
+                    _bullish_series[_t] = _bull_flag
+                    _bearish_series[_t] = _bear_flag
                 else:
-                    _ptgt_series[_t] = 0.0
+                    _ptgt_series[_t]    = 0.0
+                    _bullish_series[_t] = 0.0
+                    _bearish_series[_t] = 0.0
             except Exception:
-                _ptgt_series[_t] = 0.0
-        # Build and forward-fill the feature column
-        _ptgt_col = pd.Series(0.0, index=df_proc.index)
-        for _t, _v in _ptgt_series.items():
-            if _t < len(df_proc):
-                _ptgt_col.iloc[_t] = _v
-        _ptgt_col = _ptgt_col.replace(0.0, float("nan")).ffill().fillna(0.0)
-        df_proc[_pattern_col] = _ptgt_col.clip(-0.15, 0.15)
+                _ptgt_series[_t]    = 0.0
+                _bullish_series[_t] = 0.0
+                _bearish_series[_t] = 0.0
+
+        def _build_pattern_col(series_dict: dict, clip_abs: float | None = None) -> pd.Series:
+            col = pd.Series(0.0, index=df_proc.index)
+            for _t, _v in series_dict.items():
+                if _t < len(df_proc):
+                    col.iloc[_t] = _v
+            col = col.replace(0.0, float("nan")).ffill().fillna(0.0)
+            return col.clip(-clip_abs, clip_abs) if clip_abs else col
+
+        df_proc[_pattern_col]     = _build_pattern_col(_ptgt_series, 0.15)
+        df_proc["Pattern_Bullish"] = _build_pattern_col(_bullish_series)
+        df_proc["Pattern_Bearish"] = _build_pattern_col(_bearish_series)
     except Exception:
-        df_proc[_pattern_col] = 0.0
+        df_proc[_pattern_col]      = 0.0
+        df_proc["Pattern_Bullish"] = 0.0
+        df_proc["Pattern_Bearish"] = 0.0
 
     df_proc['Target_Return'] = df_proc['Log_Ret'].shift(-1)
     # Bug D fix: save the last row BEFORE dropna — this is the most recent close
@@ -757,7 +912,11 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'Sentiment', 'Multi_Sentiment', 'Sentiment_Confidence',
         'FII_Net_Norm', 'DII_Net_Norm', 'FII_5D_Avg', 'DII_5D_Avg',
         'VIX_Norm', 'VIX_Change',
-        'Pattern_Target_Dist',
+        'Pattern_Target_Dist', 'Pattern_Bullish', 'Pattern_Bearish',  # P2-9
+        # P2-11: trend-strength features (ADX, Aroon, EMA slopes)
+        'ADX_Norm', 'ADX_Trend', 'DI_Diff_Norm',
+        'Aroon_Osc_Norm',
+        'EMA9_Slope', 'EMA21_Slope', 'EMA50_Slope',
     ]
     features.extend(_macro_cols)   # A5.2
     features.extend(_option_cols)  # A4.3
@@ -787,17 +946,22 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled  = scaler.transform(X_test)
 
+    # P2-3 / F14: stronger regularisation — 28+ features on ≤200 training rows
+    # means the default depth-4, no-L1 XGB memorises noise. Shallower trees +
+    # L1/L2 penalties keep test accuracy up while reducing ECE.
     xgb_model = xgb.XGBRegressor(
         objective='reg:squarederror',
-        n_estimators=150,
-        max_depth=4,
-        learning_rate=0.05,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        min_child_weight=1,
-        gamma=0,
+        n_estimators=250,
+        max_depth=3,
+        learning_rate=0.03,
+        subsample=0.7,
+        colsample_bytree=0.7,
+        min_child_weight=5,
+        gamma=0.1,
+        reg_alpha=0.5,
+        reg_lambda=2.0,
         n_jobs=-1,
-        verbosity=0
+        verbosity=0,
     )
     xgb_model.fit(X_train_scaled, y_train)
     xgb_pred = xgb_model.predict(X_test_scaled)
@@ -844,7 +1008,7 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     y_train_direction = (y_train_rnn > 0).astype(np.float32)
 
     _all_returns = pd.Series(y_train)
-    _rolling_vol = _all_returns.rolling(5, min_periods=1).std().fillna(method='bfill').values
+    _rolling_vol = _all_returns.rolling(5, min_periods=1).std().bfill().values
     y_train_volatility = _rolling_vol[rnn_lookback:].astype(np.float32)
     seq_len = len(y_train_rnn)
     if len(y_train_volatility) > seq_len:
@@ -1091,13 +1255,56 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     rnn_weight    = base_rnn_weight   / total_weight
     stack_weight  = base_stack_weight / total_weight
 
-    ml_pred = (
-        xgb_weight   * xgb_pred
-        + lgbm_weight  * (lgbm_pred     if lgbm_pred     is not None else xgb_pred)
-        + cb_weight    * (catboost_pred  if catboost_pred is not None else xgb_pred)
-        + rnn_weight   * rnn_pred
-        + stack_weight * stacked_pred
-    )
+    # P2-2/P2-3: integrate pre-trained cross-sectional LightGBM if available.
+    # Trained offline on 50 NSE tickers × 5 years → gives the per-ticker model
+    # a cross-sectional prior calibrated on far more data.
+    # OOF gate: cross-sectional model must beat random on its OOF eval.
+    # Gate lowered to 50.05% — any positive edge above random contributes a
+    # tiny weight. Pure OHLCV XS alpha ≈ 0.1–0.5% edge on 10y data.
+    # Phase 3 signals (FII per-ticker, options flow) expected to push to 52-53%.
+    # Weight scales 0→10% from gate to gate+4%.
+    _XS_OOF_MIN = 0.5005
+    _xs_pred   = None
+    _xs_weight = 0.0
+    try:
+        from models.cross_sectional_trainer import CrossSectionalTrainer as _XST
+        _xs = _XST()
+        if _xs.is_trained() and _xs.load():
+            _xs_oof = _xs._meta.get("oof_dir_accuracy", 0.0)
+            if _xs_oof >= _XS_OOF_MIN:
+                _xs_raw = _xs.predict(X_test_scaled, features, ticker=ticker)
+                if _xs_raw is not None and len(_xs_raw) == len(y_test):
+                    # Scale linearly: 0 weight at gate, 10% weight at gate+4%
+                    _edge     = min((_xs_oof - _XS_OOF_MIN) / 0.04, 1.0)
+                    _xs_pred  = _xs_raw
+                    _xs_weight = 0.10 * _edge
+            else:
+                import logging as _lg
+                _lg.getLogger(__name__).info(
+                    "Cross-sectional model skipped: OOF accuracy %.1f%% < %.1f%% gate",
+                    _xs_oof * 100, _XS_OOF_MIN * 100,
+                )
+    except Exception:
+        pass
+
+    if _xs_pred is not None:
+        _per_ticker_w = 1.0 - _xs_weight
+        ml_pred = (
+            (_per_ticker_w * xgb_weight)   * xgb_pred
+            + (_per_ticker_w * lgbm_weight)  * (lgbm_pred    if lgbm_pred    is not None else xgb_pred)
+            + (_per_ticker_w * cb_weight)    * (catboost_pred if catboost_pred is not None else xgb_pred)
+            + (_per_ticker_w * rnn_weight)   * rnn_pred
+            + (_per_ticker_w * stack_weight) * stacked_pred
+            + _xs_weight * _xs_pred
+        )
+    else:
+        ml_pred = (
+            xgb_weight   * xgb_pred
+            + lgbm_weight  * (lgbm_pred     if lgbm_pred     is not None else xgb_pred)
+            + cb_weight    * (catboost_pred  if catboost_pred is not None else xgb_pred)
+            + rnn_weight   * rnn_pred
+            + stack_weight * stacked_pred
+        )
 
     stat_preds = [p for p in [arima_pred, prophet_pred] if p is not None]
     if stat_preds:
@@ -1203,12 +1410,15 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         'RNN_Vol_Pred':     rnn_vol_pred,
     }, index=test_dates)
 
-    min_wf_train = max(int(len(y_test) * 0.50), 10)
-    # Bug J: windows of ~5 samples yield SE ≈ 20%, drowning the signal.
-    # Enforce a 30-sample minimum with 50% overlap so reported walkforward_std
-    # reflects real variance rather than sampling noise.
-    wf_window = max(30, int(len(y_test) * 0.20))
-    wf_step   = max(wf_window // 2, 1)
+    # P2-6: Use small fixed windows (20 bars ≈ 1 month) with a 5-bar step.
+    # The previous scheme used 20% of test data as the window, which with a
+    # 24-bar test set produced ~5 windows of 5 samples each (SE ≈ 20%).
+    # With 5y of data (≈318 test bars) and these settings we get ~50 windows.
+    # The warm-up min_wf_train is capped at 50 bars so most of the test
+    # fold is actually evaluated.
+    wf_window    = max(20, min(30, len(y_test) // 10))   # 20–30 bars per window
+    wf_step      = max(5, wf_window // 4)                # ≥25% overlap
+    min_wf_train = max(wf_window, min(int(len(y_test) * 0.15), 60))
     window_records = []
 
     for start in range(min_wf_train, len(y_test) - wf_window + 1, wf_step):
@@ -1376,7 +1586,8 @@ def hybrid_predict_prices(models: dict, scaler: MinMaxScaler,
         lookback = ModelConfig.LOOKBACK_PERIOD
         current_window = feat_df.iloc[-lookback:] if len(feat_df) >= lookback else feat_df
         anchor_return = hybrid_predict_next_day(models, scaler, current_window, features, lookback)
-    except Exception:
+    except Exception as _exc:
+        logger.warning("hybrid_predict_prices: anchor_return computation failed: %s", _exc)
         anchor_return = 0.0
 
     if df_proc_full is not None and 'Log_Ret' in df_proc_full.columns:
