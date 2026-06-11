@@ -54,8 +54,15 @@ export default function PriceChart({ bars, predictions, anchorPrice, height = 42
       borderVisible: false,
     });
 
+    const validBars = bars.filter(
+      (b) =>
+        Number.isFinite(b.open) &&
+        Number.isFinite(b.high) &&
+        Number.isFinite(b.low) &&
+        Number.isFinite(b.close),
+    );
     candle.setData(
-      bars.map((b) => ({
+      validBars.map((b) => ({
         time: Math.floor(new Date(b.ts).getTime() / 1000) as UTCTimestamp,
         open: b.open,
         high: b.high,

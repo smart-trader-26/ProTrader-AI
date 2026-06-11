@@ -50,7 +50,8 @@ pydantic>=2.5.0,<3.0.0
 pytest>=8.0.0
 ruff>=0.4.0
 
-# ── Optional: AI Analysis (Gemini, OpenAI / DeepSeek) ────────
+# ── Optional: AI Analysis (Claude, Gemini, OpenAI / DeepSeek) ────────
+anthropic>=0.40.0       # P4-2: in-app Claude AI Expert Analysis + LLM sentiment alpha
 google-generativeai>=0.3.0
 openai>=1.0.0
 
@@ -114,3 +115,8 @@ opentelemetry-instrumentation-fastapi>=0.44b0
 
 deep-translator>=1.11.4  # Hindi -> English translation for FinBERT pre-processing
 langdetect>=1.0.9       # Language detection for auto-translation trigger
+
+# ── P5: Trade Desk broker layer (optional) ─────────────
+# Live order placement via Zerodha Kite. Dry-run mode works without it;
+# uncomment (or pip install kiteconnect) only when going live.
+# kiteconnect>=5.0

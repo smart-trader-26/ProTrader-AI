@@ -123,6 +123,54 @@ def test_recent_fills_filters_by_ticker(tmp_path):
     assert all(f.ticker == "AAA.NS" for f in aaa)
 
 
+def test_bracketless_position_survives_price_swings(tmp_path):
+    """Swing-engine positions (stop/target=None) only close on flip/time exit."""
+    svc, fills = _svc(tmp_path)
+    fills.price = 100.0
+    pos = svc.on_signal("TCS.NS", prob_up=0.70, threshold=0.63, qty=10,
+                        stop_pct=None, target_pct=None)
+    assert pos is not None
+    assert pos.stop_price is None
+    assert pos.target_price is None
+
+    # Big swings in both directions — no brackets, so nothing closes.
+    fills.price = 80.0
+    assert svc.mark_to_market() == []
+    fills.price = 130.0
+    assert svc.mark_to_market() == []
+    assert svc.book_state().n_open == 1
+
+
+def test_time_exit_closes_aged_position(tmp_path):
+    svc, fills = _svc(tmp_path)
+    fills.price = 100.0
+    svc.on_signal("TCS.NS", prob_up=0.70, threshold=0.63, qty=10,
+                  stop_pct=None, target_pct=None)
+
+    fills.price = 104.0
+    # Position was opened just now → a 0-day limit triggers, a 30-day doesn't.
+    assert svc.mark_to_market(max_holding_days=30) == []
+    closed = svc.mark_to_market(max_holding_days=0)
+    assert len(closed) == 1
+    assert closed[0].reason_exit == "time_exit"
+    assert closed[0].exit_price == 104.0
+    assert svc.book_state().n_open == 0
+
+
+def test_disaster_stop_still_works_without_target(tmp_path):
+    svc, fills = _svc(tmp_path)
+    fills.price = 100.0
+    svc.on_signal("TCS.NS", prob_up=0.70, threshold=0.63, qty=10,
+                  stop_pct=0.10, target_pct=None)
+
+    fills.price = 95.0   # above the 10% stop — stays open
+    assert svc.mark_to_market() == []
+    fills.price = 89.0   # through the stop
+    closed = svc.mark_to_market()
+    assert len(closed) == 1
+    assert closed[0].reason_exit == "stop_hit"
+
+
 def test_fill_cost_matches_nse_model(tmp_path):
     """Verify closed-fill costs are non-zero and use DELIVERY notional-scaled model."""
     svc, fills = _svc(tmp_path)

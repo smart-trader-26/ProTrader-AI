@@ -1,17 +1,23 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SUPABASE_ENABLED, SUPABASE_URL, SUPABASE_ANON_KEY } from "./stub";
 
 /**
  * Runs on every request to refresh the Supabase session cookies. Without
  * this middleware, server components see a stale/expired access token and
  * `/me` → FastAPI starts returning 401s mid-session.
+ *
+ * Local-dev mode: when Supabase isn't configured, auth is bypassed entirely —
+ * every route is accessible without signing in (single local user).
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  if (!SUPABASE_ENABLED) return response; // no auth gate in local-dev mode
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL!,
+    SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {

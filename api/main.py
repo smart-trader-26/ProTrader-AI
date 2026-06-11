@@ -126,6 +126,12 @@ from api.routers import (
     analysis as analysis_router,
 )
 from api.routers import (
+    swing as swing_router,
+)
+from api.routers import (
+    trade as trade_router,
+)
+from api.routers import (
     sentiment as sentiment_router,
 )
 from api.routers import (
@@ -222,6 +228,8 @@ def create_app() -> FastAPI:
     app.include_router(stocks_router.router,    prefix=API_PREFIX)
     app.include_router(sentiment_router.router, prefix=API_PREFIX)
     app.include_router(analysis_router.router,  prefix=API_PREFIX)
+    app.include_router(swing_router.router,     prefix=API_PREFIX)
+    app.include_router(trade_router.router,     prefix=API_PREFIX)
     app.include_router(predict_router.router,   prefix=API_PREFIX)
     app.include_router(backtest_router.router,  prefix=API_PREFIX)
     app.include_router(jobs_router.router,      prefix=API_PREFIX)

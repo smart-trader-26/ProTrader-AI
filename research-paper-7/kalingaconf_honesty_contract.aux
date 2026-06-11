@@ -1,0 +1,143 @@
+\relax 
+\citation{bailey2014}
+\citation{harvey2016}
+\citation{arnott2019,lopezdeprado2018}
+\citation{jobin2019,amodei2016,mitchell2019}
+\citation{chow1970,elyaniv2010,geifman2017}
+\citation{fama1970}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\citation{guo2017}
+\citation{platt1999}
+\citation{zadrozny2002}
+\citation{niculescu2005}
+\citation{brier1950}
+\citation{chow1970}
+\citation{elyaniv2010,geifman2017}
+\citation{vovk2005,romano2019,angelopoulos2023}
+\citation{lopezdeprado2018,bailey2014,arnott2019,harvey2016}
+\citation{almgren2001,grinold2000}
+\citation{nti2021,long2024,fu2024,moodi2024,farhadi2025,liu2024}
+\citation{araci}
+\citation{jobin2019,amodei2016}
+\citation{mitchell2019}
+\citation{sculley2015}
+\citation{gama2014}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}The Honesty Contract}{2}{}\protected@file@percent }
+\newlabel{sec:contract}{{III}{2}{}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Selective-prediction setup}{2}{}\protected@file@percent }
+\newlabel{eq:gate}{{1}{2}{}{equation.1}{}}
+\newlabel{eq:cov}{{2}{2}{}{equation.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}The five invariants}{2}{}\protected@file@percent }
+\citation{gama2014,sculley2015}
+\citation{araci}
+\citation{chen2016,ke2017,prokhorenkova2018}
+\citation{wolpert1992}
+\citation{lopezdeprado2018}
+\citation{zadrozny2002}
+\citation{platt1999}
+\citation{romano2019,angelopoulos2023}
+\citation{jegadeesh1993}
+\newlabel{eq:alphagate}{{3}{3}{}{equation.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}System Architecture and Data}{3}{}\protected@file@percent }
+\newlabel{sec:system}{{IV}{3}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Multi-source data ingestion}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}The underlying predictor}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Three-stage probability calibration}{3}{}\protected@file@percent }
+\newlabel{sec:calib}{{\mbox  {IV-C}}{3}{}{subsection.4.3}{}}
+\newlabel{eq:ece}{{4}{3}{}{equation.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Conformal prediction intervals}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}The conviction-gated swing signal}{3}{}\protected@file@percent }
+\citation{almgren2001}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces The five invariants of the honesty contract. Each is enforced at inference time by a dedicated module and each trades coverage (willingness to act) for trust (reliability of what is acted on).}}{4}{}\protected@file@percent }
+\newlabel{tab:contract}{{I}{4}{}{table.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The honesty-contract decision pipeline. A raw forecast passes through calibration (I1) and three abstention gates (I2--I4); whatever is decided---act, abstain, or suspend---is written to the append-only ledger (I5), which in turn feeds the live Sharpe estimate that drives the circuit breaker.}}{4}{}\protected@file@percent }
+\newlabel{fig:pipeline}{{1}{4}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}Transaction-cost model and alpha gate}{4}{}\protected@file@percent }
+\newlabel{sec:cost}{{\mbox  {IV-F}}{4}{}{subsection.4.6}{}}
+\newlabel{eq:cost}{{5}{4}{}{equation.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-G}}Self-audit: circuit breaker and ledger}{4}{}\protected@file@percent }
+\newlabel{eq:sharpe}{{6}{4}{}{equation.6}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Embargoed walk-forward evaluation and out-of-sample conviction-threshold selection}}{4}{}\protected@file@percent }
+\newlabel{alg:wf}{{1}{4}{}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-H}}Evaluation protocol}{4}{}\protected@file@percent }
+\citation{fama1970}
+\citation{bailey2014,harvey2016}
+\citation{guo2017}
+\citation{kelly1956}
+\citation{chow1970,geifman2017}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Rolling-Sharpe circuit breaker (daily, at market close)}}{5}{}\protected@file@percent }
+\newlabel{alg:cb}{{2}{5}{}{algorithm.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Results and Discussion}{5}{}\protected@file@percent }
+\newlabel{sec:results}{{V}{5}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}A verified accuracy ceiling}{5}{}\protected@file@percent }
+\newlabel{sec:ceiling}{{\mbox  {V-A}}{5}{}{subsection.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Invariant I1: from overconfidence to honesty}{5}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces The accuracy ceiling, confirmed five ways. No configuration beats the upward base rate at short single-name horizons (OOS, 2018--2026).}}{5}{}\protected@file@percent }
+\newlabel{tab:ceiling}{{II}{5}{}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Headline measured results on the 2018--2026 NSE evaluation. Every figure is out-of-sample. $p(1{-}p)$ denotes the irreducible Brier floor at the base rate.}}{5}{}\protected@file@percent }
+\newlabel{tab:headline}{{III}{5}{}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Invariants I2--I3: the trust--coverage tradeoff}{5}{}\protected@file@percent }
+\newlabel{sec:tradeoff}{{\mbox  {V-C}}{5}{}{subsection.5.3}{}}
+\citation{sculley2015,gama2014}
+\citation{angelopoulos2023}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Reliability diagram on the held-out fold, before and after the three-stage calibration. The uncalibrated ensemble is badly over-confident (probabilities cluster near 0.80 while realized frequency hovers near 0.50); the calibrated ensemble follows the diagonal.}}{6}{}\protected@file@percent }
+\newlabel{fig:calib}{{2}{6}{}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces The trust--coverage tradeoff, read off one model at two operating points (30-day horizon, walk-forward OOS, 50{,}272 observations). Coverage is spent to buy precision; the ranker's AUC of 0.47 shows the edge is in the tail, not the ordering.}}{6}{}\protected@file@percent }
+\newlabel{tab:tradeoff}{{IV}{6}{}{table.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Stability across years}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Invariant I3 in operation}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Per-year out-of-sample precision of the conviction-gated bucket versus the naive always-up base rate. The gate wins in four of five years, including the 2026 drawdown where the base rate fell below 50\%.}}{6}{}\protected@file@percent }
+\newlabel{fig:peryear}{{3}{6}{}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Invariants I4--I5: self-audit in operation}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Conformal interval coverage}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-H}}What each invariant buys}{6}{}\protected@file@percent }
+\citation{nti2021,long2024,fu2024,moodi2024,farhadi2025}
+\citation{mitchell2019}
+\citation{jobin2019,amodei2016}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces The honesty contract as a threat model: the failure each invariant prevents and the responsible-AI principle it serves.}}{7}{}\protected@file@percent }
+\newlabel{tab:buys}{{V}{7}{}{table.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-I}}Deployment and reproducibility}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-J}}Reconciling with reported accuracies}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-K}}Discussion}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-L}}Toward a responsible-AI standard for FinTech}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Limitations}{7}{}\protected@file@percent }
+\bibcite{bailey2014}{1}
+\bibcite{harvey2016}{2}
+\bibcite{arnott2019}{3}
+\bibcite{lopezdeprado2018}{4}
+\bibcite{jobin2019}{5}
+\bibcite{amodei2016}{6}
+\bibcite{mitchell2019}{7}
+\bibcite{chow1970}{8}
+\bibcite{elyaniv2010}{9}
+\bibcite{geifman2017}{10}
+\bibcite{fama1970}{11}
+\bibcite{guo2017}{12}
+\bibcite{platt1999}{13}
+\bibcite{zadrozny2002}{14}
+\bibcite{niculescu2005}{15}
+\bibcite{brier1950}{16}
+\bibcite{vovk2005}{17}
+\bibcite{romano2019}{18}
+\bibcite{angelopoulos2023}{19}
+\bibcite{almgren2001}{20}
+\bibcite{grinold2000}{21}
+\bibcite{sculley2015}{22}
+\bibcite{gama2014}{23}
+\bibcite{jegadeesh1993}{24}
+\bibcite{kelly1956}{25}
+\bibcite{chen2016}{26}
+\bibcite{ke2017}{27}
+\bibcite{prokhorenkova2018}{28}
+\bibcite{wolpert1992}{29}
+\bibcite{araci}{30}
+\bibcite{nti2021}{31}
+\bibcite{long2024}{32}
+\bibcite{fu2024}{33}
+\bibcite{moodi2024}{34}
+\bibcite{farhadi2025}{35}
+\bibcite{liu2024}{36}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{8}{}\protected@file@percent }
+\gdef \@abspage@last{8}

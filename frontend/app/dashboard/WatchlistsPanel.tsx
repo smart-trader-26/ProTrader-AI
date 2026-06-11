@@ -1,9 +1,17 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
+import { SUPABASE_ENABLED } from "@/utils/supabase/stub";
+import {
+  localLoadWatchlists,
+  localCreateWatchlist,
+  localAddTicker,
+  localRemoveTicker,
+  localDeleteWatchlist,
+} from "@/lib/local-store";
 import type { Watchlist } from "@/lib/types";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TickerPicker from "@/components/TickerPicker";
 
 export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
@@ -12,12 +20,23 @@ export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // Local-dev (no-DB) mode: hydrate from localStorage on mount.
+  useEffect(() => {
+    if (!SUPABASE_ENABLED) setWatchlists(localLoadWatchlists());
+  }, []);
+
   async function create(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     setBusy(true);
     setErr(null);
     try {
+      if (!SUPABASE_ENABLED) {
+        const wl = localCreateWatchlist(name);
+        setWatchlists((xs) => [...xs, wl]);
+        setName("");
+        return;
+      }
       const supabase = createClient();
       const {
         data: { user },
@@ -41,6 +60,11 @@ export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
   async function addTicker(wlId: number, ticker: string) {
     const sym = ticker.trim().toUpperCase();
     if (!sym) return;
+    if (!SUPABASE_ENABLED) {
+      localAddTicker(wlId, sym);
+      setWatchlists(localLoadWatchlists());
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase
       .from("watchlist_tickers")
@@ -65,6 +89,11 @@ export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
   }
 
   async function removeTicker(wlId: number, ticker: string) {
+    if (!SUPABASE_ENABLED) {
+      localRemoveTicker(wlId, ticker);
+      setWatchlists(localLoadWatchlists());
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase
       .from("watchlist_tickers")
@@ -83,6 +112,11 @@ export default function WatchlistsPanel({ initial }: { initial: Watchlist[] }) {
   }
 
   async function deleteList(wlId: number) {
+    if (!SUPABASE_ENABLED) {
+      localDeleteWatchlist(wlId);
+      setWatchlists(localLoadWatchlists());
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase.from("watchlists").delete().eq("id", wlId);
     if (error) {

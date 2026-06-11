@@ -91,14 +91,18 @@ class PaperTradeService:
         prob_up: float,
         threshold: float = 0.55,
         qty: int = 1,
-        stop_pct: float = 0.02,
-        target_pct: float = 0.04,
+        stop_pct: float | None = 0.02,
+        target_pct: float | None = 0.04,
         reason: str = "",
     ) -> PaperPosition | None:
         """
         Consume a model signal. Opens a long if `prob_up > threshold` and
         the ticker is flat; flips to flat on the opposite signal. Returns
         the position after the action, or None if no action was taken.
+
+        `stop_pct` / `target_pct` may be None to open a bracketless position
+        (used by the swing engine, whose measured edge is "hold to horizon" —
+        exits come from `mark_to_market(max_holding_days=...)` instead).
         """
         price = self.fill_source(ticker)
         if price is None or price <= 0:
@@ -113,8 +117,8 @@ class PaperTradeService:
 
         # Open a new long
         if (pos is None or pos.side == "flat") and prob_up > threshold:
-            stop = price * (1 - stop_pct)
-            target = price * (1 + target_pct)
+            stop = price * (1 - stop_pct) if stop_pct is not None else None
+            target = price * (1 + target_pct) if target_pct is not None else None
             self._open(
                 ticker=ticker,
                 side="long",
@@ -128,12 +132,18 @@ class PaperTradeService:
 
         return pos
 
-    def mark_to_market(self) -> list[PaperFill]:
+    def mark_to_market(self, max_holding_days: int | None = None) -> list[PaperFill]:
         """
         For each open position: fetch latest price, check stop/target hit,
         close if breached. Returns the list of newly-closed fills.
+
+        `max_holding_days` (calendar days) adds a time-based exit: positions
+        older than the limit are closed at the current price with reason
+        "time_exit". This is how the swing engine realises its horizon — the
+        measured edge is "higher after ~30 trading days", not a price bracket.
         """
         closed: list[PaperFill] = []
+        now = datetime.now(UTC)
         for pos in self._open_positions():
             price = self.fill_source(pos.ticker)
             if price is None:
@@ -143,6 +153,12 @@ class PaperTradeService:
                     closed.append(self._close(pos, price, "stop_hit"))
                 elif pos.target_price and price >= pos.target_price:
                     closed.append(self._close(pos, price, "target_hit"))
+                elif (
+                    max_holding_days is not None
+                    and pos.opened_at is not None
+                    and (now - pos.opened_at).days >= max_holding_days
+                ):
+                    closed.append(self._close(pos, price, "time_exit"))
         return closed
 
     def book_state(self) -> PaperBookState:

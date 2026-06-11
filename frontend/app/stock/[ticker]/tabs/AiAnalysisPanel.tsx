@@ -3,6 +3,25 @@
 import { useState } from "react";
 import { apiPost } from "@/lib/api-client";
 import type { PredictionBundle, TechnicalSnapshot } from "@/lib/types";
+import { FII_DII_STORAGE_KEY } from "./FiiDiiTab";
+
+/** Read the most recent FII/DII net (₹ Cr) from the data collected in the FII/DII tab. */
+function latestFiiDii(): { fii: number; dii: number } {
+  try {
+    const raw = localStorage.getItem(FII_DII_STORAGE_KEY);
+    if (!raw) return { fii: 0, dii: 0 };
+    const rows = JSON.parse(raw) as { fii_net: number | null; dii_net: number | null }[];
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      if (r && (r.fii_net != null || r.dii_net != null)) {
+        return { fii: r.fii_net ?? 0, dii: r.dii_net ?? 0 };
+      }
+    }
+  } catch {
+    /* ignore — fall back to zeros */
+  }
+  return { fii: 0, dii: 0 };
+}
 
 interface AiAnalysisRequest {
   current_price: number;
@@ -36,6 +55,7 @@ interface Props {
 }
 
 const SOURCE_LABEL: Record<string, string> = {
+  claude: "✨ Claude Sonnet 4.6",
   deepseek: "✨ DeepSeek V3",
   gemini: "✨ Gemini 2.5 Flash",
   template: "📝 Template mode",
@@ -61,6 +81,7 @@ export default function AiAnalysisPanel({ ticker, bundle, technicals }: Props) {
     setResult(null);
     setApplied(null);
     try {
+      const fiiDii = latestFiiDii();
       const body: AiAnalysisRequest = {
         current_price: anchor,
         forecast_target: target,
@@ -74,8 +95,8 @@ export default function AiAnalysisPanel({ ticker, bundle, technicals }: Props) {
           volatility_20d: technicals?.volatility_20d ?? 0.01,
           price_vs_ma20: technicals?.price_vs_ma20 ?? 0,
         },
-        fii_net_cr: 0,
-        dii_net_cr: 0,
+        fii_net_cr: fiiDii.fii,
+        dii_net_cr: fiiDii.dii,
         vix: null,
         forward_pe: null,
         price_book: null,

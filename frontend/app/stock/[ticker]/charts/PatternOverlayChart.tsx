@@ -64,7 +64,14 @@ export default function PatternOverlayChart({
       borderVisible: false,
     });
 
-    const trimmed = bars.slice(-windowDays);
+    const valid = bars.filter(
+      (b) =>
+        Number.isFinite(b.open) &&
+        Number.isFinite(b.high) &&
+        Number.isFinite(b.low) &&
+        Number.isFinite(b.close),
+    );
+    const trimmed = valid.slice(-windowDays);
     const barMap = new Map<string, StockBar>();
     trimmed.forEach((b) => { barMap.set(b.ts.slice(0, 10), b); });
 
@@ -113,7 +120,9 @@ export default function PatternOverlayChart({
         // Build a line series through the keypoints
         const kpData: { time: UTCTimestamp; value: number }[] = [];
         for (const kp of p.keypoints) {
+          if (!Number.isFinite(kp.price)) continue;
           const ts = Math.floor(new Date(kp.date).getTime() / 1000) as UTCTimestamp;
+          if (!Number.isFinite(ts)) continue;
           kpData.push({ time: ts, value: kp.price });
         }
         kpData.sort((a, b) => (a.time as number) - (b.time as number));

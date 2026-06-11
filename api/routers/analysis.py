@@ -247,14 +247,40 @@ def ai_analysis(ticker: str, req: AiAnalysisRequest) -> AiAnalysisResponse:
     3. Fallback to template
     Always returns `claude_prompt` so the UI can offer a copy-paste alternative.
     """
-    from config.settings import DEEPSEEK_API_KEY, GEMINI_API_KEY
+    from config.settings import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GEMINI_API_KEY
 
     context = _build_analysis_context(ticker, req)
     system_prompt = _build_system_prompt()
     user_prompt = _build_user_prompt(context)
 
-    # Build Claude expert prompt (always)
+    # Build Claude expert prompt (always — used as the copy-paste fallback)
     claude_prompt = _build_claude_expert_prompt(ticker, req)
+
+    # 0 — Claude API (primary when ANTHROPIC_API_KEY is set). Runs in-app so the
+    # user gets a real analysis without the copy-paste dance. Prompt-cached system
+    # block keeps repeat calls on the same session cheap.
+    if ANTHROPIC_API_KEY:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            resp = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=900,
+                system=[
+                    {"type": "text", "text": system_prompt,
+                     "cache_control": {"type": "ephemeral"}},
+                ],
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            text = "".join(
+                b.text for b in resp.content if getattr(b, "type", None) == "text"
+            ).strip()
+            if text:
+                return AiAnalysisResponse(
+                    analysis=text, source="claude", claude_prompt=claude_prompt,
+                )
+        except Exception:
+            pass  # fall through to DeepSeek / Gemini / template
 
     # 1 — DeepSeek
     if DEEPSEEK_API_KEY:

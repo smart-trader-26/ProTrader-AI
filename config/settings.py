@@ -49,8 +49,9 @@ REDDIT_CLIENT_ID = _get_secret("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = _get_secret("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER_AGENT = _get_secret("REDDIT_USER_AGENT", "ProTraderAI/1.0")
 
-# Roboflow API (for pattern detection)
-ROBOFLOW_API_KEY = _get_secret("ROBOFLOW_API_KEY", "9KHbf18pSI2tt8dqZeOL")
+# Roboflow API (for pattern detection) — env-only; no key committed in source.
+# The vision path is skipped when the key is absent (see models/visual_analyst.py).
+ROBOFLOW_API_KEY = _get_secret("ROBOFLOW_API_KEY", "")
 ROBOFLOW_WORKSPACE = _get_secret("ROBOFLOW_WORKSPACE", "financeas")
 ROBOFLOW_WORKFLOW_ID = _get_secret("ROBOFLOW_WORKFLOW_ID", "custom-workflow")
 
@@ -121,6 +122,25 @@ MODEL_REGISTRY_URI = _get_secret("MODEL_REGISTRY_URI", "")
 UPSTOX_API_KEY = _get_secret("UPSTOX_API_KEY", "")
 UPSTOX_ACCESS_TOKEN = _get_secret("UPSTOX_ACCESS_TOKEN", "")
 UPSTOX_INSTRUMENTS_JSON = _get_secret("UPSTOX_INSTRUMENTS_JSON", "")
+
+
+# ==============================================
+# P5 — Broker layer (Zerodha Kite) + live-trading gate
+# ==============================================
+# All optional; without them the Trade Desk runs in DRY-RUN mode (orders are
+# simulated, nothing reaches a broker). Live order placement requires ALL of:
+#   KITE_API_KEY       — Kite Connect app key (developers.kite.trade)
+#   KITE_ACCESS_TOKEN  — daily access token (SEBI mandates daily re-login)
+#   LIVE_TRADING=1     — explicit opt-in flag; default off
+KITE_API_KEY = _get_secret("KITE_API_KEY", "")
+KITE_ACCESS_TOKEN = _get_secret("KITE_ACCESS_TOKEN", "")
+LIVE_TRADING = _get_secret("LIVE_TRADING", "0").strip().lower() in ("1", "true", "yes")
+
+# Default rupee allocation per approved position (UI can override per request).
+try:
+    TRADE_CAPITAL_PER_SLOT = float(_get_secret("TRADE_CAPITAL_PER_SLOT", "25000") or 25000)
+except (TypeError, ValueError):
+    TRADE_CAPITAL_PER_SLOT = 25000.0
 
 
 # ==============================================

@@ -26,9 +26,19 @@ def test_blend_disabled_returns_stacker_only(monkeypatch):
     assert out.weight_v2 == 0.0
 
 
-def test_blend_skipped_when_v2_not_configured(monkeypatch):
+def test_blend_falls_back_when_v2_unavailable(monkeypatch):
+    # The HF_TOKEN / is_configured gate was removed — v2 is always attempted.
+    # When the model genuinely can't load, predict_v2 raises and the blend
+    # must fall back to the stacker-only probability.
     from services import v2_ensemble_service as v2svc
-    monkeypatch.setattr(v2svc, "is_configured", lambda: False)
+    arts = [{"title": "news", "description": ""}]
+    monkeypatch.setattr("data.news_sentiment.get_news", lambda t: arts)
+    monkeypatch.setattr("data.news_sentiment.filter_relevant_news", lambda raw, name: arts)
+
+    def unavailable(*a, **k):
+        raise ImportError("v2 model not available")
+
+    monkeypatch.setattr(v2svc, "predict_v2", unavailable)
     out = ps._maybe_blend_v2("X.NS", stacker_prob=0.40, use_v2_blend=None, weight_override=None)
     assert out.used is False
     assert out.blended_prob == 0.40

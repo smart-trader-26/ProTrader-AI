@@ -3,6 +3,23 @@
 import { useState } from "react";
 import { apiPost } from "@/lib/api-client";
 import type { PredictionBundle, TechnicalSnapshot } from "@/lib/types";
+import { FII_DII_STORAGE_KEY } from "./FiiDiiTab";
+
+/** Sum of the last 5 days' FII/DII net (₹ Cr) from the collected FII/DII data. */
+function fiiDii5dSum(): { fii: number; dii: number } {
+  try {
+    const raw = localStorage.getItem(FII_DII_STORAGE_KEY);
+    if (!raw) return { fii: 0, dii: 0 };
+    const rows = JSON.parse(raw) as { fii_net: number | null; dii_net: number | null }[];
+    const last5 = rows.slice(-5);
+    return {
+      fii: last5.reduce((s, r) => s + (r.fii_net ?? 0), 0),
+      dii: last5.reduce((s, r) => s + (r.dii_net ?? 0), 0),
+    };
+  } catch {
+    return { fii: 0, dii: 0 };
+  }
+}
 
 interface SignalSynthesisRequest {
   current_price: number;
@@ -60,6 +77,7 @@ export default function SignalSynthesisPanel({ ticker, bundle, technicals }: Pro
     setPrompt(null);
     setApplied(null);
     try {
+      const fiiDii = fiiDii5dSum();
       const body: SignalSynthesisRequest = {
         current_price: anchor,
         forecast_return_pct: forecastReturn,
@@ -71,8 +89,8 @@ export default function SignalSynthesisPanel({ ticker, bundle, technicals }: Pro
         rsi: technicals?.rsi_14 ?? 50,
         macd_hist: technicals?.macd_histogram ?? 0,
         volatility_20d: technicals?.volatility_20d ?? 0.01,
-        fii_net_5d_cr: 0,
-        dii_net_5d_cr: 0,
+        fii_net_5d_cr: fiiDii.fii,
+        dii_net_5d_cr: fiiDii.dii,
         vix: 15,
         llm_sentiment_signal: 0,
         llm_mean_sentiment: 0,

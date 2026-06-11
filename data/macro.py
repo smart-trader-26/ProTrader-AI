@@ -67,6 +67,11 @@ def fetch_macro_series(start, end, tickers: dict[str, str] | None = None) -> pd.
         series.columns = [f"{label}_Close"]
         if series.index.tz is not None:
             series.index = series.index.tz_localize(None)
+        # yfinance includes today's in-progress bar with a NaN close while the
+        # market is open (or on a holiday). Keep only settled bars.
+        series = series.dropna()
+        if series.empty:
+            continue
         frames.append(series)
 
     if not frames:

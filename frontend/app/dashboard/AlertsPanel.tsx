@@ -1,8 +1,10 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
+import { SUPABASE_ENABLED } from "@/utils/supabase/stub";
+import { localLoadAlerts, localCreateAlert, localToggleAlert, localDeleteAlert } from "@/lib/local-store";
 import type { Alert, AlertKind } from "@/lib/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TickerPicker from "@/components/TickerPicker";
 
 const KINDS: { value: AlertKind; label: string }[] = [
@@ -18,17 +20,29 @@ export default function AlertsPanel({ initial }: { initial: Alert[] }) {
   const [threshold, setThreshold] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
+  // Local-dev (no-DB) mode: hydrate from localStorage on mount.
+  useEffect(() => {
+    if (!SUPABASE_ENABLED) setAlerts(localLoadAlerts());
+  }, []);
+
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     try {
+      const num = Number(threshold);
+      if (!Number.isFinite(num)) throw new Error("Threshold must be a number");
+      if (!SUPABASE_ENABLED) {
+        const a = localCreateAlert(ticker, kind, num);
+        setAlerts((xs) => [a, ...xs]);
+        setTicker("");
+        setThreshold("");
+        return;
+      }
       const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
-      const num = Number(threshold);
-      if (!Number.isFinite(num)) throw new Error("Threshold must be a number");
       const { data, error } = await supabase
         .from("alerts")
         .insert({
@@ -50,6 +64,11 @@ export default function AlertsPanel({ initial }: { initial: Alert[] }) {
   }
 
   async function toggle(a: Alert) {
+    if (!SUPABASE_ENABLED) {
+      const updated = localToggleAlert(a.id, !a.active);
+      if (updated) setAlerts((xs) => xs.map((x) => (x.id === a.id ? updated : x)));
+      return;
+    }
     const supabase = createClient();
     // Re-arming (active: true) also clears triggered_at — matches backend.
     const patch = a.active
@@ -69,6 +88,11 @@ export default function AlertsPanel({ initial }: { initial: Alert[] }) {
   }
 
   async function remove(id: number) {
+    if (!SUPABASE_ENABLED) {
+      localDeleteAlert(id);
+      setAlerts((xs) => xs.filter((x) => x.id !== id));
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase.from("alerts").delete().eq("id", id);
     if (error) {

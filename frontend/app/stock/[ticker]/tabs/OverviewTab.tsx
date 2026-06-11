@@ -14,6 +14,7 @@ import { formatINR, formatPercent, formatRatio, toneFor } from "@/lib/format";
 import { FII_DII_STORAGE_KEY } from "./FiiDiiTab";
 import AiAnalysisPanel from "./AiAnalysisPanel";
 import SignalSynthesisPanel from "./SignalSynthesisPanel";
+import SwingSignalPanel from "./SwingSignalPanel";
 const FII_DII_SAVED_AT_KEY = "fii_dii:saved_at:v1";
 
 interface LlmSentimentScores {
@@ -784,6 +785,8 @@ export default function OverviewTab({ ticker, ohlcv }: Props) {
                 </div>
               </div>
             )}
+
+            <SwingSignalPanel signal={bundle.swing_signal} />
 
             <AiAnalysisPanel ticker={ticker} bundle={bundle} technicals={technicals} />
 

@@ -1115,8 +1115,19 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
     # ── Directional probability: calibrated tree blend + Platt-calibrated RNN ──
     n_tree_models = sum([1, LGBM_AVAILABLE, CATBOOST_AVAILABLE])
     oof_tree_avg  = (oof_xgb + oof_lgbm + oof_catboost) / n_tree_models
+    # Fix (calibration domain): the isotonic calibrator is FIT on the tree-average
+    # OOF predictions, so it must be APPLIED to the matching test-time tree average
+    # — not to `stacked_pred` (the Ridge meta output, a different distribution with
+    # its own intercept/scale). Feeding stacked_pred through a calibrator fit on the
+    # tree average is a domain mismatch that produced wildly miscalibrated
+    # probabilities (ECE≈0.35, avg P(up)≈0.80 against a 0.48 base rate).
+    tree_test_avg = (
+        xgb_pred
+        + (lgbm_pred     if lgbm_pred     is not None else xgb_pred)
+        + (catboost_pred if catboost_pred is not None else xgb_pred)
+    ) / n_tree_models
     tree_dir_prob, _tree_calibrate = _calibrate_direction_probability(
-        oof_tree_avg, y_train, stacked_pred, return_calibrator=True
+        oof_tree_avg, y_train, tree_test_avg, return_calibrator=True
     )
 
     # Val/test split — defined early so every downstream computation can use it
@@ -1143,6 +1154,28 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
         rnn_dir_prob_cal = rnn_dir_prob
 
     directional_prob = 0.60 * tree_dir_prob + 0.40 * rnn_dir_prob_cal
+
+    # ── Final-stage calibration (Fix): a convex blend of two individually
+    # calibrated probabilities is NOT itself calibrated. With ~51% directional
+    # skill the raw blend was severely overconfident (avg P(up)≈0.80 vs a ~0.48
+    # base rate, ECE≈0.35). Refit a monotonic Platt scaler on the val fold so the
+    # reported probability reflects the model's *realised* skill — a low-skill
+    # model is correctly shrunk toward the base rate instead of screaming 80%.
+    # _final_dir_cal is also reused for the live single-row inference below.
+    _final_dir_cal = None
+    if val_end:
+        _dir_val = directional_prob[:val_end]
+        _yv_dir  = (y_val > 0).astype(int)
+        if len(_dir_val) >= 20 and len(np.unique(_yv_dir)) == 2:
+            try:
+                _fc = _LR(C=1.0, solver='lbfgs', max_iter=300)
+                _fc.fit(_dir_val.reshape(-1, 1), _yv_dir)
+                _final_dir_cal = lambda p: _fc.predict_proba(
+                    np.asarray(p, dtype=float).reshape(-1, 1)
+                )[:, 1]
+                directional_prob = np.clip(_final_dir_cal(directional_prob), 0.02, 0.98)
+            except Exception:
+                _final_dir_cal = None
 
     prob_val  = directional_prob[:val_end] if val_end else np.array([])
     prob_eval = directional_prob[val_end:] if val_end else directional_prob
@@ -1388,11 +1421,18 @@ def create_hybrid_model(df: pd.DataFrame, sentiment_features: dict,
                     )[0])
                 else:
                     _l_stacked = _lxgb
-                # Apply stored calibrators
-                _ltree_p = float(_tree_calibrate(np.array([_l_stacked]))[0])
+                # Apply stored calibrators. The tree calibrator is fit on the tree
+                # AVERAGE domain, so feed it the live tree average (not the stacked
+                # output) to match the create-time behaviour fixed above.
+                _l_tree_avg = (_lxgb + _llgb + _lcb) / n_tree_models
+                _ltree_p = float(_tree_calibrate(np.array([_l_tree_avg]))[0])
                 _lrnn_p  = (float(_platt_cal.predict_proba([[_lrnn_dir]])[0, 1])
                             if _platt_cal else _lrnn_dir)
                 _live_dir_prob = float(np.clip(0.60 * _ltree_p + 0.40 * _lrnn_p, 0.02, 0.98))
+                # Apply the same final-stage calibration used for the test fold so
+                # the live probability is on the same (honest) scale as reported ECE.
+                if _final_dir_cal is not None:
+                    _live_dir_prob = float(np.clip(_final_dir_cal([_live_dir_prob])[0], 0.02, 0.98))
     except Exception:
         pass  # any failure falls back to directional_prob[-1]
 

@@ -2,7 +2,9 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import WatchlistsPanel from "./WatchlistsPanel";
 import AlertsPanel from "./AlertsPanel";
-import type { Alert, Watchlist } from "@/lib/types";
+import SwingScreenerPanel from "./SwingScreenerPanel";
+import TradeDeskPanel from "./TradeDeskPanel";
+import type { Alert, Watchlist, WatchlistTicker } from "@/lib/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,9 +19,11 @@ export default async function DashboardPage() {
     supabase.from("alerts").select("*").order("created_at", { ascending: false }),
   ]);
 
-  const watchlists: Watchlist[] = (wlRes.data ?? []).map((w) => ({
+  const wlRows = (wlRes.data ?? []) as Watchlist[];
+  const tkRows = (tkRes.data ?? []) as WatchlistTicker[];
+  const watchlists: Watchlist[] = wlRows.map((w) => ({
     ...w,
-    tickers: (tkRes.data ?? []).filter((t) => t.watchlist_id === w.id),
+    tickers: tkRows.filter((t) => t.watchlist_id === w.id),
   }));
   const alerts: Alert[] = (alRes.data ?? []) as Alert[];
 
@@ -33,6 +37,8 @@ export default async function DashboardPage() {
         </p>
       </header>
 
+      <SwingScreenerPanel />
+      <TradeDeskPanel />
       <WatchlistsPanel initial={watchlists} />
       <AlertsPanel initial={alerts} />
     </div>

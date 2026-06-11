@@ -144,6 +144,7 @@ class PortfolioConstructor:
         annual_vol_target: float = _DEFAULT_ANNUAL_VOL_TGT,
         ic:                float = _DEFAULT_IC,
         max_names:         int   = _MAX_PORTFOLIO_NAMES,
+        allow_relative_fallback: bool = True,
     ) -> None:
         self.kelly_fraction    = float(kelly_fraction)
         self.per_name_cap      = float(per_name_cap)
@@ -152,6 +153,14 @@ class PortfolioConstructor:
         self.daily_vol_target  = self.annual_vol_target / np.sqrt(_TRADING_DAYS)
         self.ic                = float(ic)
         self.max_names         = int(max_names)
+        # When True, a cross-section with too few names above the absolute
+        # signal threshold falls back to the best-available *positive* names
+        # (relative ranking) instead of sitting in 100% cash. This is the
+        # standard long-only cross-sectional behaviour and stops the book from
+        # missing entire bull windows when the dominant signal is small-scale
+        # (e.g. raw 5-day reversal). Set False to restore the old cash-on-weak
+        # behaviour.
+        self.allow_relative_fallback = bool(allow_relative_fallback)
 
     def construct(
         self,
@@ -181,16 +190,29 @@ class PortfolioConstructor:
         sigma_dict = sigma_dict or {}
         sector_map = sector_map or {}
 
-        # ── Step 1: filter to positive signals above minimum threshold ────────
-        eligible = {
-            t: s for t, s in combined_signals.items()
-            if s > _MIN_SIGNAL_THRESHOLD
-        }
-        if len(eligible) < _MIN_PORTFOLIO_NAMES:
+        # ── Step 1: select long candidates (long-only) ────────────────────────
+        # Prefer names above the absolute signal threshold. If too few clear it,
+        # fall back to the best-available *positive* names so a weak-but-positive
+        # cross-section stays invested rather than holding 100% cash (the old
+        # behaviour missed entire bull windows whenever the dominant signal was
+        # small-scale, e.g. raw 5-day reversal ≈ ±0.03 << the 0.10 threshold).
+        positive = {t: s for t, s in combined_signals.items() if s > 0.0}
+        strong   = {t: s for t, s in positive.items() if s > _MIN_SIGNAL_THRESHOLD}
+
+        if len(strong) >= _MIN_PORTFOLIO_NAMES:
+            eligible = strong
+        elif self.allow_relative_fallback and len(positive) >= _MIN_PORTFOLIO_NAMES:
+            eligible = positive
             logger.info(
-                "PortfolioConstructor: only %d names above threshold %.2f — "
-                "returning empty portfolio",
-                len(eligible), _MIN_SIGNAL_THRESHOLD,
+                "PortfolioConstructor: %d names above threshold %.2f; using "
+                "relative fallback to top %d positive-signal names.",
+                len(strong), _MIN_SIGNAL_THRESHOLD, min(len(positive), self.max_names),
+            )
+        else:
+            logger.info(
+                "PortfolioConstructor: only %d positive signals (need %d) — "
+                "holding cash.",
+                len(positive), _MIN_PORTFOLIO_NAMES,
             )
             return PortfolioWeights(weights={}, n_names=0, cash_weight=1.0)
 

@@ -1,12 +1,17 @@
-# ProTrader AI — AI-Powered Stock Analytics Platform
+# ProTrader AI — AI-Powered Stock Analytics Platform (NSE / Indian Markets)
 
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-FF4B4B.svg)](https://streamlit.io/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13%2B-FF6F00.svg)](https://tensorflow.org/)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.2.x-009688.svg)](https://fastapi.tiangolo.com/)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B.svg)](https://streamlit.io/)
 [![XGBoost](https://img.shields.io/badge/XGBoost-2.0%2B-028cf0.svg)](https://xgboost.readthedocs.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-An advanced AI-powered stock prediction and analysis platform for **Indian markets (NSE)**, combining multi-source sentiment analysis, institutional flow tracking, Bayesian multi-expert fusion, and mathematical chart pattern detection into a single interactive dashboard.
+A research-grade stock analytics platform for **Indian markets (NSE)** that combines a
+calibrated multi-day directional signal, multi-source sentiment, institutional-flow
+tracking, Bayesian multi-expert fusion, and chart-pattern detection — served through a
+**Next.js + FastAPI** web app and a secondary **Streamlit** app, with a paper-trading
+pipeline and a self-resolving accuracy ledger that keeps the reported numbers honest.
 
 > **For educational and research purposes only. Not financial advice.**
 
@@ -14,25 +19,105 @@ An advanced AI-powered stock prediction and analysis platform for **Indian marke
 
 ## 📋 Table of Contents
 
+- [Honest Results (Real Numbers)](#-honest-results-real-numbers)
+- [Two App Surfaces](#-two-app-surfaces)
 - [What Makes This Novel](#-what-makes-this-novel)
+- [Architecture](#-architecture)
 - [Data Sources](#-data-sources)
-- [Model Architecture](#-model-architecture)
-- [Explainability Framework](#-explainability-framework)
-- [Backtesting & Validation](#-backtesting--validation)
-- [Platform Features](#-platform-features)
 - [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
-- [API Keys Setup](#-api-keys-setup)
+- [API Surface](#-api-surface)
+- [Daily Operations](#-daily-operations-paper-trading--accuracy)
+- [Deployment](#-deployment)
 - [Known Limitations](#-known-limitations)
 - [Disclaimer](#-disclaimer)
 
 ---
 
+## 📊 Honest Results (Real Numbers)
+
+This project's defining principle is that **every reported number is the measured,
+walk-forward out-of-sample result — never an in-sample fit, and never inflated.**
+That stance produced two findings worth stating up front:
+
+### 1. There is no honest *next-day* single-name directional edge
+
+On liquid NSE large-caps (2018–2026) we tested five independent approaches —
+per-ticker ensemble, cross-sectional logistic regression (AUC ≈ 0.49), LightGBM +
+reversion (AUC ≈ 0.45), trend/momentum gating, and market-regime gating. **None beat
+equity drift.** Claims of 60–70% next-day direction are not honestly achievable on
+this universe. After fixing a calibration bug (below), the model's reported next-day
+"up" probability correctly sits **near 0.50**, where it belongs.
+
+### 2. Calibration fix (high value)
+
+`models/hybrid_model.py` previously reported a next-day directional probability of
+**~80%** while the real hit-rate was **~51%** — Expected Calibration Error (ECE) of
+**0.345** and a Brier score worse than a coin flip. Root cause: the isotonic
+calibrator was fit on one prediction surface and applied to a different one, and the
+final tree/RNN blend was never itself calibrated. After the fix (matching-surface
+isotonic + a final Platt scaler fit on the validation fold):
+
+| Metric | Before | After |
+|--------|--------|-------|
+| ECE    | 0.345  | **0.049** |
+| Reported P(up) | ~0.80 (false confidence) | ~0.50 (honest) |
+
+### 3. Where a *real* edge exists: the 30-day swing signal
+
+`models/directional_signal.py` answers a different, tractable question:
+**"Over the next ~30 trading days, is this name more likely to be higher — and is the
+setup convincing enough to act on?"** It is deliberately **long / neutral only**
+(confident short calls on single names are destroyed by upward drift — ~10% precision
+OOS). Measured walk-forward on 54 NSE names over 2018–2026 (91,471 train rows,
+**50,272 out-of-sample rows**):
+
+| Metric | Value |
+|--------|-------|
+| Horizon | 30 trading days (~1.5 months) |
+| Fires UP only above conviction threshold | τ\* = 0.63 |
+| OOS precision of the fired bucket | **60.6%** |
+| "Always-up" base rate (the bar to beat) | 58.0% |
+| Net edge | **+2.5 pp**, positive in **4 of 5 years** |
+| Coverage (how often it fires) | 5.6% — it stays quiet by design |
+| Ranking AUC | 0.47 — near-random *by design*; the edge lives in the high-conviction tail, not the ordering |
+
+Per-year OOS precision vs. base rate: 2022 `61.6 / 54.0` · 2023 `68.3 / 65.3` ·
+2024 `53.3 / 55.7` (below base) · 2025 `69.0 / 58.2` · 2026 `54.5 / 47.1`.
+
+The shipped model lives at `models/saved/directional_signal.pkl` with its
+walk-forward stats baked in; retrain monthly with
+`DirectionalSignal(horizon=30).train(years=8)`.
+
+> **The honesty contract:** the "expected hit-rate" shown in the UI is the measured
+> OOS precision of the fired bucket. If the model isn't trained, the signal returns a
+> clearly-flagged `NEUTRAL`.
+
+---
+
+## 🖥️ Two App Surfaces
+
+Both surfaces share the same `services/` + `schemas/` contract, so every feature stays
+consistent across them.
+
+| Surface | Stack | Status | Run |
+|---------|-------|--------|-----|
+| **Web app (primary)** | Next.js 15 (App Router, React 19) → FastAPI backend | The main app used for testing and daily use | `run.bat` |
+| **Streamlit app (secondary)** | `app.py` (single-file Streamlit dashboard) | Kept working; not the primary path | `streamlit run app.py` |
+
+---
+
 ## 🎯 What Makes This Novel
 
-### 1. Bayesian Dynamic Fusion Framework
+### 1. Calibrated, conviction-gated swing signal
+A long/neutral 30-day directional model whose displayed confidence is its *measured*
+out-of-sample precision, not an in-sample probability. It abstains 94% of the time and
+only speaks when the setup clears a tuned conviction threshold. (See
+[Honest Results](#-honest-results-real-numbers).)
 
-Three specialized neural networks, each tracking its own prediction uncertainty. Weights shift automatically to the most accurate expert:
+### 2. Bayesian Dynamic Fusion Framework
+Three specialized networks, each tracking its own prediction uncertainty (σ²). Weights
+shift every cycle toward the most-accurate expert:
 
 ```
 w_i = exp(-σ²_i) / Σ exp(-σ²_j)
@@ -40,93 +125,84 @@ w_i = exp(-σ²_i) / Σ exp(-σ²_j)
 
 | Expert | Architecture | Input |
 |--------|-------------|-------|
-| Technical Expert | GRU (128→64→32) | 20 OHLCV-derived features |
-| Sentiment Expert | Dense NN (64→32→16) | 8 multi-source sentiment features |
-| Volatility Expert | MLP | India VIX + stock volatility features |
+| Technical Expert | GRU (128→64→32) | OHLCV-derived features |
+| Sentiment Expert | Dense NN (64→32→16) | multi-source sentiment features |
+| Volatility Expert | MLP | India VIX + stock-volatility features |
 
-Unlike fixed-weight ensembles, this framework re-weights experts every prediction cycle based on their recent error variance (σ²).
+### 3. 27-Feature Hybrid Model (XGBoost + GRU)
+A 50/50 ensemble of XGBoost (100 trees, `max_depth=3`) and a GRU (128→64→32) over 27
+engineered features across Core Technical (5), Enhanced Technical (9), Advanced
+Technical (4), Sentiment (3), Institutional FII/DII (4), and Volatility (2). All
+features are stationary (log returns, oscillators, ratios) to avoid non-stationarity.
 
----
+### 4. 4-Source Sentiment with Temporal & Event Weighting
+RSS feeds (30%), NewsAPI (25%), Reddit (25%), Google Trends (20%), with temporal decay
+`w = exp(-0.5 × days_old)` and event multipliers (earnings 2.0×, regulatory 1.8×,
+dividend 1.5×, management 1.3×). NLP via **DistilRoBERTa-Financial** (zero-shot). An
+optional **LLM sentiment-alpha** path (`services/llm_sentiment_alpha.py`) and a **v2
+HF-hosted ensemble** (FinBERT + base learners + LR stacker) extend this.
 
-### 2. 27-Feature Hybrid Model (XGBoost + GRU)
+### 5. Hurst-Exponent Regime Detection
+R/S rescaled-range analysis classifies trending (H > 0.55), mean-reverting (H < 0.45),
+or random-walk (H ≈ 0.50) regimes to modulate trend-following confidence.
 
-A 50/50 ensemble of XGBoost (100 trees, max_depth=3) and GRU (128→64→32) trained on 27 engineered features:
+### 6. Multi-Timeframe Chart Pattern Detection
+ZigZag-based detection (3% reversal, O(n)) with a SciPy `argrelextrema` fallback;
+detects double tops/bottoms, head-and-shoulders, channels, flags, triangles, wedges,
+with volume confirmation. Optional Roboflow Vision API for image-based classification.
 
-| Category | Count | Features |
-|----------|-------|---------|
-| **Core Technical** | 5 | Log Returns, Volatility_5D, RSI_Norm, Volume Ratio, MA Divergence |
-| **Enhanced Technical** | 9 | MACD_Norm, MACD_Hist_Norm, Bollinger %B, ATR_Norm, OBV_Slope, 2D/5D/10D/20D Returns |
-| **Advanced Technical** | 4 | Chaikin Money Flow (CMF_20), Williams %R, RSI Bearish Divergence, RSI Bullish Divergence |
-| **Sentiment** | 3 | Base Sentiment Score, Multi-Source Score, Confidence |
-| **Institutional** | 4 | FII Net (normalized), DII Net (normalized), FII 5D Rolling Avg, DII 5D Rolling Avg |
-| **Volatility** | 2 | VIX Normalized, VIX Change Rate |
+### 7. FII/DII Flows with 6-Source Fallback Chain
+`NSE API → nselib → MoneyControl → Trendlyne → Gemini AI parsing → manual input`.
 
-All features are stationary (log returns, oscillators, ratios) to avoid non-stationarity issues.
-
----
-
-### 3. 4-Source Sentiment Aggregation with Temporal & Event Weighting
-
-| Source | Weight | Details |
-|--------|--------|---------|
-| RSS Feeds | 30% | Moneycontrol, Economic Times, LiveMint, Business Standard, Google News |
-| NewsAPI | 25% | Global financial news with dynamic stock keyword mapping |
-| Reddit | 25% | r/IndianStockMarket, r/DalalStreetTalks, r/IndiaInvestments, r/indianstreetbets |
-| Google Trends | 20% | Retail investor interest via search volume |
-
-**Temporal decay**: `w = exp(-0.5 × days_old)` — same-day articles weighted 1.0, 3-day-old articles weighted 0.22.
-
-**Event classification multipliers**:
-- Earnings announcements: 2.0×
-- Regulatory news: 1.8×
-- Dividend announcements: 1.5×
-- Management changes: 1.3×
-- General news: 1.0×
-
-NLP model: **DistilRoBERTa-Financial** (`mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis`), a transformer pre-trained on financial corpora, applied without fine-tuning.
+### 8. Operational backbone
+A **paper-trading pipeline**, a self-resolving **accuracy ledger** (predictions are
+later marked Hit/Miss against real prices), a versioned **model registry** with atomic
+promotion, **Celery** background jobs, and **observability** (structlog, Sentry, OTLP
+tracing) — all gated so the app runs free-tier and DB-less locally.
 
 ---
 
-### 4. Hurst Exponent Market Regime Detection
-
-Uses R/S (Rescaled Range) analysis to classify market regimes before prediction:
+## 🔧 Architecture
 
 ```
-H = slope of log(R/S) vs log(lag)
+                         ┌──────────────────────────────┐
+        Browser  ───────►│  Next.js 15 (frontend/)       │
+                         │  • Supabase SSR auth/watchlists│
+                         │  • typed fetch client          │
+                         └───────────────┬────────────────┘
+                                         │  /api/v1/*
+                                         ▼
+        ┌────────────────────────────────────────────────────────────┐
+        │  FastAPI  (api/main.py)                                      │
+        │  routers: stocks · sentiment · analysis · predict · backtest │
+        │           jobs · accuracy · models · ws · auth · watchlists  │
+        │           · alerts · health                                  │
+        └───────────────┬───────────────────────────┬─────────────────┘
+                        │                            │
+                        ▼                            ▼
+        ┌──────────────────────────┐    ┌──────────────────────────────┐
+        │  services/  (the contract)│    │  workers/  (Celery + beat)    │
+        │  prediction · backtest    │    │  paper-trade & ledger jobs,   │
+        │  sentiment · technicals   │    │  tick publisher/broker        │
+        │  paper_trade · ledger ... │    └──────────────────────────────┘
+        └───────────┬───────────────┘
+                    ▼
+   ┌────────────────────────────────────────────────────────────────┐
+   │ models/  hybrid · directional_signal · fusion · experts ·        │
+   │          cross_sectional · portfolio · backtester · registry     │
+   │ data/    yfinance · FII/DII · VIX · multi-sentiment · options ·   │
+   │          intraday · upstox · macro                                │
+   │ db/      Supabase (RLS) + local SQLite ledger fallback            │
+   └────────────────────────────────────────────────────────────────┘
 
-H > 0.55 → Trending market
-H < 0.45 → Mean-reverting market
-H ≈ 0.50 → Random walk
-H with high volatility → Volatile regime
+   Same services/ + schemas/ layer also powers the Streamlit app (app.py).
 ```
 
-The regime classification modulates confidence in trend-following signals.
-
----
-
-### 5. Multi-Timeframe Chart Pattern Detection
-
-**ZigZag-based detection** (primary):
-- Threshold: 3% price reversal for daily data
-- O(n) time complexity, adaptive to volatility
-
-**Scipy peak detection** (fallback):
-- `scipy.signal.argrelextrema` with orders 3, 5, 7 for multi-scale scanning
-
-**Patterns detected**: Double Top, Double Bottom, Head & Shoulders, Inverse Head & Shoulders, Ascending/Descending Channels, Bull/Bear Flags, Triangles, Wedges, Rounding Bottoms, Support/Resistance levels.
-
-Volume confirmation: Breakout volume > 1.5× MA20, Reversal volume > 1.2× MA20.
-
-**Roboflow Vision API** integration available for AI-based chart image classification.
-
----
-
-### 6. FII/DII Data with 6-Source Fallback Chain
-
-Official Foreign/Domestic Institutional Investor flow data with automatic fallbacks:
-```
-NSE API → nselib library → MoneyControl → Trendlyne → Gemini AI parsing → Manual input UI
-```
+Hard invariants the backend inherits:
+- **No `streamlit` imports** inside `services/` / `schemas/` — those are the shared contract.
+- **Secrets only via `config.settings._get_secret()`** (Streamlit secrets → `.env` → env vars).
+- **Free-tier first** — every endpoint works without paid keys; the v2 ensemble (`HF_TOKEN`) `503`s cleanly when absent, and auth-only endpoints `401` in dev when `SUPABASE_JWT_SECRET` is unset.
+- **Local no-DB mode** — the frontend auto-bypasses Supabase when `NEXT_PUBLIC_SUPABASE_*` are absent (`frontend/utils/supabase/stub.ts`); the backend runs on a local SQLite ledger.
 
 ---
 
@@ -134,132 +210,15 @@ NSE API → nselib library → MoneyControl → Trendlyne → Gemini AI parsing 
 
 | Source | Type | Data |
 |--------|------|------|
-| Yahoo Finance (yfinance) | Market data | OHLCV, fundamentals (P/E, ROE, debt ratios, market cap) |
+| Yahoo Finance (yfinance) | Market data | OHLCV, fundamentals (P/E, ROE, debt, market cap) |
 | NSE India | Institutional | FII/DII net flows (daily) |
-| India VIX (^INDIAVIX) | Macroeconomic | Market fear/volatility index |
-| NewsAPI | News | Global financial news aggregation |
-| RSS Feeds (6 sources) | News | Indian financial news (Moneycontrol, ET, LiveMint, Business Standard, Google News) |
-| Reddit (PRAW) | Social media | 4 Indian market subreddits |
-| Google Trends (pytrends) | Retail sentiment | Search volume as retail interest proxy |
-| Roboflow Vision API | Pattern data | AI chart pattern classification |
-
----
-
-## 🔧 Model Architecture
-
-### Hybrid Model Pipeline
-
-```
-Raw Market Data (OHLCV)
-        │
-        ▼
-Feature Engineering (27 features)
-        ├── Core Technical  (5): Log Returns, Volatility, RSI, Volume Ratio, MA Divergence
-        ├── Enhanced Tech   (9): MACD, Bollinger %B, ATR, OBV Slope, Multi-timeframe Returns
-        ├── Advanced Tech   (4): CMF_20, Williams %R, RSI Bull/Bear Divergence
-        ├── Sentiment       (3): Base Score, Multi-Source Score, Confidence
-        ├── Institutional   (4): FII/DII Net Normalized, 5D Rolling Averages
-        └── Volatility      (2): VIX Normalized, VIX Change Rate
-              │
-        ┌─────┴──────┐
-        ▼            ▼
-   XGBoost       GRU Network
-  (100 trees)  (128→64→32 units)
-   max_depth=3   BatchNorm + 0.3 dropout
-        │            │
-        └─────┬───────┘
-              ▼
-       50/50 Ensemble
-              │
-              ▼
-    Predicted Return + Regime Classification
-```
-
-### Dynamic Fusion Framework
-
-```
-                    ┌─────────────────┐
-                    │   Stock Data    │
-                    └────────┬────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        ▼                    ▼                    ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│   Technical   │   │   Sentiment   │   │   Volatility  │
-│    Expert     │   │    Expert     │   │    Expert     │
-│  GRU (128→32) │   │ Dense (64→16) │   │    MLP        │
-└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
-        │                   │                   │
-        │    σ²_tech        │    σ²_sent        │    σ²_vol
-        └────────────────────┴────────────────────┘
-                             │
-                             ▼
-              Bayesian Weight Calculator
-           w_i = exp(-σ²_i) / Σ exp(-σ²_j)
-                             │
-                             ▼
-                    Combined Prediction
-```
-
----
-
-## 🔍 Explainability Framework
-
-| Method | What It Shows |
-|--------|--------------|
-| **SHAP Values** | Per-feature attribution — which of the 27 features drove the prediction up or down |
-| **Uncertainty Quantification** | Per-expert σ² (mean squared error over last 10 predictions) — visible in Dynamic Fusion tab |
-| **Expert Weight Visualization** | Real-time bar chart showing current Technical / Sentiment / Volatility weights |
-| **Sentiment Source Breakdown** | Individual scores from each source (RSS, NewsAPI, Reddit, Trends) with article counts |
-| **Trade Setup Transparency** | Entry, stop loss, and target prices with explicit ATR-based derivation and risk/reward ratio |
-| **Hurst Exponent Display** | Current regime value and classification shown alongside prediction |
-| **Pattern Explanation** | Each detected pattern shows location, confidence score, volume confirmation, and price target |
-
----
-
-## 📈 Backtesting & Validation
-
-### Benchmarks
-- **NIFTY 50 buy-and-hold** (market baseline)
-- **MA Crossover** (20-day / 50-day moving average signals)
-- **52-Week Momentum** (breakout-based signals)
-
-### Metrics
-| Metric | Description |
-|--------|-------------|
-| Direction Accuracy | % of correct up/down predictions |
-| RMSE | Root Mean Square Error of return predictions |
-| Sharpe Ratio | Annualized risk-adjusted return |
-| Max Drawdown | Largest peak-to-trough decline |
-| Win Rate | % of profitable trades |
-| Profit Factor | Total gross wins / total gross losses |
-
-### Statistical Significance Tests
-- **Binomial test**: Direction accuracy vs. 50% random baseline
-- **Paired t-test**: Model RMSE vs. random walk RMSE
-- **Bootstrap 95% CI**: Confidence interval on Sharpe ratio difference
-- **Cohen's d**: Effect size calculation
-- **Monte Carlo simulation**: 1,000 path resampling for strategy robustness
-
-### Transaction Costs
-NSE round-trip cost of 0.1% applied (0.05% brokerage + 0.025% STT + 0.003% exchange charges).
-
-Walk-forward validation used throughout — no look-ahead bias.
-
----
-
-## 🖥️ Platform Features
-
-| Tab | Description |
-|-----|-------------|
-| 📊 **Dashboard** | Main prediction output, direction accuracy chart, Gemini AI commentary |
-| 🔬 **Dynamic Fusion** | Real-time expert weight visualization, per-expert uncertainty tracking |
-| 📈 **Technicals & Risk** | Fibonacci levels, ATR, Kelly Criterion position sizing, trade setup calculator |
-| 🏛️ **Fundamentals** | P/E, ROE, debt-to-equity, market cap, analyst target prices |
-| 💼 **FII/DII Analysis** | Daily and cumulative institutional flow charts with 5D rolling averages |
-| 📰 **Multi-Source Sentiment** | Per-source sentiment scores, article counts, event classification, temporal trends |
-| 🛠️ **Backtest** | Strategy vs. benchmarks, equity curve, Monte Carlo CI, statistical p-values |
-| 📐 **Pattern Analysis** | Detected chart patterns with confidence scores, targets, and volume confirmation |
+| India VIX (^INDIAVIX) | Macro | Market fear/volatility index (synthetic fallback) |
+| Upstox | Market data | Instruments + intraday/option-chain (optional) |
+| NewsAPI | News | Global financial news |
+| RSS Feeds (6 sources) | News | Moneycontrol, ET, LiveMint, Business Standard, Google News |
+| Reddit (PRAW) | Social | 4 Indian-market subreddits |
+| Google Trends (pytrends) | Retail sentiment | Search-volume proxy |
+| Roboflow Vision API | Pattern | AI chart-pattern classification (optional) |
 
 ---
 
@@ -267,85 +226,183 @@ Walk-forward validation used throughout — no look-ahead bias.
 
 ```
 finance/
-├── app.py                      # Main Streamlit application (~29,000 lines)
-├── config/
-│   └── settings.py             # API keys, model config, Indian holiday calendar
-├── data/
-│   ├── stock_data.py           # Yahoo Finance OHLCV + fundamentals
-│   ├── fii_dii.py              # NSE FII/DII data with 6-source fallback chain
-│   ├── vix_data.py             # India VIX + synthetic NIFTY-based fallback
-│   ├── news_sentiment.py       # NewsAPI + FinBERT sentiment pipeline
-│   └── multi_sentiment.py      # 4-source sentiment aggregator (~695 lines)
-├── models/
-│   ├── hybrid_model.py         # 27-feature XGBoost + GRU ensemble
-│   ├── fusion_framework.py     # Bayesian multi-expert fusion framework
-│   ├── technical_expert.py     # GRU-based technical price model
-│   ├── sentiment_expert.py     # Dense NN for sentiment features
-│   ├── volatility_expert.py    # MLP for VIX + volatility analysis
-│   ├── visual_analyst.py       # ZigZag + scipy chart pattern detection
-│   ├── backtester.py           # Vectorized backtesting with Monte Carlo
-│   └── optimizer.py            # Optuna hyperparameter tuning
-├── ui/
-│   ├── charts.py               # Plotly interactive chart generation
-│   └── ai_analysis.py          # Google Gemini AI commentary integration
-├── utils/
-│   ├── technical_indicators.py # RSI, MACD, ATR, OBV, Bollinger Bands, CMF
-│   └── risk_manager.py         # Fibonacci levels, Kelly Criterion, ATR stop-loss
-├── indian_stocks.csv           # NSE stock symbols list
-├── .env                        # API keys (gitignored)
-└── README.md                   # This file
+├── api/                        # FastAPI backend (primary surface)
+│   ├── main.py                 # app factory, CORS, middleware, router wiring
+│   ├── routers/                # stocks, sentiment, analysis, predict, backtest,
+│   │                           #   jobs, accuracy, models, ws, auth, watchlists, alerts, health
+│   ├── observability/          # structlog, Sentry, OTLP tracing, request-id middleware
+│   ├── auth.py · deps.py · jobs.py · rate_limit.py
+│
+├── frontend/                   # Next.js 15 web app (primary surface) — see frontend/README.md
+│   ├── app/                    # App Router pages: dashboard, stock/[ticker] tabs, accuracy, login
+│   ├── components/ · hooks/ · lib/ · utils/supabase/
+│
+├── services/                   # Shared service layer (the contract for BOTH surfaces)
+│   ├── prediction_service.py · backtest_service.py · sentiment_service.py
+│   ├── paper_trade_service.py · ledger_service.py · ledger_backfill.py
+│   ├── technicals_service.py · pattern_service.py · stock_service.py
+│   ├── v2_ensemble_service.py · llm_sentiment_alpha.py · live_monitor.py
+│
+├── schemas/                    # Pydantic DTOs (prediction, backtest, sentiment, ledger, …)
+│
+├── models/                     # ML models
+│   ├── hybrid_model.py         # 27-feature XGBoost + GRU ensemble (calibrated)
+│   ├── directional_signal.py   # 30-day calibrated swing signal  ⭐
+│   ├── fusion_framework.py     # Bayesian multi-expert fusion
+│   ├── technical_expert.py · sentiment_expert.py · volatility_expert.py
+│   ├── cross_sectional_trainer.py · portfolio_constructor.py · signal_combiner.py
+│   ├── visual_analyst.py · backtester.py · optimizer.py · registry.py
+│   ├── nse_costs.py · transaction_costs.py · alpha_signals.py
+│   └── saved/                  # persisted artifacts (directional_signal.pkl, cross_sectional_*)
+│
+├── data/                       # data sources (yfinance, FII/DII, VIX, sentiment, options, intraday, upstox, macro)
+│   └── ledger/                 # local SQLite ledger + LLM sentiment cache
+│
+├── db/                         # Supabase client + RLS schema + SQLite ledger + alerts
+├── workers/                    # Celery app, beat schedule, tasks, tick publisher/broker
+├── ui/                         # Streamlit-only: charts.py, ai_analysis.py
+├── utils/                      # technical_indicators, risk_manager, roboflow_client
+├── config/                     # settings.py (secret resolution), instruments
+├── scripts/                    # run_paper_trade, promote_model, populate_instruments
+├── models-registry/            # versioned model registry (active.json + v1/) — see its README
+├── tests/                      # pytest suite: api/ services/ models/ schemas/ data/ workers/ scripts/
+├── docs/figures/               # research-paper figures + app screenshots
+│
+├── app.py                      # Streamlit app (secondary surface)
+├── run.bat                     # dev launcher (backend :8000 + frontend :3000)
+├── run_backtest.py             # standalone backtest entry point
+├── requirements.txt            # Python deps (target: Python 3.11)
+├── Procfile · railway.toml     # deployment (web/worker/beat/ticks)
+└── indian_stocks.csv           # NSE symbol list
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone & Install
+### Prerequisites
+- **Python 3.11** (deps pin `numpy<2` / `tensorflow-cpu<2.17`; 3.13 has no compatible wheels)
+- **Node.js 18+** (for the Next.js frontend)
 
+### 1. Backend env (one-time)
+```bat
+"%LOCALAPPDATA%\Programs\Python\Python311\python.exe" -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+### 2. Frontend env (one-time)
 ```bash
-git clone https://github.com/yourusername/protrader-ai.git
-cd protrader-ai
-pip install -r requirements.txt
+cd frontend
+npm install
+cp .env.local.example .env.local   # optional — see frontend/README.md
 ```
 
-### 2. Configure API Keys (Optional but Recommended)
-
-Create a `.env` file in the project root:
-
-```env
-GEMINI_API_KEY=your_gemini_key          # AI analysis commentary
-NEWS_API_KEY=your_newsapi_key           # Enhanced news sentiment
-REDDIT_CLIENT_ID=your_reddit_id         # Reddit social sentiment
-REDDIT_CLIENT_SECRET=your_reddit_secret
-ROBOFLOW_API_KEY=your_roboflow_key      # Vision-based pattern detection
+### 3. Run the primary app (FastAPI + Next.js)
+```bat
+run.bat
 ```
+Backend → http://localhost:8000 (Swagger at `/docs`) · Frontend → http://localhost:3000.
+Without `NEXT_PUBLIC_SUPABASE_*` set, the frontend runs in local no-DB mode (fake
+signed-in user, auth gate skipped) so you can use it with zero external services.
 
-The platform works without any API keys — it falls back gracefully using RSS feeds, Yahoo Finance news, and synthetic VIX.
-
-### 3. Run
-
+### 4. (Optional) Run the secondary Streamlit app
 ```bash
 streamlit run app.py
 ```
 
+### API keys (all optional — the platform degrades gracefully)
+Create `.env` in the project root:
+```env
+GEMINI_API_KEY=...          # AI commentary
+NEWS_API_KEY=...            # enhanced news sentiment
+REDDIT_CLIENT_ID=...        # Reddit sentiment
+REDDIT_CLIENT_SECRET=...
+ANTHROPIC_API_KEY=...       # in-app Claude analysis + LLM sentiment alpha
+HF_TOKEN=...                # v2 hosted ensemble (else /sentiment/v2 returns 503)
+ROBOFLOW_API_KEY=...        # vision pattern detection
+SUPABASE_JWT_SECRET=...     # enable auth-gated endpoints
+REDIS_URL=...               # enable Celery background jobs
+
+# Trade Desk (P5) — live order placement via Zerodha Kite. ALL THREE required
+# for live mode; any missing → orders are simulated (dry-run). Also requires
+# `pip install kiteconnect`. The access token expires daily (SEBI rule).
+KITE_API_KEY=...
+KITE_ACCESS_TOKEN=...
+LIVE_TRADING=1
+TRADE_CAPITAL_PER_SLOT=25000  # default ₹ per approved position
+```
+
 ---
 
-## 🔑 API Keys Setup
+## 🌐 API Surface
 
-### Gemini API (Free)
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create an API key
-3. Add to `.env`: `GEMINI_API_KEY=your_key`
+Base prefix: `/api/v1` (full interactive docs at `/docs`).
 
-### NewsAPI (Free tier — 100 requests/day)
-1. Visit [newsapi.org/register](https://newsapi.org/register)
-2. Sign up and get key
-3. Add to `.env`: `NEWS_API_KEY=your_key`
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /healthz` · `/readyz` | liveness / readiness |
+| `GET /me` | current Supabase user |
+| `GET /stocks` · `/stocks/{ticker}` | search + OHLCV + fundamentals |
+| `GET /stocks/{ticker}/sentiment[/v2]` | sentiment + v2 ensemble |
+| `POST /stocks/{ticker}/predict` | enqueue prediction → `job_id` (includes swing signal) |
+| `GET /swing/scan` | run the 30-day swing signal across the universe (cached ≤30 min; `?refresh=1` to force) |
+| `GET /trade/broker/status` | active execution backend (dry-run vs live Kite) |
+| `POST /trade/proposals` · `GET /trade/proposals` | analyze tickers → stage sized order proposals |
+| `POST /trade/proposals/{id}/approve` · `/reject` | the ONLY execution path — per-order human approval |
+| `POST /stocks/{ticker}/backtest` | enqueue backtest → `job_id` |
+| `GET /jobs/{id}` | poll job status / result |
+| `GET /accuracy[/recent]` · `POST /accuracy/resolve` | ledger rollups + resolution |
+| `GET /models/active` | active model version |
+| `GET/POST /watchlists` · `/alerts` | per-user CRUD (RLS) |
+| `WS /ws/prices?tickers=` | live price stream |
 
-### Reddit API (Free)
-1. Visit [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
-2. Create a "script" type application
-3. Add both `REDDIT_CLIENT_ID` and `REDDIT_CLIENT_SECRET` to `.env`
+Regenerate the typed frontend client after backend changes:
+`cd frontend && npm run codegen` (reads `http://localhost:8000/openapi.json`).
+
+---
+
+## 🔁 Daily Operations (Paper Trading & Accuracy)
+
+If you are **not** running the Celery job queue, run these from the project root in the
+`.venv` (see `daily_commands.txt` for the full guide):
+
+```bash
+# Near market close (~15:20 IST): predict + log paper trades, mark open positions
+# Trades the 30-day swing signal when trained (the validated edge): bracketless
+# entry, 10% disaster stop, time exit at the horizon (~42 calendar days).
+# Use --engine nextday for the legacy next-day comparison book.
+python -m scripts.run_paper_trade            # add --dry-run to preview, --tickers to scope
+
+# After close (~16:00 IST): resolve past predictions into Hit/Miss against real prices
+python -m services.ledger_backfill           # or: curl -X POST localhost:8000/api/v1/accuracy/resolve
+```
+
+With `REDIS_URL` set, Celery beat automates this (`run_paper_trade` ~15:45 IST,
+`ledger_backfill` ~16:30 IST) — see `Procfile` for `web` / `worker` / `beat` / `ticks`.
+
+### Trade Desk (P5) — approve-before-execute broker layer
+
+The dashboard's **Trade Desk** panel turns analysis into sized order proposals
+(qty, entry, 10% disaster stop, exit-by date) and waits for an explicit
+per-order approval. The approve endpoint is the only code path that talks to a
+broker, and it is **simulated (dry-run) by default** — live placement requires
+`KITE_API_KEY` + `KITE_ACCESS_TOKEN` + `LIVE_TRADING=1`. In live mode the
+protective stop is a server-side Zerodha **GTT** so it survives the app being
+offline. Every approved order is also logged to the accuracy ledger
+(`model_version=swing30d-live[...]`), so live vs paper vs backtest results are
+directly comparable from the same table.
+
+---
+
+## ☁️ Deployment
+
+- **FastAPI backend** → Railway (`railway.toml`, NIXPACKS, healthcheck `/api/v1/healthz`).
+- **Streamlit app** → Streamlit Cloud (Python 3.11, `packages.txt` for `libgomp1` etc.).
+- **Frontend** → any Next.js host (Vercel-style); point `NEXT_PUBLIC_API_URL` at the backend.
+- **Model registry** → local dir by default; set `MODEL_REGISTRY_URI=s3://…` (+ `S3_ENDPOINT_URL` for R2) to switch backends. See `models-registry/README.md`.
+
+CI: `.github/workflows/ci.yml` runs lint + schema/service smoke tests on Python 3.11
+(heavy ML deps are exercised at deploy time, not in CI).
 
 ---
 
@@ -353,50 +410,20 @@ streamlit run app.py
 
 | Limitation | Detail |
 |-----------|--------|
-| **EOD data only** | Uses end-of-day prices; not suitable for intraday trading |
-| **NSE API reliability** | FII/DII data may be unavailable when NSE website is down (6-source fallback chain mitigates this) |
-| **India VIX availability** | Falls back to synthetic NIFTY volatility proxy when ^INDIAVIX is unavailable |
-| **Training speed** | GRU training is slow on CPU; GPU recommended for faster turnaround |
-| **Market scope** | Optimized for NSE India; other markets work but lack FII/DII and VIX integration |
-| **NLP model** | DistilRoBERTa-Financial is applied zero-shot — not fine-tuned on Indian market-specific language |
-
----
-
-## 📦 Core Dependencies
-
-```
-streamlit>=1.28.0
-yfinance>=0.2.28
-pandas>=2.0.0
-numpy>=1.24.0
-scipy>=1.11.0
-xgboost>=2.0.0
-tensorflow>=2.13.0
-transformers>=4.30.0
-plotly>=5.15.0
-scikit-learn>=1.3.0
-python-dotenv>=1.0.0
-requests>=2.31.0
-feedparser>=6.0.0
-praw>=7.7.0
-pytrends>=4.9.0
-google-generativeai>=0.3.0
-shap>=0.42.0
-```
-
-Optional (conditional imports, platform works without):
-`prophet`, `statsmodels`, `lightgbm`, `catboost`, `optuna`, `nselib`
+| **No next-day single-name edge** | By design we report ~0.50; the tradable signal is the 30-day swing model, not next-day direction. |
+| **Swing signal is selective** | Fires only ~5.6% of the time and is long/neutral only — it abstains far more than it acts. |
+| **EOD-first** | Built around end-of-day prices; intraday/options paths are optional and secondary. |
+| **NSE source reliability** | FII/DII and VIX rely on fallback chains when NSE is down. |
+| **NLP zero-shot** | DistilRoBERTa-Financial is not fine-tuned on Indian-market language. |
+| **CPU training** | GRU/ensemble training is slow on CPU; retraining is a periodic offline job. |
 
 ---
 
 ## ⚠️ Disclaimer
 
-**This tool is for educational and research purposes only.**
-
-- Not financial advice
-- Past performance does not guarantee future results
-- Do not use for real trading without extensive independent backtesting
-- Always consult a SEBI-registered financial advisor before investing
+**This tool is for educational and research purposes only.** Not financial advice. Past
+performance does not guarantee future results. Always consult a SEBI-registered advisor
+before investing.
 
 ---
 
@@ -408,12 +435,11 @@ MIT License — free for personal and research use.
 
 ## 🙏 Credits
 
-- **Market Data**: Yahoo Finance, NSE India
-- **Sentiment NLP**: [DistilRoBERTa-Financial](https://huggingface.co/mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis)
-- **AI Commentary**: Google Gemini
-- **Pattern Detection**: SciPy signal processing, Roboflow Vision API
-- **Backtesting**: Custom vectorized engine with NSE transaction cost model
+Market data: Yahoo Finance, NSE India, Upstox · Sentiment NLP:
+[DistilRoBERTa-Financial](https://huggingface.co/mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis),
+FinBERT · AI commentary: Google Gemini, Anthropic Claude · Patterns: SciPy, Roboflow ·
+Backtesting: custom vectorized engine with NSE transaction-cost model.
 
 ---
 
-**Version**: 4.0 | **Last Updated**: March 2026
+**Version:** 0.2.x (API) · **Architecture:** Next.js + FastAPI (primary) + Streamlit (secondary) · **Last updated:** June 2026

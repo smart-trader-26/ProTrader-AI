@@ -111,6 +111,31 @@ class ConvictionPrecision(BaseModel):
     conviction_rate: float = 0.0
 
 
+class SwingSignal(BaseModel):
+    """
+    P4-1 — honest, conviction-gated multi-day (≈1-2 month) directional signal.
+
+    Unlike `last_directional_prob` (next-day, ~50/50 noise), this targets a
+    ~30-trading-day horizon where equity drift + a small genuine selective edge
+    give a measurable, *out-of-sample-validated* hit-rate. Long/neutral only —
+    confident single-name shorts are unreliable at this horizon (drift). Every
+    number here is backed by the persisted walk-forward statistics, not an
+    in-sample fit.
+    """
+
+    horizon_days: int
+    signal: Literal["UP", "NEUTRAL"] = "NEUTRAL"
+    prob_up: float = Field(ge=0.0, le=1.0, description="Calibrated P(up over horizon)")
+    conviction: float = Field(default=0.0, ge=0.0, le=1.0)
+    trained: bool = False
+    # Honesty fields — measured out-of-sample, displayed verbatim in the UI.
+    expected_hit_rate: float | None = None   # OOS precision of the fired UP bucket
+    coverage: float | None = None            # fraction of history the signal fires
+    base_rate: float | None = None           # naive always-up rate at this horizon
+    tau_star: float | None = None            # conviction threshold for an UP call
+    note: str = ""
+
+
 class PredictionBundle(BaseModel):
     ticker: str
     made_at: datetime
@@ -163,4 +188,7 @@ class PredictionBundle(BaseModel):
 
     # P3-11 — trading suspension flag (set by LiveMonitor when 60d Sharpe < 0)
     trading_suspended: bool = False
+
+    # P4-1 — honest 1-2 month swing-direction signal (None when model untrained).
+    swing_signal: SwingSignal | None = None
 

@@ -33,6 +33,7 @@ from schemas.prediction import (
     PredictionBundle,
     PredictionPoint,
     ShapFeature,
+    SwingSignal,
     TestSeriesPoint,
     ThresholdTuning,
     V2BlendInfo,
@@ -156,6 +157,27 @@ def predict(
         naive_brier=_opt(metrics.get("naive_brier")),
         conviction_precision=_to_conviction(metrics.get("conviction_precision")),
     )
+
+    # P4-1 — honest 1-2 month swing-direction signal. Computed from the same
+    # close series we already have; never blocks a prediction (degrades to a
+    # flagged NEUTRAL on any error / when the model isn't trained).
+    try:
+        from models.directional_signal import get_signal
+        _sw = get_signal().predict(df["Close"], ticker=ticker)
+        bundle.swing_signal = SwingSignal(
+            horizon_days=_sw["horizon_days"],
+            signal=_sw["signal"],
+            prob_up=_sw["prob_up"],
+            conviction=_sw.get("conviction", 0.0),
+            trained=_sw.get("trained", False),
+            expected_hit_rate=_sw.get("expected_hit_rate"),
+            coverage=_sw.get("coverage"),
+            base_rate=_sw.get("base_rate"),
+            tau_star=_sw.get("tau_star"),
+            note=_sw.get("note", ""),
+        )
+    except Exception as _exc:
+        logger.warning("Swing signal failed for %s: %s", ticker, _exc)
 
     # A7.2 — append to the ledger so actuals can be resolved later.
     if log_to_ledger:
