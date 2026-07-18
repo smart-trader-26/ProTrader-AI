@@ -1,0 +1,111 @@
+\relax 
+\citation{davis2017drift,davis2020updating}
+\citation{platt1999}
+\citation{zadrozny2002}
+\citation{guo2017}
+\citation{vovk2005,gibbs2021}
+\citation{davis2020updating}
+\citation{mahadevan2024cara}
+\citation{learningdebt2026}
+\citation{anytimevalid2026}
+\citation{retrainfreq2025}
+\citation{harris1913}
+\citation{barlow1965}
+\citation{murphy1973}
+\citation{brier1950}
+\citation{naeini2015}
+\citation{harris1913}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{}{section.1}{}}
+\citation{brier1950,gneiting2007}
+\citation{murphy1973}
+\citation{naeini2015,kumar2019}
+\citation{platt1999}
+\citation{zadrozny2002}
+\citation{guo2017}
+\citation{vovk2005}
+\citation{gibbs2021}
+\citation{gibbs2021}
+\citation{davis2017drift}
+\citation{davis2020updating}
+\citation{mahadevan2024cara}
+\citation{learningdebt2026}
+\citation{retrainfreq2025}
+\citation{anytimevalid2026}
+\citation{harris1913,barlow1965,ross1996}
+\citation{brier1950}
+\citation{murphy1973}
+\citation{naeini2015,kumar2019}
+\citation{ross1996}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\newlabel{sec:related}{{II}{2}{}{section.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}Preliminaries}{2}{}\protected@file@percent }
+\newlabel{sec:prelim}{{III}{2}{}{section.3}{}}
+\newlabel{eq:murphy}{{1}{2}{}{equation.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}The Recalibration Cadence Law}{2}{}\protected@file@percent }
+\newlabel{sec:law}{{IV}{2}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Assumptions}{2}{}\protected@file@percent }
+\newlabel{ass:drift}{{1}{2}{}{subsection.4.1}{}}
+\newlabel{ass:res}{{2}{2}{}{subsection.4.1}{}}
+\newlabel{ass:cost}{{3}{2}{}{subsection.4.1}{}}
+\citation{ross1996}
+\citation{harris1913}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}The gap--loss bridge}{3}{}\protected@file@percent }
+\newlabel{lem:bridge}{{1}{3}{}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}The law}{3}{}\protected@file@percent }
+\newlabel{thm:law}{{1}{3}{}{subsection.4.3}{}}
+\newlabel{eq:AT}{{2}{3}{}{equation.2}{}}
+\newlabel{eq:law}{{3}{3}{}{equation.3}{}}
+\newlabel{cor:regimes}{{1}{3}{}{equation.3}{}}
+\newlabel{cor:scaling}{{2}{3}{}{equation.3}{}}
+\newlabel{cor:rob}{{3}{3}{}{equation.3}{}}
+\newlabel{eq:penalty}{{4}{3}{}{equation.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Imperfect recalibration and other extensions}{3}{}\protected@file@percent }
+\newlabel{thm:affine}{{2}{3}{}{subsection.4.4}{}}
+\newlabel{eq:cubic}{{5}{3}{}{equation.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Practical recipe}{3}{}\protected@file@percent }
+\newlabel{sec:recipe}{{\mbox  {IV-E}}{3}{}{subsection.4.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Simulation Validation}{3}{}\protected@file@percent }
+\newlabel{sec:sim}{{V}{3}{}{section.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Average daily loss versus recalibration interval: Monte-Carlo (dots) against the analytic $A(T)$ of \eqref  {eq:AT} (line); the dashed vertical line is the closed-form $T^{*}$.}}{4}{}\protected@file@percent }
+\newlabel{fig:at}{{1}{4}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Measuring the Primitive on a Live System}{4}{}\protected@file@percent }
+\newlabel{sec:ledger}{{VI}{4}{}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}System and identification strategy}{4}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces E4: plug-in cadence from noisy $\hat  \gamma $ ($\beta {=}1$, $c{=}0.01$, $\gamma {=}0.008$, 400 reps).}}{4}{}\protected@file@percent }
+\newlabel{tab:e4}{{I}{4}{}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Results}{4}{}\protected@file@percent }
+\citation{harris1913}
+\citation{mahadevan2024cara,learningdebt2026,anytimevalid2026}
+\citation{mahadevan2024cara,retrainfreq2025}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Empirical optimum $\hat  T$ (Monte-Carlo argmin, integer days) against (a) recalibration cost and (b) drift rate, on log--log axes, for $\beta =0.5$ and $\beta =1$. Fitted slopes bracket the theoretical exponents $1/(2\beta +1)$ and $-2/(2\beta +1)$ of Corollary~\ref {cor:scaling}.}}{5}{}\protected@file@percent }
+\newlabel{fig:scaling}{{2}{5}{}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Closed-form misspecification penalty \eqref  {eq:penalty} for $\beta =1$ and $\beta =0.5$, with the 18 E1 ratios $\hat  T/T^{*}$ (ticks at $R{=}1$). The curve is flat near the optimum: a $2\times $ cost misestimate costs $5.8\%$ at $\beta {=}1$.}}{5}{}\protected@file@percent }
+\newlabel{fig:penalty}{{3}{5}{}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}The law, applied}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Discussion and Limitations}{5}{}\protected@file@percent }
+\newlabel{sec:discussion}{{VII}{5}{}{section.7}{}}
+\bibcite{brier1950}{1}
+\bibcite{murphy1973}{2}
+\bibcite{gneiting2007}{3}
+\bibcite{naeini2015}{4}
+\bibcite{guo2017}{5}
+\bibcite{kumar2019}{6}
+\bibcite{platt1999}{7}
+\bibcite{zadrozny2002}{8}
+\bibcite{vovk2005}{9}
+\bibcite{gibbs2021}{10}
+\bibcite{davis2017drift}{11}
+\bibcite{davis2020updating}{12}
+\bibcite{mahadevan2024cara}{13}
+\bibcite{learningdebt2026}{14}
+\bibcite{anytimevalid2026}{15}
+\bibcite{retrainfreq2025}{16}
+\bibcite{harris1913}{17}
+\bibcite{barlow1965}{18}
+\bibcite{ross1996}{19}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Live-ledger calibration decay (564 resolved NSE forecasts, 2026-04-19 to 2026-06-11). (a) Gap between nominal 90\% and empirical coverage by staleness, with affine and diffusive fits. (b) Directional hit-rate by staleness. Error bars are binomial 95\% CIs.}}{6}{}\protected@file@percent }
+\newlabel{fig:ledger}{{4}{6}{}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Conclusion}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{6}{}\protected@file@percent }
+\gdef \@abspage@last{6}

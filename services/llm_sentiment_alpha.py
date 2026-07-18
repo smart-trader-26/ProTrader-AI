@@ -93,6 +93,7 @@ class HeadlineScore:
     scored_at:    str   = ""
     from_cache:   bool  = False
     from_manual:  bool  = False
+    used_fallback: bool = False
     error:        str   = ""
 
 
@@ -502,6 +503,9 @@ def parse_manual_response(
     # Strip markdown code fences if present
     text = re.sub(r"```(?:json)?\s*", "", text)
     text = re.sub(r"```", "", text)
+    # Normalize typographic quotes that clipboards/editors substitute for ASCII ones
+    text = (text.replace("“", '"').replace("”", '"').replace("„", '"')
+                .replace("‘", "'").replace("’", "'"))
     text = text.strip()
 
     # Find the first JSON array (may have surrounding text)
@@ -528,7 +532,10 @@ def parse_manual_response(
         # Support both "i" key (preferred) and positional fallback
         idx = item.get("i") or item.get("index") or item.get("n")
         if idx is not None:
-            index_map[int(idx) - 1] = item
+            try:
+                index_map[int(idx) - 1] = item
+            except (TypeError, ValueError):
+                continue
 
     # If no "i" keys, use positional order
     if not index_map:

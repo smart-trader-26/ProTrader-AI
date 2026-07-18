@@ -1,0 +1,13 @@
+{
+  "n": 23,
+  "sign_agree": 0.391,
+  "kw_silent": 0.87,
+  "llm_nov_std": 0.207,
+  "llm_mat_std": 0.158,
+  "floor_pass": 0.304,
+  "unique_keys": 23,
+  "tickers": [
+    "ADANIPORTS",
+    "TCS.NS"
+  ]
+}

@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: jbcs_decision_value.aux
+Reallocating 'name_of_file' (item size: 1) to 12 items.
+The style file: apalike-sol.bst
+Reallocating 'name_of_file' (item size: 1) to 5 items.
+Database file #1: refs.bib
+Warning--empty doi in elyaniv2010
+Warning--empty doi in geifman2017
+Warning--empty doi in gibbs2021
+Warning--empty doi in guo2017
+Warning--empty doi in lopezdeprado2018
+Warning--empty doi in naeini2015
+Warning--empty doi in platt1999
+Warning--empty doi in vovk2005
+You've used 36 entries,
+            1962 wiz_defined-function locations,
+            735 strings with 10347 characters,
+and the built_in function-call counts, 15243 in all, are:
+= -- 1543
+> -- 480
+< -- 33
++ -- 164
+- -- 152
+* -- 1270
+:= -- 2524
+add.period$ -- 109
+call.type$ -- 36
+change.case$ -- 252
+chr.to.int$ -- 36
+cite$ -- 44
+duplicate$ -- 613
+empty$ -- 1168
+format.name$ -- 214
+if$ -- 3075
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 38
+newline$ -- 183
+num.names$ -- 110
+pop$ -- 211
+preamble$ -- 1
+purify$ -- 254
+quote$ -- 0
+skip$ -- 484
+stack$ -- 0
+substring$ -- 1260
+swap$ -- 116
+text.length$ -- 8
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 212
+warning$ -- 8
+while$ -- 141
+width$ -- 0
+write$ -- 503
+(There were 8 warnings)

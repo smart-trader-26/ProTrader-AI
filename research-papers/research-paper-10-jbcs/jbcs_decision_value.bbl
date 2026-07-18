@@ -1,0 +1,231 @@
+\begin{thebibliography}{}
+
+\bibitem[Angelopoulos and Bates, 2021]{angelopoulos2021}
+Angelopoulos, A.~N. and Bates, S. (2021).
+\newblock A gentle introduction to conformal prediction and distribution-free
+  uncertainty quantification.
+\newblock {\em arXiv preprint arXiv:2107.07511}. DOI:
+  10.48550/arXiv.2107.07511.
+
+\bibitem[Antweiler and Frank, 2004]{antweiler2004}
+Antweiler, W. and Frank, M.~Z. (2004).
+\newblock Is all that talk just noise? {The} information content of internet
+  stock message boards.
+\newblock {\em The Journal of Finance}, 59(3):1259--1294. DOI:
+  10.1111/j.1540-6261.2004.00662.x.
+
+\bibitem[Bailey {\em et~al}., 2017]{bailey2017}
+Bailey, D.~H., Borwein, J., Lopez~de Prado, M., and Zhu, Q.~J. (2017).
+\newblock The probability of backtest overfitting.
+\newblock {\em Journal of Computational Finance}, 20(4):39--69. DOI:
+  10.21314/JCF.2016.322.
+
+\bibitem[Brier, 1950]{brier1950}
+Brier, G.~W. (1950).
+\newblock Verification of forecasts expressed in terms of probability.
+\newblock {\em Monthly Weather Review}, 78(1):1--3. DOI:
+  10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2.
+
+\bibitem[Chow, 1970]{chow1970}
+Chow, C.~K. (1970).
+\newblock On optimum recognition error and reject tradeoff.
+\newblock {\em IEEE Transactions on Information Theory}, 16(1):41--46. DOI:
+  10.1109/TIT.1970.1054406.
+
+\bibitem[DeGroot and Fienberg, 1983]{degroot1983}
+DeGroot, M.~H. and Fienberg, S.~E. (1983).
+\newblock The comparison and evaluation of forecasters.
+\newblock {\em Journal of the Royal Statistical Society: Series D (The
+  Statistician)}, 32(1--2):12--22. DOI: 10.2307/2987588.
+
+\bibitem[Devlin {\em et~al}., 2019]{devlin2019}
+Devlin, J., Chang, M.-W., Lee, K., and Toutanova, K. (2019).
+\newblock {BERT}: pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock In {\em Proceedings of NAACL-HLT 2019}, pages 4171--4186,
+  Minneapolis, MN, USA. DOI: 10.18653/v1/N19-1423.
+
+\bibitem[El-Yaniv and Wiener, 2010]{elyaniv2010}
+El-Yaniv, R. and Wiener, Y. (2010).
+\newblock On the foundations of noise-free selective classification.
+\newblock {\em Journal of Machine Learning Research}, 11:1605--1641.
+
+\bibitem[Fama, 1970]{fama1970}
+Fama, E.~F. (1970).
+\newblock Efficient capital markets: a review of theory and empirical work.
+\newblock {\em The Journal of Finance}, 25(2):383--417. DOI: 10.2307/2325486.
+
+\bibitem[Fischer and Krauss, 2018]{fischer2018}
+Fischer, T. and Krauss, C. (2018).
+\newblock Deep learning with long short-term memory networks for financial
+  market predictions.
+\newblock {\em European Journal of Operational Research}, 270(2):654--669. DOI:
+  10.1016/j.ejor.2017.11.054.
+
+\bibitem[Geifman and El-Yaniv, 2017]{geifman2017}
+Geifman, Y. and El-Yaniv, R. (2017).
+\newblock Selective classification for deep neural networks.
+\newblock In {\em Advances in Neural Information Processing Systems 30 (NeurIPS
+  2017)}, pages 4878--4887, Long Beach, CA, USA.
+
+\bibitem[Gibbs and Cand\`es, 2021]{gibbs2021}
+Gibbs, I. and Cand\`es, E. (2021).
+\newblock Adaptive conformal inference under distribution shift.
+\newblock In {\em Advances in Neural Information Processing Systems 34 (NeurIPS
+  2021)}, pages 1660--1672.
+
+\bibitem[Gneiting {\em et~al}., 2007]{gneiting2007}
+Gneiting, T., Balabdaoui, F., and Raftery, A.~E. (2007).
+\newblock Probabilistic forecasts, calibration and sharpness.
+\newblock {\em Journal of the Royal Statistical Society: Series B},
+  69(2):243--268. DOI: 10.1111/j.1467-9868.2007.00587.x.
+
+\bibitem[Gneiting and Raftery, 2007]{gneitingraftery2007}
+Gneiting, T. and Raftery, A.~E. (2007).
+\newblock Strictly proper scoring rules, prediction, and estimation.
+\newblock {\em Journal of the American Statistical Association},
+  102(477):359--378. DOI: 10.1198/016214506000001437.
+
+\bibitem[Granger and Pesaran, 2000]{granger2000}
+Granger, C. W.~J. and Pesaran, M.~H. (2000).
+\newblock Economic and statistical measures of forecast accuracy.
+\newblock {\em Journal of Forecasting}, 19(7):537--560. DOI:
+  10.1002/1099-131X(200012)19:7<537::AID-FOR769>3.0.CO;2-G.
+
+\bibitem[Gu {\em et~al}., 2020]{gu2020}
+Gu, S., Kelly, B., and Xiu, D. (2020).
+\newblock Empirical asset pricing via machine learning.
+\newblock {\em The Review of Financial Studies}, 33(5):2223--2273. DOI:
+  10.1093/rfs/hhaa009.
+
+\bibitem[Guo {\em et~al}., 2017]{guo2017}
+Guo, C., Pleiss, G., Sun, Y., and Weinberger, K.~Q. (2017).
+\newblock On calibration of modern neural networks.
+\newblock In {\em Proceedings of the 34th International Conference on Machine
+  Learning (ICML 2017)}, pages 1321--1330, Sydney, Australia.
+
+\bibitem[Harvey {\em et~al}., 2016]{harvey2016}
+Harvey, C.~R., Liu, Y., and Zhu, H. (2016).
+\newblock {$\ldots$} and the cross-section of expected returns.
+\newblock {\em The Review of Financial Studies}, 29(1):5--68. DOI:
+  10.1093/rfs/hhv059.
+
+\bibitem[Jiang, 2021]{jiang2021}
+Jiang, W. (2021).
+\newblock Applications of deep learning in stock market prediction: recent
+  progress.
+\newblock {\em Expert Systems with Applications}, 184:115537. DOI:
+  10.1016/j.eswa.2021.115537.
+
+\bibitem[Ke {\em et~al}., 2019]{ke2019}
+Ke, Z.~T., Kelly, B.~T., and Xiu, D. (2019).
+\newblock Predicting returns with text data.
+\newblock {\em National Bureau of Economic Research, Working Paper 26186}. DOI:
+  10.3386/w26186.
+
+\bibitem[Krauss {\em et~al}., 2017]{krauss2017}
+Krauss, C., Do, X.~A., and Huck, N. (2017).
+\newblock Deep neural networks, gradient-boosted trees, random forests:
+  statistical arbitrage on the {S\&P} 500.
+\newblock {\em European Journal of Operational Research}, 259(2):689--702. DOI:
+  10.1016/j.ejor.2016.10.031.
+
+\bibitem[Lopez~de Prado, 2018]{lopezdeprado2018}
+Lopez~de Prado, M. (2018).
+\newblock {\em Advances in Financial Machine Learning}.
+\newblock Wiley, Hoboken, NJ, USA.
+
+\bibitem[Lopez-Lira and Tang, 2023]{lopezlira2023}
+Lopez-Lira, A. and Tang, Y. (2023).
+\newblock Can {ChatGPT} forecast stock price movements? {Return} predictability
+  and large language models.
+\newblock {\em arXiv preprint arXiv:2304.07619}. DOI:
+  10.48550/arXiv.2304.07619.
+
+\bibitem[Loughran and McDonald, 2011]{loughran2011}
+Loughran, T. and McDonald, B. (2011).
+\newblock When is a liability not a liability? {Textual} analysis,
+  dictionaries, and {10-Ks}.
+\newblock {\em The Journal of Finance}, 66(1):35--65. DOI:
+  10.1111/j.1540-6261.2010.01625.x.
+
+\bibitem[Malkiel, 2003]{malkiel2003}
+Malkiel, B.~G. (2003).
+\newblock The efficient market hypothesis and its critics.
+\newblock {\em Journal of Economic Perspectives}, 17(1):59--82. DOI:
+  10.1257/089533003321164958.
+
+\bibitem[Murphy, 1973]{murphy1973}
+Murphy, A.~H. (1973).
+\newblock A new vector partition of the probability score.
+\newblock {\em Journal of Applied Meteorology}, 12(4):595--600. DOI:
+  10.1175/1520-0450(1973)012<0595:ANVPOT>2.0.CO;2.
+
+\bibitem[Murphy, 1993]{murphy1993}
+Murphy, A.~H. (1993).
+\newblock What is a good forecast? {An} essay on the nature of goodness in
+  weather forecasting.
+\newblock {\em Weather and Forecasting}, 8(2):281--293. DOI:
+  10.1175/1520-0434(1993)008<0281:WIAGFA>2.0.CO;2.
+
+\bibitem[Naeini {\em et~al}., 2015]{naeini2015}
+Naeini, M.~P., Cooper, G.~F., and Hauskrecht, M. (2015).
+\newblock Obtaining well calibrated probabilities using {Bayesian} binning.
+\newblock In {\em Proceedings of the 29th AAAI Conference on Artificial
+  Intelligence}, pages 2901--2907, Austin, TX, USA.
+
+\bibitem[Niculescu-Mizil and Caruana, 2005]{niculescu2005}
+Niculescu-Mizil, A. and Caruana, R. (2005).
+\newblock Predicting good probabilities with supervised learning.
+\newblock In {\em Proceedings of the 22nd International Conference on Machine
+  Learning (ICML 2005)}, pages 625--632, Bonn, Germany. DOI:
+  10.1145/1102351.1102430.
+
+\bibitem[Platt, 1999]{platt1999}
+Platt, J.~C. (1999).
+\newblock Probabilistic outputs for support vector machines and comparisons to
+  regularized likelihood methods.
+\newblock In Smola, A.~J., Bartlett, P., Sch\"olkopf, B., and Schuurmans, D.,
+  editors, {\em Advances in Large Margin Classifiers}, pages 61--74. MIT Press,
+  Cambridge, MA, USA.
+
+\bibitem[Sezer {\em et~al}., 2020]{sezer2020}
+Sezer, O.~B., Gudelek, M.~U., and Ozbayoglu, A.~M. (2020).
+\newblock Financial time series forecasting with deep learning: a systematic
+  literature review: 2005--2019.
+\newblock {\em Applied Soft Computing}, 90:106181. DOI:
+  10.1016/j.asoc.2020.106181.
+
+\bibitem[Sharpe, 1994]{sharpe1994}
+Sharpe, W.~F. (1994).
+\newblock The {Sharpe} ratio.
+\newblock {\em Journal of Portfolio Management}, 21(1):49--58. DOI:
+  10.3905/jpm.1994.409501.
+
+\bibitem[Tetlock, 2007]{tetlock2007}
+Tetlock, P.~C. (2007).
+\newblock Giving content to investor sentiment: the role of media in the stock
+  market.
+\newblock {\em The Journal of Finance}, 62(3):1139--1168. DOI:
+  10.1111/j.1540-6261.2007.01232.x.
+
+\bibitem[Vovk {\em et~al}., 2005]{vovk2005}
+Vovk, V., Gammerman, A., and Shafer, G. (2005).
+\newblock {\em Algorithmic Learning in a Random World}.
+\newblock Springer, New York, NY, USA.
+
+\bibitem[Wolpert, 1992]{wolpert1992}
+Wolpert, D.~H. (1992).
+\newblock Stacked generalization.
+\newblock {\em Neural Networks}, 5(2):241--259. DOI:
+  10.1016/S0893-6080(05)80023-1.
+
+\bibitem[Zadrozny and Elkan, 2002]{zadrozny2002}
+Zadrozny, B. and Elkan, C. (2002).
+\newblock Transforming classifier scores into accurate multiclass probability
+  estimates.
+\newblock In {\em Proceedings of the 8th ACM SIGKDD International Conference on
+  Knowledge Discovery and Data Mining}, pages 694--699, Edmonton, Canada. DOI:
+  10.1145/775047.775151.
+
+\end{thebibliography}
