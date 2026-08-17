@@ -1,0 +1,21 @@
+{
+  "h1_3src_leakfree_per_expert": {
+    "n_rows": 91869,
+    "acc_tech_alone": 0.5041635372105934,
+    "acc_vol_alone": 0.5001034081137271,
+    "acc_macro_alone": 0.49706647508952967
+  },
+  "study3_ungated_m9": {
+    "n_days": 2070,
+    "mean_diff_pp": 0.019762845849802375,
+    "ci95_pp_blk20": [
+      0.0032938076416337337,
+      0.04062362758014934
+    ],
+    "ci_bonferroni_m9_pp_blk20": [
+      -0.002195871761089161,
+      0.05160298638559507
+    ],
+    "excludes_zero_m9": false
+  }
+}

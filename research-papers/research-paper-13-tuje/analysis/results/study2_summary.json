@@ -1,0 +1,24 @@
+{
+  "n_headlines_real": 130,
+  "n_headlines_mapped_to_trading_day": 117,
+  "n_ticker_day_events": 88,
+  "n_events_with_predictions": 88,
+  "pearson_r_sentiment_vs_return": 0.06633436341616143,
+  "pearson_p": 0.5391816370856116,
+  "ols_slope": 0.001235659229326749,
+  "ols_intercept": 0.0031457091868690354,
+  "ols_r2": 0.06633436341616143,
+  "ols_p": 0.53918163708561,
+  "mean_w_tech": 0.33564120759844335,
+  "std_w_tech": 0.024788316319537013,
+  "mean_w_sent": 0.33218453176145746,
+  "std_w_sent": 0.03284083968907583,
+  "mean_w_vol": 0.33217426064009914,
+  "std_w_vol": 0.017992902586913016,
+  "acc_dynamic": 0.5909090909090909,
+  "acc_static": 0.5909090909090909,
+  "date_range": [
+    "2025-11-11",
+    "2026-07-16"
+  ]
+}

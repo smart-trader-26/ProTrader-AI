@@ -1,0 +1,12 @@
+Highlights
+
+Multiplicative Information Gating: Decomposing News into Novelty, Materiality
+and Polarity for Calibrated Selective Forecasting
+
+Anandkumar Pardeshi and Sujata Deshmukh
+
+- News is split into polarity, novelty and materiality, combined as a product.
+- A veto bound proves the weakest of the three axes caps the event signal.
+- Live ledger: nominal 90% price intervals covered only 70.7% of outcomes.
+- A three-stage recalibration cut expected calibration error 0.35 to 0.05.
+- A conviction gate abstaining on 94% of cases lifted the hit rate to 60.6%.

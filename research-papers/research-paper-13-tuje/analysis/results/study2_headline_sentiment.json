@@ -1,0 +1,1042 @@
+[
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-07-17T13:55:28Z",
+    "title": "Billionaire Mukesh Ambani's Reliance beats first-quarter profit view",
+    "label": "positive",
+    "confidence": 0.9454008340835571,
+    "signed_sentiment": 0.9454008340835571
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-07-17T11:38:28Z",
+    "title": "Reliance Founders Lift Stake by Most Since 2019 as Stock Slumps",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-07-17T05:28:21Z",
+    "title": "IT, financials lead Indian benchmarks higher; Reliance, private banks up ahead of results",
+    "label": "positive",
+    "confidence": 0.9463292360305786,
+    "signed_sentiment": 0.9463292360305786
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-07-16T13:20:34Z",
+    "title": "India's Jio Financial profit jumps on growth across businesses",
+    "label": "positive",
+    "confidence": 0.9500728249549866,
+    "signed_sentiment": 0.9500728249549866
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-22T05:09:16Z",
+    "title": "Meta (META) Builds Its First India AI Data Center With Reliance",
+    "label": "positive",
+    "confidence": 0.7817502021789551,
+    "signed_sentiment": 0.7817502021789551
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-19T15:23:28Z",
+    "title": "Billionaire Ambani wants AI in every call, app, and home",
+    "label": "neutral",
+    "confidence": 0.8987120389938354,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-19T10:57:00Z",
+    "title": "Reliance’s Jio Platforms to Seek India Listing",
+    "label": "neutral",
+    "confidence": 0.8586994409561157,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-18T21:20:41Z",
+    "title": "Meta Platforms, Inc. (META): A Top Growth Stock to Buy Pursuing Data Centers Opportunities in India",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-18T02:10:43Z",
+    "title": "Reliance Industries (NSEI:RELIANCE) Stock Fair Value Edges Higher After Analyst Fine Tuning",
+    "label": "positive",
+    "confidence": 0.9497052431106567,
+    "signed_sentiment": 0.9497052431106567
+  },
+  {
+    "ticker": "RELIANCE.NS",
+    "pub_date_utc": "2026-06-16T06:28:02Z",
+    "title": "Meta Platforms, Inc. (META): Among Stocks ChatGPT Predicts Could Make You Wealthy in 3 Years",
+    "label": "positive",
+    "confidence": 0.6434121131896973,
+    "signed_sentiment": 0.6434121131896973
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-16T11:03:14Z",
+    "title": "TCS opens industrial AI lab in Bengaluru in partnership with Nvidia",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-14T12:05:06Z",
+    "title": "ABB taps TCS to overhaul global network operations with AI",
+    "label": "positive",
+    "confidence": 0.9115818738937378,
+    "signed_sentiment": 0.9115818738937378
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-13T06:37:08Z",
+    "title": "India's TCS bags multi-million contract from industrial giant ABB",
+    "label": "positive",
+    "confidence": 0.9444172978401184,
+    "signed_sentiment": 0.9444172978401184
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-12T08:36:49Z",
+    "title": "India's Tata Consultancy Services plans up to 8,900 AI deployment engineers, seeks AI acquisitions",
+    "label": "positive",
+    "confidence": 0.7270199060440063,
+    "signed_sentiment": 0.7270199060440063
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-10T03:56:27Z",
+    "title": "India's TCS rises after quarterly revenue beat",
+    "label": "positive",
+    "confidence": 0.9491193294525146,
+    "signed_sentiment": 0.9491193294525146
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-10T02:37:10Z",
+    "title": "Indian shares set to open higher; TCS in focus after revenue beat",
+    "label": "positive",
+    "confidence": 0.9448818564414978,
+    "signed_sentiment": 0.9448818564414978
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-09T21:00:54Z",
+    "title": "Tata Consultancy Services Ltd (BOM:532540) Q1 2027 Earnings Call Highlights: Strong Revenue ...",
+    "label": "positive",
+    "confidence": 0.9554849863052368,
+    "signed_sentiment": 0.9554849863052368
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-09T11:47:05Z",
+    "title": "India's TCS tops revenue estimates on weak rupee, banking boost",
+    "label": "positive",
+    "confidence": 0.9363908767700195,
+    "signed_sentiment": 0.9363908767700195
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-09T03:56:52Z",
+    "title": "Indian shares stage partial rebound; Mideast tensions cap gains",
+    "label": "positive",
+    "confidence": 0.912345290184021,
+    "signed_sentiment": 0.912345290184021
+  },
+  {
+    "ticker": "TCS.NS",
+    "pub_date_utc": "2026-07-06T09:45:37Z",
+    "title": "Indian IT firms face muted Q1 as AI shift, weak demand weigh",
+    "label": "negative",
+    "confidence": 0.9604488015174866,
+    "signed_sentiment": -0.9604488015174866
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-18T12:02:12Z",
+    "title": "HDFC Bank Q1 Earnings Call Highlights",
+    "label": "positive",
+    "confidence": 0.9520395398139954,
+    "signed_sentiment": 0.9520395398139954
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-17T05:28:21Z",
+    "title": "IT, financials lead Indian benchmarks higher; Reliance, private banks up ahead of results",
+    "label": "positive",
+    "confidence": 0.9463292360305786,
+    "signed_sentiment": 0.9463292360305786
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-16T15:40:02Z",
+    "title": "BKEAY or HDB: Which Is the Better Value Stock Right Now?",
+    "label": "neutral",
+    "confidence": 0.9263745546340942,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-15T11:23:29Z",
+    "title": "India's HDB Financial Services posts higher quarterly profit on steady loan demand",
+    "label": "positive",
+    "confidence": 0.953192949295044,
+    "signed_sentiment": 0.953192949295044
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-13T11:48:37Z",
+    "title": "India's retail inflation accelerates to 4.38%, raising rate hike expectations",
+    "label": "positive",
+    "confidence": 0.9348344802856445,
+    "signed_sentiment": 0.9348344802856445
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-13T10:00:14Z",
+    "title": "HDFC headcount shrinks by over 3,000 amid automation push",
+    "label": "negative",
+    "confidence": 0.9724000096321106,
+    "signed_sentiment": -0.9724000096321106
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-12T18:28:36Z",
+    "title": "India’s Largest Private Bank Lost Over 3,000 Employees to AI",
+    "label": "negative",
+    "confidence": 0.9742610454559326,
+    "signed_sentiment": -0.9742610454559326
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-08T14:43:14Z",
+    "title": "Asian Equities Traded in the US as American Depositary Receipts Higher in Wednesday Trading",
+    "label": "positive",
+    "confidence": 0.9434704184532166,
+    "signed_sentiment": 0.9434704184532166
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-06T14:47:11Z",
+    "title": "Asian Equities Traded in the US as American Depositary Receipts Soar in Monday Trading",
+    "label": "positive",
+    "confidence": 0.9339401125907898,
+    "signed_sentiment": 0.9339401125907898
+  },
+  {
+    "ticker": "HDFCBANK.NS",
+    "pub_date_utc": "2026-07-06T02:27:46Z",
+    "title": "Indian shares likely to open higher on strong business updates from lenders",
+    "label": "positive",
+    "confidence": 0.9405832886695862,
+    "signed_sentiment": 0.9405832886695862
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-14T12:19:58Z",
+    "title": "Software Stocks Sink as IBM Miss Delivers ‘Devastating Blow’",
+    "label": "negative",
+    "confidence": 0.9027587175369263,
+    "signed_sentiment": -0.9027587175369263
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-09T12:00:00Z",
+    "title": "Nandan Nilekani leaves GP role at Fundamentum as it launches $200M third fund",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-08T15:51:30Z",
+    "title": "Infosys Limited (INFY) Partners with Sentara To Enable AI Integration and Use in Hospitals",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-07T14:40:50Z",
+    "title": "Asian Equities Traded in the US as American Depositary Receipts Drop Sharply in Tuesday Trading",
+    "label": "negative",
+    "confidence": 0.9767350554466248,
+    "signed_sentiment": -0.9767350554466248
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-06T09:45:37Z",
+    "title": "Indian IT firms face muted Q1 as AI shift, weak demand weigh",
+    "label": "negative",
+    "confidence": 0.9604488015174866,
+    "signed_sentiment": -0.9604488015174866
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-04T13:35:27Z",
+    "title": "Madison Square Garden Entertainment Corp. (MSGE) To Remain Fully Operational Amid New York Penn Station Redevelopment",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-03T13:17:51Z",
+    "title": "Infosys (NSEI:INFY) Stock Sees Modest Fair Value Cut As AI Hopes Meet Choppy Demand",
+    "label": "negative",
+    "confidence": 0.9086812138557434,
+    "signed_sentiment": -0.9086812138557434
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-07-02T14:41:52Z",
+    "title": "Asian Equities Traded in the US as American Depositary Receipts Surge in Thursday Trading",
+    "label": "positive",
+    "confidence": 0.933302104473114,
+    "signed_sentiment": 0.933302104473114
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-06-26T13:31:26Z",
+    "title": "Robinhood initiation, Nike downgrade among today's top calls on Wall Street",
+    "label": "negative",
+    "confidence": 0.88,
+    "signed_sentiment": -0.88
+  },
+  {
+    "ticker": "INFY.NS",
+    "pub_date_utc": "2026-06-24T23:26:52Z",
+    "title": "Former Infosys chief has a new startup that wants to challenge the IT services world",
+    "label": "neutral",
+    "confidence": 0.6402319669723511,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-18T13:02:03Z",
+    "title": "ICICI Bank Q1 Earnings Call Highlights",
+    "label": "positive",
+    "confidence": 0.9584516882896423,
+    "signed_sentiment": 0.9584516882896423
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-18T10:25:23Z",
+    "title": "India's ICICI Bank reports 15.9% rise in Q1 profit, beats estimates",
+    "label": "positive",
+    "confidence": 0.9468774795532227,
+    "signed_sentiment": 0.9468774795532227
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-17T05:28:21Z",
+    "title": "IT, financials lead Indian benchmarks higher; Reliance, private banks up ahead of results",
+    "label": "positive",
+    "confidence": 0.9463292360305786,
+    "signed_sentiment": 0.9463292360305786
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-15T13:28:51Z",
+    "title": "India's ICICI Lombard's quarterly profit falls",
+    "label": "negative",
+    "confidence": 0.9763162732124329,
+    "signed_sentiment": -0.9763162732124329
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-15T08:40:30Z",
+    "title": "India's ICICI Prudential Life reports quarterly profit jump on strong premium growth",
+    "label": "positive",
+    "confidence": 0.9513155221939087,
+    "signed_sentiment": 0.9513155221939087
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-13T10:55:51Z",
+    "title": "Quadria-backed India's Maxivision hires IPO bankers, sources say",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-13T09:29:59Z",
+    "title": "ICICI Bank Ltd (IBN) Joins TPG to Acquire Aseem Infrastructure",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-08T13:55:45Z",
+    "title": "InsuranceDekho parent selects banks for possible IPO",
+    "label": "neutral",
+    "confidence": 0.9413682818412781,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-06T14:47:11Z",
+    "title": "Asian Equities Traded in the US as American Depositary Receipts Soar in Monday Trading",
+    "label": "positive",
+    "confidence": 0.9339401125907898,
+    "signed_sentiment": 0.9339401125907898
+  },
+  {
+    "ticker": "ICICIBANK.NS",
+    "pub_date_utc": "2026-07-03T07:22:22Z",
+    "title": "India's ICICI Bank to join peers in dollar debt funding under RBI swap window, sources say",
+    "label": "positive",
+    "confidence": 0.9167417883872986,
+    "signed_sentiment": 0.9167417883872986
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-16T20:36:05Z",
+    "title": "Ondo Finance partners with SBI Group to bring Japanese stocks onchain",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-16T19:06:58Z",
+    "title": "XRP Price Prediction: Can XRP Hit Double Digits?",
+    "label": "positive",
+    "confidence": 0.9160764217376709,
+    "signed_sentiment": 0.9160764217376709
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-16T18:05:11Z",
+    "title": "India's SBI Funds Management draws $31 billion in country's fourth-most-bid IPO",
+    "label": "positive",
+    "confidence": 0.8764815926551819,
+    "signed_sentiment": 0.8764815926551819
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-15T15:12:07Z",
+    "title": "SBI hires former LIC finance head Sunil Agrawal as CFO",
+    "label": "neutral",
+    "confidence": 0.9091925024986267,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-15T08:21:29Z",
+    "title": "India's SBI Funds' $1 billion IPO fully subscribed amid bets on market growth",
+    "label": "positive",
+    "confidence": 0.930314838886261,
+    "signed_sentiment": 0.930314838886261
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-14T13:30:21Z",
+    "title": "Ripple’s Biggest Shareholder Is Building Institutional XRP Lending in Japan",
+    "label": "neutral",
+    "confidence": 0.9192178249359131,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-14T13:27:15Z",
+    "title": "XRP Price to $0.54? 50% Crash Warning as SBI and Solana Partnership Hits Japan",
+    "label": "negative",
+    "confidence": 0.9248328804969788,
+    "signed_sentiment": -0.9248328804969788
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-14T10:43:17Z",
+    "title": "Citi, others dial back India rate hike calls as inflation expected to stay moderate",
+    "label": "neutral",
+    "confidence": 0.7828381061553955,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-13T12:52:57Z",
+    "title": "SBI Partners With Solana Foundation to Build Japan’s On-Chain Financial Market",
+    "label": "neutral",
+    "confidence": 0.9305669665336609,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "SBIN.NS",
+    "pub_date_utc": "2026-07-13T01:55:52Z",
+    "title": "Asset manager IPO rewards Amundi's early India bet",
+    "label": "positive",
+    "confidence": 0.932029128074646,
+    "signed_sentiment": 0.932029128074646
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-07-13T12:17:50Z",
+    "title": "Singtel winds up Mauritius unit linked to Bharti Airtel investment",
+    "label": "negative",
+    "confidence": 0.6702458262443542,
+    "signed_sentiment": -0.6702458262443542
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-07-10T14:21:22Z",
+    "title": "India exempts GIFT City units from foreign vessel licensing",
+    "label": "neutral",
+    "confidence": 0.7822831869125366,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-07-02T14:17:00Z",
+    "title": "Why India Is Becoming a Data-Center Hub, Whether Communities Like It or Not",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-06-02T21:43:20Z",
+    "title": "VEON Closes USD 1.4B Bond Offering & Refinances 2027 Debt Ahead of Schedule",
+    "label": "neutral",
+    "confidence": 0.8013430237770081,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-18T09:22:17Z",
+    "title": "Prudential seals deal to acquire 75% of Bharti Life",
+    "label": "positive",
+    "confidence": 0.683388352394104,
+    "signed_sentiment": 0.683388352394104
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-14T15:00:36Z",
+    "title": "Bharti Airtel Ltd (BOM:532454) Q4 2026 Earnings Call Highlights: Record Revenue and Strategic ...",
+    "label": "positive",
+    "confidence": 0.9577028155326843,
+    "signed_sentiment": 0.9577028155326843
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-14T03:55:08Z",
+    "title": "Indian shares open higher as earnings steady markets; higher oil caps gains",
+    "label": "positive",
+    "confidence": 0.9440370202064514,
+    "signed_sentiment": 0.9440370202064514
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-13T11:24:49Z",
+    "title": "Indian telecom operator Bharti Airtel's profit rises on subscriber growth, upgrades",
+    "label": "positive",
+    "confidence": 0.9499775767326355,
+    "signed_sentiment": 0.9499775767326355
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-11T16:56:40Z",
+    "title": "Bharti Airtel May Be About to Take Airtel Africa Private",
+    "label": "positive",
+    "confidence": 0.932217001914978,
+    "signed_sentiment": 0.932217001914978
+  },
+  {
+    "ticker": "BHARTIARTL.NS",
+    "pub_date_utc": "2026-05-11T06:16:00Z",
+    "title": "FTSE 100 Live: Airtel, Compass and miners lead London stocks higher",
+    "label": "positive",
+    "confidence": 0.9391297101974487,
+    "signed_sentiment": 0.9391297101974487
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-07-16T14:39:23Z",
+    "title": "Indian court orders Maruti to replace car in first E20 fuel damage ruling",
+    "label": "negative",
+    "confidence": 0.9019714593887329,
+    "signed_sentiment": -0.9019714593887329
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-07-09T06:50:29Z",
+    "title": "India's JK Tyre plans 11%-13% price hikes by September-end",
+    "label": "neutral",
+    "confidence": 0.6414871215820312,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-06-12T08:08:16Z",
+    "title": "India clears way for self-driving, safety car tech to reduce road deaths",
+    "label": "positive",
+    "confidence": 0.853790283203125,
+    "signed_sentiment": 0.853790283203125
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-06-01T11:34:09Z",
+    "title": "Indian automakers' sales rise in May despite rising fuel prices",
+    "label": "positive",
+    "confidence": 0.9507519602775574,
+    "signed_sentiment": 0.9507519602775574
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-28T08:57:03Z",
+    "title": "Suzuki opens second plant in Kharkhoda, India",
+    "label": "positive",
+    "confidence": 0.51923668384552,
+    "signed_sentiment": 0.51923668384552
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-27T10:05:21Z",
+    "title": "Hyundai Motor India to implement planned car price hikes from June",
+    "label": "positive",
+    "confidence": 0.8021385073661804,
+    "signed_sentiment": 0.8021385073661804
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-26T12:35:39Z",
+    "title": "India's Maruti Suzuki adopts fuel-saving measures",
+    "label": "positive",
+    "confidence": 0.7599927186965942,
+    "signed_sentiment": 0.7599927186965942
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-21T13:55:55Z",
+    "title": "India's top carmaker Maruti Suzuki to hike prices as input costs climb",
+    "label": "positive",
+    "confidence": 0.943331778049469,
+    "signed_sentiment": 0.943331778049469
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-05T09:22:38Z",
+    "title": "India's Mahindra expects mid‑to‑high teens SUV growth, beats quarterly forecasts",
+    "label": "positive",
+    "confidence": 0.9240529537200928,
+    "signed_sentiment": 0.9240529537200928
+  },
+  {
+    "ticker": "MARUTI.NS",
+    "pub_date_utc": "2026-05-04T10:27:56Z",
+    "title": "Indian shares advance as easing oil, state election results boost sentiment",
+    "label": "positive",
+    "confidence": 0.940717339515686,
+    "signed_sentiment": 0.940717339515686
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-07-06T02:27:46Z",
+    "title": "Indian shares likely to open higher on strong business updates from lenders",
+    "label": "positive",
+    "confidence": 0.9405832886695862,
+    "signed_sentiment": 0.9405832886695862
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-07-03T07:22:22Z",
+    "title": "India's ICICI Bank to join peers in dollar debt funding under RBI swap window, sources say",
+    "label": "positive",
+    "confidence": 0.9167417883872986,
+    "signed_sentiment": 0.9167417883872986
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-06-29T11:21:55Z",
+    "title": "India's Axis Bank says finance chief Puneet Sharma to exit",
+    "label": "negative",
+    "confidence": 0.80305415391922,
+    "signed_sentiment": -0.80305415391922
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-06-23T07:39:55Z",
+    "title": "India's Kotak Mahindra Bank has 'high ambitions' to deploy capital for growth, CEO says",
+    "label": "positive",
+    "confidence": 0.901625394821167,
+    "signed_sentiment": 0.901625394821167
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-05-26T13:36:22Z",
+    "title": "Banks reduce headcounts globally as AI boosts efficiency",
+    "label": "negative",
+    "confidence": 0.9114691615104675,
+    "signed_sentiment": -0.9114691615104675
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-04-28T01:00:27Z",
+    "title": "Axis Bank Ltd (FRA:UZC) (Full Year 2026) Earnings Call Highlights: Strong Growth Amidst Margin ...",
+    "label": "positive",
+    "confidence": 0.95024174451828,
+    "signed_sentiment": 0.95024174451828
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-04-27T10:14:16Z",
+    "title": "Indian shares snap 3-session drop; markets track Mideast tensions, earnings",
+    "label": "positive",
+    "confidence": 0.5812739133834839,
+    "signed_sentiment": 0.5812739133834839
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-04-27T06:41:22Z",
+    "title": "India's Axis Bank slips on profit miss, $2 billion equity fundraise",
+    "label": "negative",
+    "confidence": 0.9749026298522949,
+    "signed_sentiment": -0.9749026298522949
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-04-25T13:08:54Z",
+    "title": "India's Axis Bank misses profit forecast on lower trading income, approves $2 billion equity fundraise",
+    "label": "negative",
+    "confidence": 0.9774726629257202,
+    "signed_sentiment": -0.9774726629257202
+  },
+  {
+    "ticker": "AXISBANK.NS",
+    "pub_date_utc": "2026-04-06T05:55:02Z",
+    "title": "India FX curbs soften pressure on rupee even as offshore influence lingers, Axis' Gambhir says",
+    "label": "positive",
+    "confidence": 0.9161616563796997,
+    "signed_sentiment": 0.9161616563796997
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-07-06T02:27:46Z",
+    "title": "Indian shares likely to open higher on strong business updates from lenders",
+    "label": "positive",
+    "confidence": 0.9405832886695862,
+    "signed_sentiment": 0.9405832886695862
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-07-02T01:16:42Z",
+    "title": "Deutsche Bank (XTRA:DBK) Agrees To Sell India Retail Unit To Kotak Mahindra",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-07-01T14:45:00Z",
+    "title": "DB to Offload India Retail Unit to Kotak Amid Global Hausbank Push",
+    "label": "positive",
+    "confidence": 0.9322211742401123,
+    "signed_sentiment": 0.9322211742401123
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-07-01T11:45:07Z",
+    "title": "Kotak to acquire Deutsche Bank’s retail and wealth businesses in India",
+    "label": "neutral",
+    "confidence": 0.9078533053398132,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-06-30T13:19:59Z",
+    "title": "Deutsche Bank sells India retail business to Kotak Mahindra",
+    "label": "positive",
+    "confidence": 0.5918271541595459,
+    "signed_sentiment": 0.5918271541595459
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-06-30T11:58:28Z",
+    "title": "Kotak Mahindra Bank to buy Deutsche Bank's India retail, wealth business for about $30 million",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-06-27T13:54:04Z",
+    "title": "India's Kotak Mahindra Bank CEO Vaswani to step down for personal reasons",
+    "label": "neutral",
+    "confidence": 0.691580593585968,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-06-23T07:39:55Z",
+    "title": "India's Kotak Mahindra Bank has 'high ambitions' to deploy capital for growth, CEO says",
+    "label": "positive",
+    "confidence": 0.901625394821167,
+    "signed_sentiment": 0.901625394821167
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-06-03T15:08:10Z",
+    "title": "SoftBank sells 3% stake in India's Lenskart",
+    "label": "negative",
+    "confidence": 0.88,
+    "signed_sentiment": -0.88
+  },
+  {
+    "ticker": "KOTAKBANK.NS",
+    "pub_date_utc": "2026-05-04T12:47:42Z",
+    "title": "Kotak Mahindra Bank weighs Deutsche Bank retail unit",
+    "label": "negative",
+    "confidence": 0.88,
+    "signed_sentiment": -0.88
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-07-09T06:55:23Z",
+    "title": "India's Dr Reddy's on track for worst day in 3 years as semaglutide supplies hit",
+    "label": "negative",
+    "confidence": 0.97366863489151,
+    "signed_sentiment": -0.97366863489151
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-06-22T10:03:35Z",
+    "title": "Sun Pharma to acquire Innovcare Lifesciences for $28.7m",
+    "label": "neutral",
+    "confidence": 0.9465216994285583,
+    "signed_sentiment": 0.0
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-05-22T09:28:36Z",
+    "title": "India's top drugmaker Sun Pharma beats profit view on specialty drugs demand",
+    "label": "positive",
+    "confidence": 0.9422261118888855,
+    "signed_sentiment": 0.9422261118888855
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-05-07T12:12:05Z",
+    "title": "Organon Buyout By Sun Pharma Shifts Focus To Cash Value And Timing",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-05-01T14:46:05Z",
+    "title": "Organon (OGN)’s Investors React Strongly as Sun Pharma Bets Big on Specialty Drug Expansion",
+    "label": "positive",
+    "confidence": 0.9029605984687805,
+    "signed_sentiment": 0.9029605984687805
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-04-28T14:19:52Z",
+    "title": "Micron initiated, Rambus downgraded: Wall Street's top analyst calls",
+    "label": "negative",
+    "confidence": 0.88,
+    "signed_sentiment": -0.88
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-04-28T02:16:45Z",
+    "title": "Organon & Co. (OGN) Soars to 52-Week High on $11.75-Billion Sun Merger",
+    "label": "positive",
+    "confidence": 0.9070357084274292,
+    "signed_sentiment": 0.9070357084274292
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-04-27T21:54:26Z",
+    "title": "Stock Market Today, April 27: Organon Shares Surge After Sun Pharma Agrees to Acquire Company in All Cash Deal",
+    "label": "positive",
+    "confidence": 0.9101105332374573,
+    "signed_sentiment": 0.9101105332374573
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-04-27T19:54:31Z",
+    "title": "Sector Update: Health Care Stocks Softer Late Afternoon",
+    "label": "negative",
+    "confidence": 0.9697040319442749,
+    "signed_sentiment": -0.9697040319442749
+  },
+  {
+    "ticker": "SUNPHARMA.NS",
+    "pub_date_utc": "2026-04-27T18:07:00Z",
+    "title": "Organon Rides the Pharma M&A Wave With Sun Takeover. The Stock Sizzles.",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-06-04T10:35:27Z",
+    "title": "India's L&T to invest nearly $2 billion in Tamil Nadu, state government says",
+    "label": "positive",
+    "confidence": 0.9359573125839233,
+    "signed_sentiment": 0.9359573125839233
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-05-25T09:46:48Z",
+    "title": "LTM bids $186m for Randstad’s tech services in Europe and Australia",
+    "label": "positive",
+    "confidence": 0.9327024221420288,
+    "signed_sentiment": 0.9327024221420288
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-05-06T05:25:50Z",
+    "title": "India's L&T hits three-week low after profit dip, slower growth outlook",
+    "label": "negative",
+    "confidence": 0.9738854169845581,
+    "signed_sentiment": -0.9738854169845581
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-05-05T15:43:28Z",
+    "title": "India's L&T expects fiscal revenue growth may temper on Middle East disruption",
+    "label": "negative",
+    "confidence": 0.5288453102111816,
+    "signed_sentiment": -0.5288453102111816
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-05-05T10:28:21Z",
+    "title": "Indian shares dip, rupee slips to record low on elevated oil prices",
+    "label": "negative",
+    "confidence": 0.970840334892273,
+    "signed_sentiment": -0.970840334892273
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-03-26T15:47:34Z",
+    "title": "Oil and gas contracts activity drops in 2025",
+    "label": "negative",
+    "confidence": 0.9739077091217041,
+    "signed_sentiment": -0.9739077091217041
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-03-04T05:20:41Z",
+    "title": "Indian infra major L&T hits one‑month low on concerns over Mideast exposure",
+    "label": "negative",
+    "confidence": 0.9738109111785889,
+    "signed_sentiment": -0.9738109111785889
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-02-25T03:18:45Z",
+    "title": "NVIDIA Deepens Role In Global AI Infrastructure With Sovereign And Enterprise Builds",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-02-23T16:10:54Z",
+    "title": "NVIDIA Ties Blackwell Ultra To Sovereign AI Factories In India And Australia",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "LT.NS",
+    "pub_date_utc": "2026-02-19T11:23:27Z",
+    "title": "L&T partners with NVIDIA for gigawatt-scale AI data centre in India",
+    "label": "positive",
+    "confidence": 0.8800044655799866,
+    "signed_sentiment": 0.8800044655799866
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-05-08T08:14:06Z",
+    "title": "Indian non-bank lenders plan $1.6 billion in debt sales as yields decline, bankers say",
+    "label": "positive",
+    "confidence": 0.8659731149673462,
+    "signed_sentiment": 0.8659731149673462
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-04-30T05:11:24Z",
+    "title": "India's Bajaj Finance jumps as easing credit costs, asset quality gains boost outlook",
+    "label": "positive",
+    "confidence": 0.9474706053733826,
+    "signed_sentiment": 0.9474706053733826
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-04-29T15:19:25Z",
+    "title": "Indian non-bank lender Bajaj Finance posts 22% profit growth, pushes AI adoption",
+    "label": "positive",
+    "confidence": 0.9478841423988342,
+    "signed_sentiment": 0.9478841423988342
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-04-29T11:27:50Z",
+    "title": "India's Bajaj Finance posts higher profit on loan growth, lower provisions",
+    "label": "positive",
+    "confidence": 0.9536976218223572,
+    "signed_sentiment": 0.9536976218223572
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-02-23T11:15:32Z",
+    "title": "Indian telecom firm Bharti Airtel to invest $2.2 billion to expand digital lending",
+    "label": "positive",
+    "confidence": 0.88,
+    "signed_sentiment": 0.88
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-02-09T01:00:30Z",
+    "title": "Bajaj Finserv Ltd (BOM:532978) Q3 2026 Earnings Call Highlights: Robust Growth Amidst Strategic ...",
+    "label": "positive",
+    "confidence": 0.9579445123672485,
+    "signed_sentiment": 0.9579445123672485
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-02-03T19:01:31Z",
+    "title": "Bajaj Finance Ltd (BOM:500034) Q3 2026 Earnings Call Highlights: Strong Core Performance Amid ...",
+    "label": "positive",
+    "confidence": 0.9559789299964905,
+    "signed_sentiment": 0.9559789299964905
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2026-02-03T11:45:51Z",
+    "title": "India's Bajaj Finance profit drops on higher provisions",
+    "label": "negative",
+    "confidence": 0.975807249546051,
+    "signed_sentiment": -0.975807249546051
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2025-11-11T19:00:53Z",
+    "title": "Bajaj Finserv Ltd (BOM:532978) Q2 2026 Earnings Call Highlights: Strong Growth in Income and ...",
+    "label": "positive",
+    "confidence": 0.9568914175033569,
+    "signed_sentiment": 0.9568914175033569
+  },
+  {
+    "ticker": "BAJFINANCE.NS",
+    "pub_date_utc": "2025-11-11T08:28:55Z",
+    "title": "India's Bajaj Finance falls as forecast clouds short-term growth outlook",
+    "label": "negative",
+    "confidence": 0.9759854674339294,
+    "signed_sentiment": -0.9759854674339294
+  }
+]

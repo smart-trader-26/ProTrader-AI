@@ -1,0 +1,51 @@
+ITEGAM-JETIA — author details submitted separately from the manuscript
+(the template states: "The names, affiliations, ORCIDs and e-mails of the
+authors must be sent in a separate text file", and the submission checklist
+requires author identification to be absent from the manuscript file itself)
+
+Title
+-----
+An Attenuation-Corrected Matched Filter with Closed-Loop Gain Design for
+News-Sentiment Aggregation in Equity Forecasting
+
+Author 1 (corresponding author)
+-------------------------------
+Name:        Anandkumar Pardeshi
+Affiliation: Department of Computer Science and Engineering,
+             Fr. C. Rodrigues Institute of Technology,
+             University of Mumbai, Vashi, Navi Mumbai, 400703, India
+E-mail:      anand.pardeshi@fcrit.ac.in
+ORCID:       >>> TO BE FILLED IN — mandatory for every author <<<
+             register at https://orcid.org/signin
+
+Author 2
+--------
+Name:        Sujata Deshmukh
+Affiliation: Department of Information Technology,
+             Fr. C. Rodrigues Institute of Technology,
+             University of Mumbai, Bandra, Mumbai, 400050, India
+E-mail:      sujata.deshmukh@fcrit.ac.in
+ORCID:       >>> TO BE FILLED IN — mandatory for every author <<<
+             register at https://orcid.org/signin
+
+Author contributions
+--------------------
+Conceptualization: Anandkumar Pardeshi and Sujata Deshmukh.
+Methodology: Anandkumar Pardeshi.
+Investigation: Anandkumar Pardeshi.
+Discussion of results: Anandkumar Pardeshi and Sujata Deshmukh.
+Writing - Original Draft: Anandkumar Pardeshi.
+Writing - Review and Editing: Anandkumar Pardeshi and Sujata Deshmukh.
+Resources: Sujata Deshmukh.
+Supervision: Sujata Deshmukh.
+Approval of the final text: Anandkumar Pardeshi and Sujata Deshmukh.
+
+Declarations
+------------
+Conflict of interest: none. The authors declare no financial or non-financial
+relationship that could be construed as influencing the work reported here.
+Funding: none received.
+Originality: the manuscript is original, unpublished, and is not under
+consideration by any other journal.
+Data: the study uses only publicly available data (the FNSPID financial news
+corpus and public daily price bars). No human or animal subjects are involved.

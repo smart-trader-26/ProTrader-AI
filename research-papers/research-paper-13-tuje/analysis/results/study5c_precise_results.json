@@ -1,0 +1,42 @@
+[
+  {
+    "label": "usdinr_crude",
+    "n": 91869,
+    "acc_static": 0.5042832729212248,
+    "acc_dynamic": 0.5046860203115305,
+    "mean_diff_pp": 0.04027342389411352,
+    "ci95_pp": [
+      0.007619296412399826,
+      0.07510449320794146
+    ],
+    "wilcoxon_p": 0.03673477328424123,
+    "paired_t_p": 0.020963508514946792,
+    "bonferroni_m7_level_pct": 99.28571428571429,
+    "ci_bonferroni_pp": [
+      -0.0032654127481713826,
+      0.08925461511668407
+    ],
+    "excludes_zero_95": true,
+    "excludes_zero_bonferroni": false
+  },
+  {
+    "label": "all6",
+    "n": 91869,
+    "acc_static": 0.504272387856622,
+    "acc_dynamic": 0.5050778826372334,
+    "mean_diff_pp": 0.08054684778822707,
+    "ci95_pp": [
+      0.03156565656565656,
+      0.13279345175896895
+    ],
+    "wilcoxon_p": 0.0027244892179713715,
+    "paired_t_p": 0.0021804375801027336,
+    "bonferroni_m7_level_pct": 99.28571428571429,
+    "ci_bonferroni_pp": [
+      0.017256151415634066,
+      0.15673981191222566
+    ],
+    "excludes_zero_95": true,
+    "excludes_zero_bonferroni": true
+  }
+]

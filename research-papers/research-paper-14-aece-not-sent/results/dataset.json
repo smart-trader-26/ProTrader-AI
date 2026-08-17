@@ -1,0 +1,12 @@
+{
+ "n_headlines": 637845,
+ "n_unique": 430111,
+ "n_symbols_news": 237,
+ "n_symbols_panel": 237,
+ "n_sessions": 3521,
+ "date_min": "2010-01-04",
+ "date_max": "2020-06-11",
+ "coverage": 0.325127456453703,
+ "median_news_per_covered_session": 2.0,
+ "n_publishers": 819
+}

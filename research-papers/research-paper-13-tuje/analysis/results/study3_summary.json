@@ -1,0 +1,35 @@
+{
+  "horizon_days": 20,
+  "n_rows_total": 91077,
+  "n_rows_gated": 18216,
+  "gate_coverage_pct": 20.00065878322738,
+  "gate_threshold_abs_return": 0.017765846063655104,
+  "date_range": [
+    "2018-01-01",
+    "2026-06-19"
+  ],
+  "ungated": {
+    "acc_tech": 0.5623373628907408,
+    "acc_vol": 0.5480417668566159,
+    "acc_static": 0.5638306048727999,
+    "acc_dynamic": 0.5640282398410137,
+    "dynamic_minus_static_mean": 0.00019762845849802377,
+    "dynamic_minus_static_ci95": [
+      2.2065313327449418e-05,
+      0.0004082580780573914
+    ]
+  },
+  "gated_top20pct_conviction": {
+    "acc_tech": 0.5770750988142292,
+    "acc_vol": 0.581576635924462,
+    "acc_static": 0.5829490557751428,
+    "acc_dynamic": 0.5829490557751428,
+    "dynamic_minus_static_mean": 0.0,
+    "dynamic_minus_static_ci95": [
+      0.0,
+      0.0
+    ]
+  },
+  "mean_w_tech_overall": 0.49941010995403273,
+  "std_w_tech_overall": 0.026901803242765844
+}

@@ -1,0 +1,212 @@
+[
+ {
+  "query": "Textual analysis in finance",
+  "found": true,
+  "match_ok": true,
+  "type": "journal-article",
+  "crossref_title": "Textual Analysis in Finance",
+  "ieee": "T. Loughran, B. McDonald, \"Textual Analysis in Finance,\" Annual Review of Financial Economics, vol. 12, no. 1, pp. 357-375, 2020. doi:10.1146/annurev-financial-012820-032249",
+  "doi": "10.1146/annurev-financial-012820-032249",
+  "container": "Annual Review of Financial Economics"
+ },
+ {
+  "query": "BERT: Pre-training of deep bidirectional transformers",
+  "found": true,
+  "match_ok": true,
+  "type": "proceedings-article",
+  "crossref_title": "",
+  "ieee": "J. Devlin, M. W. Chang, K. Lee, K. Toutanova, \",\" Proceedings of the 2019 Conference of the North, pp. 4171-4186, 2019. doi:10.18653/v1/n19-1423",
+  "doi": "10.18653/v1/n19-1423",
+  "container": "Proceedings of the 2019 Conference of the North"
+ },
+ {
+  "query": "Comparing predictive accuracy",
+  "found": true,
+  "match_ok": true,
+  "type": "journal-article",
+  "crossref_title": "Comparing Predictive Accuracy",
+  "ieee": "F. X. Diebold, R. S. Mariano, \"Comparing Predictive Accuracy,\" Journal of Business &amp; Economic Statistics, vol. 13, no. 3, pp. 253-263, 1995. doi:10.1080/07350015.1995.10524599",
+  "doi": "10.1080/07350015.1995.10524599",
+  "container": "Journal of Business &amp; Economic Statistics"
+ },
+ {
+  "query": "An introduction to matched filters",
+  "found": true,
+  "match_ok": true,
+  "type": "journal-article",
+  "crossref_title": "An introduction to matched filters",
+  "ieee": "G. Turin, \"An introduction to matched filters,\" IEEE Transactions on Information Theory, vol. 6, no. 3, pp. 311-329, 1960. doi:10.1109/tit.1960.1057571",
+  "doi": "10.1109/tit.1960.1057571",
+  "container": "IEEE Transactions on Information Theory"
+ },
+ {
+  "query": "An analysis of the factors which determine signal/noise discrimination",
+  "found": true,
+  "match_ok": true,
+  "type": "journal-article",
+  "crossref_title": "An Analysis of the factors which determine signal/noise discrimination in pulsed-carrier systems",
+  "ieee": "D. North, \"An Analysis of the factors which determine signal/noise discrimination in pulsed-carrier systems,\" Proceedings of the IEEE, vol. 51, no. 7, pp. 1016-1027, 1963. doi:10.1109/proc.1963.2383",
+  "doi": "10.1109/proc.1963.2383",
+  "container": "Proceedings of the IEEE"
+ },
+ {
+  "query": "Stationary and nonstationary learning characteristics of the LMS",
+  "found": true,
+  "match_ok": true,
+  "type": "journal-article",
+  "crossref_title": "Stationary and nonstationary learning characteristics of the LMS adaptive filter",
+  "ieee": "B. Widrow, J. McCool, M. Larimore, C. Johnson, \"Stationary and nonstationary learning characteristics of the LMS adaptive filter,\" Proceedings of the IEEE, vol. 64, no. 8, pp. 1151-1162, 1976. doi:10.1109/proc.1976.10286",
+  "doi": "10.1109/proc.1976.10286",
+  "container": "Proceedings of the IEEE"
+ },
+ {
+  "query": "On the convergence behavior of the LMS and the normalized LMS",
+  "doi": "10.1109/78.257263",
+  "found": false
+ },
+ {
+  "query": "Measurement error in nonlinear models",
+  "found": true,
+  "match_ok": true,
+  "type": "book",
+  "crossref_title": "Measurement Error in Nonlinear Models",
+  "ieee": "R. J. Carroll, D. Ruppert, L. A. Stefanski, C. M. Crainiceanu, \"Measurement Error in Nonlinear Models,\" 2006. doi:10.1201/9781420010138",
+  "doi": "10.1201/9781420010138",
+  "container": ""
+ },
+ {
+  "query": "Measurement error models",
+  "found": true,
+  "match_ok": true,
+  "type": "monograph",
+  "crossref_title": "Measurement Error Models",
+  "ieee": "W. A. Fuller, \"Measurement Error Models,\" Wiley Series in Probability and Statistics, 1987. doi:10.1002/9780470316665",
+  "doi": "10.1002/9780470316665",
+  "container": "Wiley Series in Probability and Statistics"
+ },
+ {
+  "query": "Structural equation methods in the social sciences",
+  "found": true,
+  "match_ok": false,
+  "type": "journal-article",
+  "crossref_title": "Stabilization of the Canadian Dollar: 1952-1960",
+  "ieee": "J. E. Pippinger, L. Phillips, \"Stabilization of the Canadian Dollar: 1952-1960,\" Econometrica, vol. 41, no. 5, pp. 797, 1973. doi:10.2307/1913807",
+  "doi": "10.2307/1913807",
+  "container": "Econometrica"
+ },
+ {
+  "query": "Stock price reaction to news and no-news",
+  "doi": "10.1016/S0304-405X(02)00223-3",
+  "found": false
+ },
+ {
+  "query": "Stock movement prediction from tweets and historical prices",
+  "found": true,
+  "match_ok": true,
+  "type": "proceedings-article",
+  "crossref_title": "Stock Movement Prediction from Tweets and Historical Prices",
+  "ieee": "Y. Xu, S. B. Cohen, \"Stock Movement Prediction from Tweets and Historical Prices,\" Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pp. 1970-1979, 2018. doi:10.18653/v1/p18-1183",
+  "doi": "10.18653/v1/p18-1183",
+  "container": "Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)"
+ },
+ {
+  "query": "Listening to chaotic whispers",
+  "found": true,
+  "match_ok": true,
+  "type": "proceedings-article",
+  "crossref_title": "Listening to Chaotic Whispers",
+  "ieee": "Z. Hu, W. Liu, J. Bian, X. Liu, T. Y. Liu, \"Listening to Chaotic Whispers,\" Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining, pp. 261-269, 2018. doi:10.1145/3159652.3159690",
+  "doi": "10.1145/3159652.3159690",
+  "container": "Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining"
+ },
+ {
+  "query": "Deep attentive learning for stock movement prediction",
+  "found": true,
+  "match_ok": true,
+  "type": "proceedings-article",
+  "crossref_title": "Deep Attentive Learning for Stock Movement Prediction From Social Media Text and Company Correlations",
+  "ieee": "R. Sawhney, S. Agarwal, A. Wadhwa, R. R. Shah, \"Deep Attentive Learning for Stock Movement Prediction From Social Media Text and Company Correlations,\" Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pp. 8415-8426, 2020. doi:10.18653/v1/2020.emnlp-main.676",
+  "doi": "10.18653/v1/2020.emnlp-main.676",
+  "container": "Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)"
+ },
+ {
+  "query": "Which news moves stock prices?",
+  "found": true,
+  "match_ok": false,
+  "type": "journal-article",
+  "crossref_title": "Quantifying Sentiment with News Media across Local Housing Markets",
+  "ieee": "C. K. Soo, \"Quantifying Sentiment with News Media across Local Housing Markets,\" The Review of Financial Studies, vol. 31, no. 10, pp. 3689-3719, 2018. doi:10.1093/rfs/hhy036",
+  "doi": "10.1093/rfs/hhy036",
+  "container": "The Review of Financial Studies"
+ },
+ {
+  "query": "Adaptive filters (Sayed)",
+  "found": true,
+  "match_ok": true,
+  "type": "monograph",
+  "crossref_title": "Adaptive Filters",
+  "ieee": "A. H. Sayed, \"Adaptive Filters,\" 2008. doi:10.1002/9780470374122",
+  "doi": "10.1002/9780470374122",
+  "container": ""
+ },
+ {
+  "query": "Measurement error in survey data",
+  "found": true,
+  "match_ok": null,
+  "type": "other",
+  "crossref_title": "Sources of Survey Measurement Error",
+  "ieee": ", \"Sources of Survey Measurement Error,\" Margins of Error, pp. 15-33, 2007. doi:10.1002/9780470146316.ch2",
+  "doi": "10.1002/9780470146316.ch2",
+  "container": "Margins of Error"
+ },
+ {
+  "query": "Attention allocation and return co-movement of news",
+  "found": true,
+  "match_ok": null,
+  "type": "journal-article",
+  "crossref_title": "Attention Allocation and Return Co-Movement: Evidence from Repeated Natural Experiments",
+  "ieee": "S. Huang, Y. Huang, T. C. Lin, \"Attention Allocation and Return Co-Movement: Evidence from Repeated Natural Experiments,\" SSRN Electronic Journal, 2016. doi:10.2139/ssrn.2872078",
+  "doi": "10.2139/ssrn.2872078",
+  "container": "SSRN Electronic Journal"
+ },
+ {
+  "query": "A deep learning framework for financial time series using stacked autoencoders and long short term memory",
+  "found": true,
+  "match_ok": null,
+  "type": "journal-article",
+  "crossref_title": "A deep learning framework for financial time series using stacked autoencoders and long-short term memory",
+  "ieee": "W. Bao, J. Yue, Y. Rao, \"A deep learning framework for financial time series using stacked autoencoders and long-short term memory,\" PLOS ONE, vol. 12, no. 7, pp. e0180944, 2017. doi:10.1371/journal.pone.0180944",
+  "doi": "10.1371/journal.pone.0180944",
+  "container": "PLOS ONE"
+ },
+ {
+  "query": "Predicting stock market index using fusion of machine learning techniques",
+  "found": true,
+  "match_ok": null,
+  "type": "journal-article",
+  "crossref_title": "Predicting stock market index using fusion of machine learning techniques",
+  "ieee": "J. Patel, S. Shah, P. Thakkar, K. Kotecha, \"Predicting stock market index using fusion of machine learning techniques,\" Expert Systems with Applications, vol. 42, no. 4, pp. 2162-2172, 2015. doi:10.1016/j.eswa.2014.10.031",
+  "doi": "10.1016/j.eswa.2014.10.031",
+  "container": "Expert Systems with Applications"
+ },
+ {
+  "query": "Sentiment analysis of financial news: mechanics and statistics",
+  "found": true,
+  "match_ok": null,
+  "type": "book-chapter",
+  "crossref_title": "Sentiment Analysis of Financial News: Mechanics and Statistics",
+  "ieee": "A. Arratia, G. Avalos, A. Caba\u00f1a, A. Duarte-L\u00f3pez, M. Renedo-Mirambell, \"Sentiment Analysis of Financial News: Mechanics and Statistics,\" Data Science for Economics and Finance, pp. 195-216, 2021. doi:10.1007/978-3-030-66891-4_9",
+  "doi": "10.1007/978-3-030-66891-4_9",
+  "container": "Data Science for Economics and Finance"
+ },
+ {
+  "query": "The use of news articles for stock market prediction: a survey",
+  "found": true,
+  "match_ok": null,
+  "type": "proceedings-article",
+  "crossref_title": "Stock Market Prediction using Financial News Articles on Ho Chi Minh Stock Exchange",
+  "ieee": "D. Duong, T. Nguyen, M. Dang, \"Stock Market Prediction using Financial News Articles on Ho Chi Minh Stock Exchange,\" Proceedings of the 10th International Conference on Ubiquitous Information Management and Communication, pp. 1-6, 2016. doi:10.1145/2857546.2857619",
+  "doi": "10.1145/2857546.2857619",
+  "container": "Proceedings of the 10th International Conference on Ubiquitous Information Management and Communication"
+ }
+]

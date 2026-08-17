@@ -1,0 +1,332 @@
+[
+ {
+  "query": "Giving content to investor sentiment: the role of media in the stock market",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Giving Content to Investor Sentiment: The Role of Media in the Stock Market",
+  "ieee": "P. C. TETLOCK, \"Giving Content to Investor Sentiment: The Role of Media in the Stock Market,\" The Journal of Finance, vol. 62, no. 3, pp. 1139-1168, 2007. doi:10.1111/j.1540-6261.2007.01232.x",
+  "doi": "10.1111/j.1540-6261.2007.01232.x",
+  "container": "The Journal of Finance",
+  "n_authors": 1
+ },
+ {
+  "query": "When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10\u2010Ks",
+  "ieee": "T. LOUGHRAN, B. MCDONALD, \"When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10\u2010Ks,\" The Journal of Finance, vol. 66, no. 1, pp. 35-65, 2011. doi:10.1111/j.1540-6261.2010.01625.x",
+  "doi": "10.1111/j.1540-6261.2010.01625.x",
+  "container": "The Journal of Finance",
+  "n_authors": 2
+ },
+ {
+  "query": "Textual analysis in finance",
+  "found": true,
+  "type": "dissertation",
+  "crossref_title": "Textual analysis in finance",
+  "ieee": "\u0391. \u039a\u03b1\u03c4\u03c3\u03b1\u03c6\u03ac\u03b4\u03bf\u03c2, \"Textual analysis in finance,\" doi:10.12681/eadd/49794",
+  "doi": "10.12681/eadd/49794",
+  "container": "",
+  "n_authors": 1
+ },
+ {
+  "query": "More than words: Quantifying language to measure firms' fundamentals",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "More Than Words: Quantifying Language to Measure Firms' Fundamentals",
+  "ieee": "P. C. TETLOCK, M. SAAR\u2010TSECHANSKY, S. MACSKASSY, \"More Than Words: Quantifying Language to Measure Firms' Fundamentals,\" The Journal of Finance, vol. 63, no. 3, pp. 1437-1467, 2008. doi:10.1111/j.1540-6261.2008.01362.x",
+  "doi": "10.1111/j.1540-6261.2008.01362.x",
+  "container": "The Journal of Finance",
+  "n_authors": 3
+ },
+ {
+  "query": "Text-based sentiment analysis in finance: Synthesising the existing literature and exploring future directions",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Text\u2010based sentiment analysis in finance: Synthesising the existing literature and exploring future directions",
+  "ieee": "A. Todd, J. Bowden, Y. Moshfeghi, \"Text\u2010based sentiment analysis in finance: Synthesising the existing literature and exploring future directions,\" Intelligent Systems in Accounting, Finance and Management, vol. 31, no. 1, 2024. doi:10.1002/isaf.1549",
+  "doi": "10.1002/isaf.1549",
+  "container": "Intelligent Systems in Accounting, Finance and Management",
+  "n_authors": 3
+ },
+ {
+  "query": "Transformer-gated recurrent unit method for predicting stock price based on news sentiments and technical indicators",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Transformer-Gated Recurrent Unit Method for Predicting Stock Price Based on News Sentiments and Technical Indicators",
+  "ieee": "A. T. Haryono, R. Sarno, K. R. Sungkono, \"Transformer-Gated Recurrent Unit Method for Predicting Stock Price Based on News Sentiments and Technical Indicators,\" IEEE Access, vol. 11, pp. 77132-77146, 2023. doi:10.1109/access.2023.3298445",
+  "doi": "10.1109/access.2023.3298445",
+  "container": "IEEE Access",
+  "n_authors": 3
+ },
+ {
+  "query": "A stock price prediction model based on investor sentiment and optimized deep learning",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "A Stock Price Prediction Model Based on Investor Sentiment and Optimized Deep Learning",
+  "ieee": "G. Mu, N. Gao, Y. Wang, L. Dai, \"A Stock Price Prediction Model Based on Investor Sentiment and Optimized Deep Learning,\" IEEE Access, vol. 11, pp. 51353-51367, 2023. doi:10.1109/access.2023.3278790",
+  "doi": "10.1109/access.2023.3278790",
+  "container": "IEEE Access",
+  "n_authors": 4
+ },
+ {
+  "query": "Hybrid information mixing module for stock movement prediction",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Hybrid Information Mixing Module for Stock Movement Prediction",
+  "ieee": "J. Choi, S. Yoo, X. Zhou, Y. Kim, \"Hybrid Information Mixing Module for Stock Movement Prediction,\" IEEE Access, vol. 11, pp. 28781-28790, 2023. doi:10.1109/access.2023.3258695",
+  "doi": "10.1109/access.2023.3258695",
+  "container": "IEEE Access",
+  "n_authors": 4
+ },
+ {
+  "query": "Stock price movement prediction using sentiment analysis and CandleStick chart representation",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Stock Price Movement Prediction Using Sentiment Analysis and CandleStick Chart Representation",
+  "ieee": "T. T. Ho, Y. Huang, \"Stock Price Movement Prediction Using Sentiment Analysis and CandleStick Chart Representation,\" Sensors, vol. 21, no. 23, pp. 7957, 2021. doi:10.3390/s21237957",
+  "doi": "10.3390/s21237957",
+  "container": "Sensors",
+  "n_authors": 2
+ },
+ {
+  "query": "A generalization of multi-source fusion-based framework to stock selection",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "A generalization of multi-source fusion-based framework to stock selection",
+  "ieee": "V. Sn\u00e1\u0161el, J. D. Vel\u00e1squez, M. Pant, D. Georgiou, L. Kong, \"A generalization of multi-source fusion-based framework to stock selection,\" Information Fusion, vol. 102, pp. 102018, 2024. doi:10.1016/j.inffus.2023.102018",
+  "doi": "10.1016/j.inffus.2023.102018",
+  "container": "Information Fusion",
+  "n_authors": 5
+ },
+ {
+  "query": "A hybrid model for stock price prediction based on multi-view heterogeneous data",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "A hybrid model for stock price prediction based on multi-view heterogeneous data",
+  "ieee": "W. Long, J. Gao, K. Bai, Z. Lu, \"A hybrid model for stock price prediction based on multi-view heterogeneous data,\" Financial Innovation, vol. 10, no. 1, 2024. doi:10.1186/s40854-023-00519-w",
+  "doi": "10.1186/s40854-023-00519-w",
+  "container": "Financial Innovation",
+  "n_authors": 4
+ },
+ {
+  "query": "Deep learning for financial applications: A survey",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Deep learning for financial applications : A survey",
+  "ieee": "A. M. Ozbayoglu, M. U. Gudelek, O. B. Sezer, \"Deep learning for financial applications : A survey,\" Applied Soft Computing, vol. 93, pp. 106384, 2020. doi:10.1016/j.asoc.2020.106384",
+  "doi": "10.1016/j.asoc.2020.106384",
+  "container": "Applied Soft Computing",
+  "n_authors": 3
+ },
+ {
+  "query": "Financial time series forecasting with deep learning: A systematic literature review",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Financial time series forecasting with deep learning : A systematic literature review: 2005\u20132019",
+  "ieee": "O. B. Sezer, M. U. Gudelek, A. M. Ozbayoglu, \"Financial time series forecasting with deep learning : A systematic literature review: 2005\u20132019,\" Applied Soft Computing, vol. 90, pp. 106181, 2020. doi:10.1016/j.asoc.2020.106181",
+  "doi": "10.1016/j.asoc.2020.106181",
+  "container": "Applied Soft Computing",
+  "n_authors": 3
+ },
+ {
+  "query": "FNSPID: A Comprehensive Financial News Dataset in Time Series",
+  "found": true,
+  "type": "proceedings-article",
+  "crossref_title": "FNSPID: A Comprehensive Financial News Dataset in Time Series",
+  "ieee": "Z. Dong, X. Fan, Z. Peng, \"FNSPID: A Comprehensive Financial News Dataset in Time Series,\" Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp. 4918-4927, 2024. doi:10.1145/3637528.3671629",
+  "doi": "10.1145/3637528.3671629",
+  "container": "Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining",
+  "n_authors": 3
+ },
+ {
+  "query": "FinBERT: A Pretrained Language Model for Financial Communications",
+  "found": true,
+  "type": "proceedings-article",
+  "crossref_title": "FinBERT: A Pre-trained Financial Language Representation Model for Financial Text Mining",
+  "ieee": "Z. Liu, D. Huang, K. Huang, Z. Li, J. Zhao, \"FinBERT: A Pre-trained Financial Language Representation Model for Financial Text Mining,\" Proceedings of the Twenty-Ninth International Joint Conference on Artificial Intelligence, pp. 4513-4519, 2020. doi:10.24963/ijcai.2020/622",
+  "doi": "10.24963/ijcai.2020/622",
+  "container": "Proceedings of the Twenty-Ninth International Joint Conference on Artificial Intelligence",
+  "n_authors": 5
+ },
+ {
+  "query": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+  "found": true,
+  "type": "proceedings-article",
+  "crossref_title": "Arabic Image Captioning using Pre-training of Deep Bidirectional Transformers",
+  "ieee": "J. Emami, P. Nugues, A. Elnagar, I. Afyouni, \"Arabic Image Captioning using Pre-training of Deep Bidirectional Transformers,\" Proceedings of the 15th International Conference on Natural Language Generation, pp. 40-51, 2022. doi:10.18653/v1/2022.inlg-main.4",
+  "doi": "10.18653/v1/2022.inlg-main.4",
+  "container": "Proceedings of the 15th International Conference on Natural Language Generation",
+  "n_authors": 4
+ },
+ {
+  "query": "VADER: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "VADER: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text",
+  "ieee": "C. Hutto, E. Gilbert, \"VADER: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text,\" Proceedings of the International AAAI Conference on Web and Social Media, vol. 8, no. 1, pp. 216-225, 2014. doi:10.1609/icwsm.v8i1.14550",
+  "doi": "10.1609/icwsm.v8i1.14550",
+  "container": "Proceedings of the International AAAI Conference on Web and Social Media",
+  "n_authors": 2
+ },
+ {
+  "query": "The General Inquirer: A Computer Approach to Content Analysis",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "The general inquirer: A computer approach to content analysis",
+  "ieee": "W. E. Grieb, \"The general inquirer: A computer approach to content analysis,\" Information Storage and Retrieval, vol. 4, no. 4, pp. 375-376, 1968. doi:10.1016/0020-0271(68)90031-4",
+  "doi": "10.1016/0020-0271(68)90031-4",
+  "container": "Information Storage and Retrieval",
+  "n_authors": 1
+ },
+ {
+  "query": "Measurement Error in Nonlinear Models: A Modern Perspective",
+  "found": true,
+  "type": "book-chapter",
+  "crossref_title": "Response Variable Error",
+  "ieee": ", \"Response Variable Error,\" C&amp;H/CRC Monographs on Statistics &amp; Applied Probability, pp. 339-358, 2006. doi:10.1201/9781420010138.ch15",
+  "doi": "10.1201/9781420010138.ch15",
+  "container": "C&amp;H/CRC Monographs on Statistics &amp; Applied Probability",
+  "n_authors": 0
+ },
+ {
+  "query": "Errors in variables in econometrics",
+  "found": true,
+  "type": "book-chapter",
+  "crossref_title": "Errors in Variables",
+  "ieee": "V. J. Geraci, \"Errors in Variables,\" Econometrics, pp. 80-87, 1990. doi:10.1007/978-1-349-20570-7_11",
+  "doi": "10.1007/978-1-349-20570-7_11",
+  "container": "Econometrics",
+  "n_authors": 1
+ },
+ {
+  "query": "Instrumental variables estimation with measurement error",
+  "found": true,
+  "type": "book-chapter",
+  "crossref_title": "Instrumental Variables",
+  "ieee": "R. J. Carroll, D. Ruppert, L. A. Stefanski, \"Instrumental Variables,\" Measurement Error in Nonlinear Models, pp. 107-121, 1995. doi:10.1007/978-1-4899-4477-1_5",
+  "doi": "10.1007/978-1-4899-4477-1_5",
+  "container": "Measurement Error in Nonlinear Models",
+  "n_authors": 3
+ },
+ {
+  "query": "Adaptive Filter Theory",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Adaptive filter theory",
+  "ieee": "B. Wittenmark, \"Adaptive filter theory,\" Automatica, vol. 29, no. 2, pp. 567-568, 1993. doi:10.1016/0005-1098(93)90162-m",
+  "doi": "10.1016/0005-1098(93)90162-m",
+  "container": "Automatica",
+  "n_authors": 1
+ },
+ {
+  "query": "Stationary and nonstationary learning characteristics of the LMS adaptive filter",
+  "found": true,
+  "type": "book-chapter",
+  "crossref_title": "Stationary and Nonstationary Learning Characteristics of the LMS Adaptive Filter",
+  "ieee": "B. Widrow, J. McCool, M. G. Larimore, C. R. Johnson, \"Stationary and Nonstationary Learning Characteristics of the LMS Adaptive Filter,\" Aspects of Signal Processing, pp. 355-393, 1977. doi:10.1007/978-94-010-1223-2_23",
+  "doi": "10.1007/978-94-010-1223-2_23",
+  "container": "Aspects of Signal Processing",
+  "n_authors": 4
+ },
+ {
+  "query": "On the statistical efficiency of the LMS algorithm with nonstationary inputs",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "On the statistical efficiency of the LMS algorithm with nonstationary inputs",
+  "ieee": "B. Widrow, E. Walach, \"On the statistical efficiency of the LMS algorithm with nonstationary inputs,\" IEEE Transactions on Information Theory, vol. 30, no. 2, pp. 211-221, 1984. doi:10.1109/tit.1984.1056892",
+  "doi": "10.1109/tit.1984.1056892",
+  "container": "IEEE Transactions on Information Theory",
+  "n_authors": 2
+ },
+ {
+  "query": "The complex LMS algorithm",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "The complex LMS algorithm",
+  "ieee": "B. Widrow, J. McCool, M. Ball, \"The complex LMS algorithm,\" Proceedings of the IEEE, vol. 63, no. 4, pp. 719-720, 1975. doi:10.1109/proc.1975.9807",
+  "doi": "10.1109/proc.1975.9807",
+  "container": "Proceedings of the IEEE",
+  "n_authors": 3
+ },
+ {
+  "query": "Extraction of Signals from Noise",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Extraction of signals from noise through Wiener filtering",
+  "ieee": "J. R. Arora, \"Extraction of signals from noise through Wiener filtering,\" pure and applied geophysics, vol. 92, no. 1, pp. 5-18, 1971. doi:10.1007/bf00874987",
+  "doi": "10.1007/bf00874987",
+  "container": "pure and applied geophysics",
+  "n_authors": 1
+ },
+ {
+  "query": "Analysis of the convergence of the normalized LMS algorithm",
+  "found": true,
+  "type": "proceedings-article",
+  "crossref_title": "Convergence and steady-state analysis of a variable step-size normalized LMS algorithm",
+  "ieee": "A. Sulyman, A. Zerguine, \"Convergence and steady-state analysis of a variable step-size normalized LMS algorithm,\" Seventh International Symposium on Signal Processing and Its Applications, 2003. Proceedings., pp. 591-594 vol.2, 2003. doi:10.1109/isspa.2003.1224946",
+  "doi": "10.1109/isspa.2003.1224946",
+  "container": "Seventh International Symposium on Signal Processing and Its Applications, 2003. Proceedings.",
+  "n_authors": 2
+ },
+ {
+  "query": "Comparing predictive accuracy",
+  "found": true,
+  "type": "book-chapter",
+  "crossref_title": "Comparing Predictive Accuracy",
+  "ieee": "F. X. DIEBOLD, R. S. MARIANO, \"Comparing Predictive Accuracy,\" Business Cycles, pp. 387-412, 2020. doi:10.2307/j.ctv15r57n1.23",
+  "doi": "10.2307/j.ctv15r57n1.23",
+  "container": "Business Cycles",
+  "n_authors": 2
+ },
+ {
+  "query": "A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix",
+  "ieee": "W. K. Newey, K. D. West, \"A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix,\" Econometrica, vol. 55, no. 3, pp. 703, 1987. doi:10.2307/1913610",
+  "doi": "10.2307/1913610",
+  "container": "Econometrica",
+  "n_authors": 2
+ },
+ {
+  "query": "Distributed lags: A survey",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Distributed Lags: A Survey",
+  "ieee": "Z. Griliches, \"Distributed Lags: A Survey,\" Econometrica, vol. 35, no. 1, pp. 16, 1967. doi:10.2307/1909382",
+  "doi": "10.2307/1909382",
+  "container": "Econometrica",
+  "n_authors": 1
+ },
+ {
+  "query": "An Ensemble Model for Word-based DGA Botnet Detection Using XGBoost and BERT",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "An Ensemble Model for Word-based DGA Botnet Detection Using XGBoost and BERT",
+  "ieee": "X. H. VU, X. D. HOANG, \"An Ensemble Model for Word-based DGA Botnet Detection Using XGBoost and BERT,\" Advances in Electrical and Computer Engineering, vol. 25, no. 3, pp. 13-20, 2025. doi:10.4316/aece.2025.03002",
+  "doi": "10.4316/aece.2025.03002",
+  "container": "Advances in Electrical and Computer Engineering",
+  "n_authors": 2
+ },
+ {
+  "query": "A Message Passing Neural Network Framework with Learnable PageRank for Author Impact Assessment",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "A Message Passing Neural Network Framework with Learnable PageRank for Author Impact Assessment",
+  "ieee": "G. SONG, D. FU, X. WU, \"A Message Passing Neural Network Framework with Learnable PageRank for Author Impact Assessment,\" Advances in Electrical and Computer Engineering, vol. 25, no. 1, pp. 11-20, 2025. doi:10.4316/aece.2025.01002",
+  "doi": "10.4316/aece.2025.01002",
+  "container": "Advances in Electrical and Computer Engineering",
+  "n_authors": 3
+ },
+ {
+  "query": "Adaptive mu-law Gradient Quantization for Training MLPs and CNNs",
+  "found": true,
+  "type": "journal-article",
+  "crossref_title": "Adaptive \u00b5-law Gradient Quantization for Training MLPs and CNNs",
+  "ieee": "M. DUBLJANIN, S. PANIC, M. SAVIC, S. MILOSAVLJEVIC, \"Adaptive \u00b5-law Gradient Quantization for Training MLPs and CNNs,\" Advances in Electrical and Computer Engineering, vol. 26, no. 1, pp. 55-64, 2026. doi:10.4316/aece.2026.01006",
+  "doi": "10.4316/aece.2026.01006",
+  "container": "Advances in Electrical and Computer Engineering",
+  "n_authors": 4
+ }
+]

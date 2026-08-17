@@ -1,0 +1,150 @@
+ 
+ Open Menu 
+ Authors Informations
+ Conditions for submission 
+ For the submission process, authors are required to check all items required for subimission. Submissions that do not conform to JETIA's norms will be returned to the authors.
+ Attention to the moment of submission the following items:
+   - Fill in all requested fields on the article submission page.
+   - All the authors of the work are correctly registered in the platform of the Magazine.
+   - The contribution must be original and unpublished, and is not being evaluated for publication by another journal.
+   - The submission file is in Microsoft Word format.
+   - The authors consulted are duly cited and the URLs for the references were informed.
+   - Figures and tables are inserted in the text, not at the end of the document in the form of appendices / appendices.
+   - The text follows the style standards and bibliographic requirements described in the Informations for Authors and in the ITEGAM-JETIA magazine template.
+   - Authors maintain copyright and grant the journal the right to first publication, allowing the sharing of the work with recognition of the authorship of the work and initial publication in this journal: Authorization for Publication of Work .
+   - The identification of authorship of the manuscript has been removed from the file and the Properties option in Word, ensuring the Peer Blind Evaluation.
+   - Respect for the standards of ethics of research with human beings according to norms in force.
+   - It's in the English language.
+   - There should be no conflict of interest between the authors of the article.
+   - The ORCID number is mandatory for all authors, if you do not have it, please register at: https://orcid.org/signin . 
+ Conflict of interests 
+ All authors must disclose any relationships or interests that may improperly influence or distort their work. Examples of potential conflicts of interest include, but are not limited to, financial interests (such as membership, employment, consultancy, shares / ownership of shares, fees, subsidies or other financing, testimonials from paid experts and patent licensing agreements) and non-interest financial (such as personal or professional relationships, affiliations, personal beliefs).
+ Authors may disclose potential conflicts of interest through the online submission system during the submission process.
+ Reviewers should also be aware of conflicts of interest and if there is any contact with the Editor-in-Chief to find the best solution.
+ In the case of editors, when articles in which they have a direct or indirect interest are submitted to the journal, that editor who does not have such a conflict will be fully responsible for forwarding, evaluating and deciding on the publication.
+ Editors and reviewers cannot participate in the evaluation process of articles in which they have links with the authors.
+ Papers with the following characteristics will not be considered for publication: 
+ Previously published in another journal or scientific / informational journal;
+ The translation or use of material protected by intellectual property rights;
+ A critique of engineering technique that does not contribute to the innovation of the subject;
+ A paper of class notes;
+ Roles with offensive content for individuals, research groups, products and / or other services;
+ *All articles are funded by the institution ITEGAM (Institute of Technology and Education Galileo da Amazônia).
+The concepts and statements contained in the works are the sole responsibility of the author (s).
+ Generative AI Policy 
+ 1. Use of Generative Artificial Intelligence 
+ In accordance with the requirements of Scopus and to maintain transparency and integrity in academic publishing, the Journal of Engineering and Technology for Industrial Applications has established the following policy regarding the use of Generative Artificial Intelligence (GenAI) and AI-assisted technologies in the preparation, review, and publication of manuscripts. 
+ 2. Fundamental Principle 
+ Human authors are fully responsible for all content submitted to the Journal of Engineering and Technology for Industrial Applications. Generative AI tools must not be listed or recognized as authors or co-authors, as they cannot assume responsibility for the work, hold copyright, or provide consent for publication. Authors must ensure that their work is original and that any content generated or assisted by AI has been carefully reviewed, verified, and approved by all named authors before submission. Learn More . 
+ Paper Format 
+ Download Template JETIA 
+ ARTICLE STRUCTURE 
+ Research articles, current studies, and research projects must follow the IMRDC format: Abstract, Introduction, Theoretical Framework, Methodology, Results and Discussion, and Conclusions. To ensure an up-to-date literature review, it should be organized into several logical sections, each headed by a concise subheading. 
+ Title: Times New Roman; Size 15 
+ Author1, Author2, and Author3 
+ ¹ ABC Institute – INITIALS. Manaus, Amazonas, Brazil. 
+ ² Example Institute – EI. Toronto, XXXXX, Canada. 
+ Email: author1@gmail.com, author2@gmail.com, author3@gmail.com 
+ 1. Abstract 
+ The abstract must contain 150 to 250 words. It should be written as a single paragraph, single-spaced, using Times New Roman, size 10. 
+ The abstract must include: 
+ The overall objective of the article; 
+ The theoretical framework supporting the study (main concepts and foundations); 
+ A concise description of the methodology; 
+ The principal findings. 
+ Keywords should accurately represent the article's content and include three to five terms, separated by commas. 
+ 2. Introduction 
+ The introduction should define the research problem and explain the importance of the study. It should include a concise literature review on the topic, highlighting the contributions of previous authors to the current state of the art. When abbreviations or acronyms are used, the full term must first be written out, followed by the abbreviation in parentheses. 
+ This section should also present: 
+ The research question; 
+ The objectives of the study; 
+ The research hypothesis (when applicable); 
+ The significance and limitations of the study; 
+ A brief description of the research method. 
+ The Introduction should be written in the present tense. 
+ 3. Theoretical Framework 
+ A well-developed theoretical framework should present the main concepts, theories, and models related to the research topic, providing the scientific foundation necessary for understanding the investigated problem. It should also include a critical review of previous studies, highlighting the most relevant findings and contributions to the field. Authors are encouraged to use up-to-date references from reliable sources, preferably scientific articles indexed in recognized databases. The theoretical framework should identify existing knowledge gaps, thereby justifying the need for the research and demonstrating its scientific contribution. Finally, it should establish a clear connection between the reviewed literature, the research objectives, the analyzed variables, and the adopted methodology, ensuring coherence throughout the study. 
+ 4. Methodology 
+ Describe the research design in sufficient detail, including its background and limitations. The selection of materials, methods, procedures, software, and equipment must be justified so that the study can be reproduced. Modifications to existing methods or newly developed methods must be described in detail. Authors should clearly define the study population and explain how the sample was selected and why it is representative. Data processing should represent the practical implementation of the theoretical foundation, including the derivation of model equations and the development of computational algorithms whenever applicable. 
+ For materials, include: 
+ Technical specifications; 
+ Quantities; 
+ Sources; 
+ Preparation methods (when necessary). 
+ If public datasets were used, the source of the dataset must be clearly identified. 
+ 5. Results and Discussion 
+ The Results section should present the main findings clearly, objectively, and systematically, using tables, graphs, figures, and other visual resources whenever appropriate. Results should be directly related to the study objectives and research questions, highlighting the analyses performed and the identified patterns. The most significant findings should be emphasized and compared with benchmark values or applicable performance metrics whenever possible. The presentation should be accurate, coherent, and evidence-based, avoiding unsupported interpretations. Results should be written in the past tense, using concise and straightforward language. This section should be the shortest part of the manuscript and should avoid redundancy. The Discussion should analyze and interpret the findings, emphasizing: 
+ Their significance; 
+ The achievements and limitations of the study; 
+ Innovative aspects and practical applications; 
+ Conclusions derived from the results; 
+ Remaining unresolved issues. 
+ Recommendations for future work may also be included where appropriate. 
+ 6. Conclusions 
+ A well-written conclusion should revisit the objectives of the research and clearly summarize the principal findings. It should also highlight the scientific, technical, or practical contributions of the study, demonstrating its relevance to the field. The conclusion should answer the research questions, indicate whether the objectives were achieved, and summarize the most important discoveries. Authors are encouraged to discuss the study's limitations and suggest directions for future research, thereby contributing to the advancement of knowledge. The conclusion must be fully consistent with the presented results and should not introduce new information or analyses that were not previously discussed. 
+ 7. Author Contributions 
+ Example: 
+ Conceptualization: Author One, Author Two, and Author Three. 
+ Methodology: Author One and Author Two. 
+ Investigation: Author One and Author Two. 
+ Results Discussion: Author One, Author Two, and Author Three. 
+ Writing – Original Draft: Author One. 
+ Writing – Review & Editing: Author One and Author Two. 
+ Resources: Author Two. 
+ Supervision: Author Two and Author Three. 
+ Approval of the Final Manuscript: Author One, Author Two, and Author Three. 
+ 8. Acknowledgments 
+ If applicable, acknowledge individuals or organizations that supported the development of the research. 
+ 9. References 
+ The IEEE referencing style shall be used for both citations and references. References must be cited numerically in the text, in ascending order according to their first appearance. The reference list should comply with the following requirements: 
+ At least 50% of the references must have been published within the last five years; 
+ At least 70% should be international references relative to the corresponding author's country; 
+ At least 40% should correspond to documents available online; 
+ The reference list should not follow a 70/25/5 distribution among journal articles, books/monographs/manuals, and other types of documents. Articles are considered published when they have been issued in either digital or printed form by recognized institutions such as universities, research centers, international organizations, or reputable companies. Citations to articles published in the JETIA Journal should represent less than 10% of the total references. 
+ Language
+ English
+ español
+ português
+ Make a Submission
+ Make a Submission
+ informations
+ Qualis Capes 
+ Publication Fee 
+ Author Informations 
+ eBooks 
+ Support Team 
+ JETIA Journal Data 
+ Available:
+ 2015 - 2026
+ Volumes:
+ 12
+ Issues:
+ 59
+ Articles:
+ 1.308
+ Article Processing Charges (APC):
+ PAID 
+ Total Articles 
+ The JETIA is a Multidisciplinary Online Journal with the following international identifiers: ISSN 2447-0228 & DOI 10.5935. The journal is already indexed in Qualis CAPES .
+ The JETIA Journal accepts manuscripts exclusively in English .
+ The JETIA Journal covers topics from the following knowledge areas:
+ Engineering 
+ Computing 
+ Environment 
+ Biotechnology 
+ areas
+ The   JETIA Journal  approaches the themes of the knowledge areas bellow: 
+ Engineering; 
+ Computing; 
+ Environment; 
+ Biotechnology. 
+ visitantes
+ Counter Information 
+ Counter started on July 13, 2019 
+ Counter started on December 29, 2024 
+ View My Stats 
+ Journal of Engineering and Technology for Industrial Applications (JETIA) 
+ E-ISSN: 2447-0228 |  DOI: 105935 
+ Manaus - AM - Brazil. 
+ This work is licensed under an    International 4.0 Assignment (CC BY 4.0)   license 
+ This work is licensed under a Creative Commons Assignment 4.0 International  License 

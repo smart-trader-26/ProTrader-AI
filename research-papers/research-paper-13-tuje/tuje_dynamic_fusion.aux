@@ -1,0 +1,158 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand*\HyPL@Entry[1]{}
+\citation{moodi2024}
+\citation{mu2023}
+\citation{farimani2024}
+\citation{vargas2022}
+\citation{liu2019}
+\citation{haryono2023}
+\citation{zhang2022}
+\citation{li2020}
+\citation{jung2024}
+\citation{liu2024llm}
+\citation{khuwaja2023}
+\citation{tai2022}
+\citation{haryono2024}
+\citation{wang2024spcm}
+\citation{alsheebah2024}
+\HyPL@Entry{0<</S/D>>}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Multi-source financial forecasting}{1}{subsection.1.1}\protected@file@percent }
+\citation{lee2007}
+\citation{parekh2022}
+\citation{chou2018}
+\citation{wang2020tsmining}
+\citation{bacco2024}
+\citation{zhang2022}
+\citation{jacobs1991}
+\citation{hoeting1999}
+\citation{freundschapire1997}
+\citation{cesabianchi2006}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}The static-fusion problem}{2}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Dynamic expert weighting beyond finance}{2}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}What this paper does differently}{2}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Method}{3}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The deployed architecture under test}{3}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Finding 1: a feedback loop that is never closed}{3}{subsubsection.2.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Finding 2: a formula that is numerically inert at realistic scale}{3}{subsubsection.2.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Study 1: long-horizon, real, two-source evaluation}{3}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Study 2: a short, real, three-source case study}{3}{subsection.2.3}\protected@file@percent }
+\citation{chenrollross1986}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The deployed Dynamic Fusion architecture under test. Solid arrows are the real, active data path; the dashed red arrow is the error-feedback connection that Section~2.1.1 finds is never invoked in the shipped interactive tool, so $\sigma _i^2$ never updates and $w_i$ collapses to $1/3$ for every source. Section~2.1.2 identifies a second problem in the softmax step itself.}}{4}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:arch}{{1}{4}{The deployed Dynamic Fusion architecture under test. Solid arrows are the real, active data path; the dashed red arrow is the error-feedback connection that Section~2.1.1 finds is never invoked in the shipped interactive tool, so $\sigma _i^2$ never updates and $w_i$ collapses to $1/3$ for every source. Section~2.1.2 identifies a second problem in the softmax step itself}{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Study 3: a longer, conviction-gated horizon}{4}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Study 4: a genuinely differentiated third source}{4}{subsection.2.5}\protected@file@percent }
+\citation{bailey2014}
+\citation{harvey2016}
+\citation{hoeting1999}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}A self-audit of Study 4's own evaluation harness}{5}{subsection.2.6}\protected@file@percent }
+\newlabel{sec:leakaudit}{{2.6}{5}{A self-audit of Study 4's own evaluation harness}{subsection.2.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}A pre-registered check of the fusion rule's implicit learning rate}{5}{subsection.2.7}\protected@file@percent }
+\newlabel{sec:etacheck}{{2.7}{5}{A pre-registered check of the fusion rule's implicit learning rate}{subsection.2.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Study 7: mean squared error as an independent check}{5}{subsection.2.8}\protected@file@percent }
+\newlabel{sec:mse}{{2.8}{5}{Study 7: mean squared error as an independent check}{subsection.2.8}{}}
+\citation{dieboldmariano1995}
+\citation{harvey2016}
+\citation{lopezdeprado2018}
+\citation{bailey2014}
+\citation{harvey2016}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Sensitivity of the scale-normalized weight to the trailing-error window length $W$ (re-derived from the same real per-day error series at each $W$; the deployed system hardcodes $W=10$).}}{6}{table.caption.2}\protected@file@percent }
+\newlabel{tab:ablation}{{1}{6}{Sensitivity of the scale-normalized weight to the trailing-error window length $W$ (re-derived from the same real per-day error series at each $W$; the deployed system hardcodes $W=10$)}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Evaluation}{6}{subsection.2.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{6}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The raw formula freezes; the scaled formula does not}{6}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Study 1 headline results: 44 real NSE tickers, 2,088 real trading days, 2018--2026 quarterly walk-forward.}}{6}{table.caption.4}\protected@file@percent }
+\newlabel{tab:study1}{{2}{6}{Study 1 headline results: 44 real NSE tickers, 2,088 real trading days, 2018--2026 quarterly walk-forward}{table.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Study 2 headline results: 88 real ticker-day events with genuine FinBERT-scored sentiment, Nov.\ 2025--Jul.\ 2026.}}{6}{table.caption.6}\protected@file@percent }
+\newlabel{tab:study2}{{3}{6}{Study 2 headline results: 88 real ticker-day events with genuine FinBERT-scored sentiment, Nov.\ 2025--Jul.\ 2026}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Genuine differentiation does not translate into an accuracy edge}{6}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}A real three-source case study tells the same story}{6}{subsection.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Quarterly-averaged technical-expert fusion weight, 2018Q1--2026Q3, computed from the identical real trailing errors under two formulas: the raw softmax (dashed, essentially frozen at 0.500) and the scale-normalized softmax (solid, genuinely time-varying; shaded band = intra-quarter range).}}{7}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:weightcollapse}{{2}{7}{Quarterly-averaged technical-expert fusion weight, 2018Q1--2026Q3, computed from the identical real trailing errors under two formulas: the raw softmax (dashed, essentially frozen at 0.500) and the scale-normalized softmax (solid, genuinely time-varying; shaded band = intra-quarter range)}{figure.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Real directional accuracy by calendar year, 2018--2026, for the four Study~1 strategies. The four bars in every year move together, indicating that year-to-year performance is driven by market conditions common to all strategies rather than by which fusion rule is used.}}{7}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:peryear}{{3}{7}{Real directional accuracy by calendar year, 2018--2026, for the four Study~1 strategies. The four bars in every year move together, indicating that year-to-year performance is driven by market conditions common to all strategies rather than by which fusion rule is used}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}A genuine effect at a longer horizon -- and where it disappears}{7}{subsection.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Study 3 headline results: 20-day forward direction, 44 real NSE tickers, 2018--2026 quarterly walk-forward, block-bootstrap significance (block = 20 trading days).}}{7}{table.caption.9}\protected@file@percent }
+\newlabel{tab:study3}{{4}{7}{Study 3 headline results: 20-day forward direction, 44 real NSE tickers, 2018--2026 quarterly walk-forward, block-bootstrap significance (block = 20 trading days)}{table.caption.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Real FinBERT-scored signed sentiment vs.\ real realized next-day return, 88 ticker-day events, Nov.\ 2025--Jul.\ 2026. The near-zero, non-significant slope is an honest null result, not a fitting artifact.}}{8}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:sentiment}{{4}{8}{Real FinBERT-scored signed sentiment vs.\ real realized next-day return, 88 ticker-day events, Nov.\ 2025--Jul.\ 2026. The near-zero, non-significant slope is an honest null result, not a fitting artifact}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Three-source dynamic fusion weights actually computed on the 88 real ticker-day events, in chronological order. Weights swing further from equal division than in Study~1 because the trailing error window fills from very few observations, then settle back toward $1/3$ each.}}{8}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:study2weights}{{5}{8}{Three-source dynamic fusion weights actually computed on the 88 real ticker-day events, in chronological order. Weights swing further from equal division than in Study~1 because the trailing error window fills from very few observations, then settle back toward $1/3$ each}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}What looked like a real effect was a self-inflicted leak}{8}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:res-study4}{{3.5}{8}{What looked like a real effect was a self-inflicted leak}{subsection.3.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Real 20-day-forward directional accuracy, all predictions (n=91,077) vs.\ the top-20\%-conviction subset (n=18,216), for the four strategies. Dynamic and static fusion are visibly and numerically identical in the gated panel.}}{9}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:study3}{{6}{9}{Real 20-day-forward directional accuracy, all predictions (n=91,077) vs.\ the top-20\%-conviction subset (n=18,216), for the four strategies. Dynamic and static fusion are visibly and numerically identical in the gated panel}{figure.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces The same next-day, three-source dynamic-vs-static comparison under all four combinations of the two harness defects (Section~\ref {sec:leakaudit}), identical data and fusion math throughout. Each defect alone inflates the apparent effect; both together very nearly triple it. Only the rightmost (blue) bar is a valid result of this paper.}}{9}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:leakanatomy}{{7}{9}{The same next-day, three-source dynamic-vs-static comparison under all four combinations of the two harness defects (Section~\ref {sec:leakaudit}), identical data and fusion math throughout. Each defect alone inflates the apparent effect; both together very nearly triple it. Only the rightmost (blue) bar is a valid result of this paper}{figure.caption.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Leak anatomy: the identical next-day, three-source comparison (91,869 real observations) under all four combinations of the two harness defects found in Section~\ref {sec:leakaudit}. Only the last row is a valid result of this paper.}}{9}{table.caption.11}\protected@file@percent }
+\newlabel{tab:leakanatomy}{{5}{9}{Leak anatomy: the identical next-day, three-source comparison (91,869 real observations) under all four combinations of the two harness defects found in Section~\ref {sec:leakaudit}. Only the last row is a valid result of this paper}{table.caption.11}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Study 4 headline results, leak-free protocol: adding a real macro/FX expert (USD/INR, WTI crude) as a third source, at both horizons, 44 real NSE tickers, 2018--2026.}}{9}{table.caption.13}\protected@file@percent }
+\newlabel{tab:study4}{{6}{9}{Study 4 headline results, leak-free protocol: adding a real macro/FX expert (USD/INR, WTI crude) as a third source, at both horizons, 44 real NSE tickers, 2018--2026}{table.caption.13}{}}
+\citation{bailey2014}
+\citation{harvey2016}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}A pre-registered learning-rate search does not recover an effect, and shows why not to look for one after the fact}{10}{subsection.3.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Mean squared error, dynamic vs.\ static fusion, all six leak-free comparisons (Section~\ref {sec:mse}). Positive ``static $-$ dynamic'' values favor dynamic fusion; none excludes zero.}}{10}{table.caption.16}\protected@file@percent }
+\newlabel{tab:mse}{{7}{10}{Mean squared error, dynamic vs.\ static fusion, all six leak-free comparisons (Section~\ref {sec:mse}). Positive ``static $-$ dynamic'' values favor dynamic fusion; none excludes zero}{table.caption.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Mean squared error tells the same story as directional accuracy}{10}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{10}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Why a mathematically sound rule can still act static}{10}{subsection.4.1}\protected@file@percent }
+\citation{lopezdeprado2018}
+\citation{bailey2014}
+\citation{harvey2016}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Dynamic-minus-static accuracy (percentage points, 95\% CI) across all six leak-free comparisons in this paper: two source counts (gray = technical+volatility, red = +macro) crossed with next-day, 20-day (all), and 20-day (gated). No configuration's interval clears zero by a margin that survives Bonferroni correction (Section 4.2).}}{11}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:study4}{{8}{11}{Dynamic-minus-static accuracy (percentage points, 95\% CI) across all six leak-free comparisons in this paper: two source counts (gray = technical+volatility, red = +macro) crossed with next-day, 20-day (all), and 20-day (gated). No configuration's interval clears zero by a margin that survives Bonferroni correction (Section 4.2)}{figure.caption.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Selection-window (2018--2019) vs.\ held-out test-window (2020--2026) dynamic-minus-static accuracy across the pre-registered learning-rate grid, three-source configuration. The value the selection window favors most ($k^\ast =20$) is the one whose sign reverses out of sample.}}{11}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:tunedeta}{{9}{11}{Selection-window (2018--2019) vs.\ held-out test-window (2020--2026) dynamic-minus-static accuracy across the pre-registered learning-rate grid, three-source configuration. The value the selection window favors most ($k^\ast =20$) is the one whose sign reverses out of sample}{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}A statistically real effect that is not practically meaningful -- and, once corrected, an effect that was never real at all}{11}{subsection.4.2}\protected@file@percent }
+\citation{bailey2014}
+\citation{harvey2016}
+\citation{lopezdeprado2018}
+\citation{gu2020}
+\citation{fama1970}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Neither differentiation nor duration rescued the mechanism}{12}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}The gap between what is deployed and what is claimed -- and between what is analyzed and what is claimed}{12}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Practical implications}{12}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Limitations}{12}{subsection.4.6}\protected@file@percent }
+\citation{gal2016}
+\citation{kendall2017}
+\citation{lakshminarayanan2017}
+\citation{gu2020}
+\bibcite{moodi2024}{1}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{13}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Future work}{13}{subsection.5.1}\protected@file@percent }
+\bibcite{mu2023}{2}
+\bibcite{farimani2024}{3}
+\bibcite{vargas2022}{4}
+\bibcite{liu2019}{5}
+\bibcite{haryono2023}{6}
+\bibcite{zhang2022}{7}
+\bibcite{li2020}{8}
+\bibcite{jung2024}{9}
+\bibcite{liu2024llm}{10}
+\bibcite{bacco2024}{11}
+\bibcite{jacobs1991}{12}
+\bibcite{hoeting1999}{13}
+\bibcite{freundschapire1997}{14}
+\bibcite{cesabianchi2006}{15}
+\bibcite{chenrollross1986}{16}
+\bibcite{dieboldmariano1995}{17}
+\bibcite{lopezdeprado2018}{18}
+\bibcite{bailey2014}{19}
+\bibcite{harvey2016}{20}
+\bibcite{gu2020}{21}
+\bibcite{fama1970}{22}
+\bibcite{gal2016}{23}
+\bibcite{kendall2017}{24}
+\bibcite{lakshminarayanan2017}{25}
+\bibcite{khuwaja2023}{26}
+\bibcite{tai2022}{27}
+\bibcite{haryono2024}{28}
+\bibcite{wang2024spcm}{29}
+\bibcite{chou2018}{30}
+\bibcite{lee2007}{31}
+\bibcite{alsheebah2024}{32}
+\bibcite{parekh2022}{33}
+\bibcite{wang2020tsmining}{34}
+\gdef \@abspage@last{15}
