@@ -1,0 +1,744 @@
+{
+ "tab_data": {
+  "caption": "The two bodies of evidence. The validation panel answers whether the decomposition carries information; the deployment ledger answers whether a calibrated selective forecaster behaves as designed in production. They are drawn from different markets and neither is used to support a claim about the other.",
+  "header": [
+   "",
+   "Validation panel",
+   "Deployment ledger"
+  ],
+  "align": [
+   "l",
+   "l",
+   "l"
+  ],
+  "widths": [
+   0.24,
+   0.38,
+   0.38
+  ],
+  "rows": [
+   [
+    "Market",
+    "US listed equities",
+    "NSE India large caps"
+   ],
+   [
+    "Source",
+    "FNSPID headline corpus",
+    "Live append-only forecast ledger"
+   ],
+   [
+    "Entities",
+    "35 operating companies",
+    "7 names (live), 54 (walk-forward)"
+   ],
+   [
+    "Span",
+    "2010-01-05 to 2023-12-29",
+    "19 Apr 2026 to 12 Jun 2026"
+   ],
+   [
+    "Sessions",
+    "3,521",
+    "--"
+   ],
+   [
+    "Symbol-sessions",
+    "117,312",
+    "--"
+   ],
+   [
+    "... with scored news",
+    "48,261",
+    "--"
+   ],
+   [
+    "Headlines scored",
+    "134,037",
+    "--"
+   ],
+   [
+    "Resolved forecasts",
+    "--",
+    "621"
+   ],
+   [
+    "Question answered",
+    "Does gating carry information?",
+    "Is the deployed system honest?"
+   ]
+  ],
+  "note": ""
+ },
+ "tab_desc": {
+  "caption": "Descriptive statistics. Panel A covers the three attributes and their products at the level of the individual headline; Panel B covers the session-level aggregators, computed on symbol-sessions carrying at least one scored headline. The final column is the share of exactly-zero values, which is the share of events or sessions the gate vetoes outright.",
+  "header": [
+   "",
+   "Mean",
+   "SD",
+   "p25",
+   "Median",
+   "p75",
+   "Zeros (%)"
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.28,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12
+  ],
+  "rows": [
+   [
+    "Panel A: per headline"
+   ],
+   [
+    "Polarity s",
+    "0.039",
+    "0.207",
+    "0.000",
+    "0.000",
+    "0.200",
+    "52.0"
+   ],
+   [
+    "Novelty ν",
+    "0.189",
+    "0.195",
+    "0.000",
+    "0.200",
+    "0.200",
+    "30.7"
+   ],
+   [
+    "Materiality μ",
+    "0.157",
+    "0.166",
+    "0.000",
+    "0.100",
+    "0.200",
+    "34.4"
+   ],
+   [
+    "Relevance r = νμ",
+    "0.058",
+    "0.100",
+    "0.000",
+    "0.020",
+    "0.060",
+    "35.0"
+   ],
+   [
+    "Event signal a = sνμ",
+    "0.005",
+    "0.056",
+    "0.000",
+    "0.000",
+    "0.004",
+    "53.7"
+   ],
+   [
+    "Panel B: per symbol-session"
+   ],
+   [
+    "Gated signal A",
+    "0.006",
+    "0.054",
+    "0.000",
+    "0.000",
+    "0.008",
+    "47.6"
+   ],
+   [
+    "Threshold-filtered polarity",
+    "0.042",
+    "0.195",
+    "0.000",
+    "0.000",
+    "0.200",
+    "48.4"
+   ],
+   [
+    "Mean polarity",
+    "0.038",
+    "0.154",
+    "0.000",
+    "0.000",
+    "0.100",
+    "36.8"
+   ],
+   [
+    "Count-weighted polarity",
+    "0.058",
+    "0.227",
+    "0.000",
+    "0.000",
+    "0.200",
+    "36.8"
+   ],
+   [
+    "Additive combiner",
+    "0.118",
+    "0.107",
+    "0.033",
+    "0.100",
+    "0.167",
+    "17.6"
+   ],
+   [
+    "Novelty gate only (sν)",
+    "0.017",
+    "0.091",
+    "0.000",
+    "0.000",
+    "0.040",
+    "36.7"
+   ],
+   [
+    "Materiality gate only (sμ)",
+    "0.013",
+    "0.079",
+    "0.000",
+    "0.000",
+    "0.040",
+    "37.1"
+   ]
+  ],
+  "note": "The correlation between novelty and materiality across all events is 0.871: the two gates are close to the same variable, which is the single fact behind most of what follows."
+ },
+ "tab_cost": {
+  "caption": "What the validity screen costs and what it pre-empts. Panel A is the screen of Section 3.5; Panel B is the modelling programme of Section 4, whose every conclusion the screen anticipates. Counts are of fitted objects, derived from the stored result files rather than asserted.",
+  "header": [
+   "Stage",
+   "Unit counted",
+   "Count"
+  ],
+  "align": [
+   "l",
+   "l",
+   "r"
+  ],
+  "widths": [
+   0.32,
+   0.46,
+   0.22
+  ],
+  "rows": [
+   [
+    "Panel A: the validity screen"
+   ],
+   [
+    "Criterion regressions",
+    "one per attribute",
+    "2"
+   ],
+   [
+    "Decile profiles inspected",
+    "one per criterion pair",
+    "1"
+   ],
+   [
+    "Additional scoring-model calls",
+    "headlines rescored",
+    "0"
+   ],
+   [
+    "Total fitted objects",
+    "",
+    "3"
+   ],
+   [
+    "Panel B: the downstream programme"
+   ],
+   [
+    "Predictive regressions",
+    "aggregator x horizon",
+    "21"
+   ],
+   [
+    "Nested horse-race coefficients",
+    "term x horizon",
+    "12"
+   ],
+   [
+    "Exponent-grid evaluations",
+    "81 per horizon, 3 horizons",
+    "243"
+   ],
+   [
+    "Robustness re-estimations",
+    "variation x setting x horizon",
+    "27"
+   ],
+   [
+    "Walk-forward selective forecasters",
+    "5 variants x 7 years x 3 horizons",
+    "105"
+   ],
+   [
+    "Total fitted objects",
+    "",
+    "408"
+   ]
+  ],
+  "note": "Neither criterion in Panel A required a labelled example or an additional call to the scoring model."
+ },
+ "tab_univariate": {
+  "caption": "Predictive regressions of forward market-adjusted returns on each aggregator, one aggregator at a time. Regressors are standardised, so a coefficient reads as basis points of forward return per one standard deviation of signal. Standard errors are two-way clustered by date and symbol; horizons beyond one session use non-overlapping windows. Stars mark significance at the 10%, 5% and 1% levels.",
+  "header": [
+   "Aggregator",
+   "H=1 bps",
+   "t",
+   "H=5 bps",
+   "t",
+   "H=21 bps",
+   "t"
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.28,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12
+  ],
+  "rows": [
+   [
+    "Gated signal A",
+    "12.2***",
+    "4.14",
+    "17.8**",
+    "2.12",
+    "11.7",
+    "0.60"
+   ],
+   [
+    "Threshold-filtered polarity",
+    "10.0***",
+    "5.11",
+    "12.5*",
+    "1.82",
+    "10.4",
+    "0.46"
+   ],
+   [
+    "Mean polarity",
+    "9.3***",
+    "5.52",
+    "13.6**",
+    "2.03",
+    "18.5",
+    "0.87"
+   ],
+   [
+    "Count-weighted polarity",
+    "14.1***",
+    "4.78",
+    "17.1**",
+    "2.29",
+    "14.3",
+    "0.62"
+   ],
+   [
+    "Additive combiner",
+    "3.3***",
+    "3.82",
+    "3.9",
+    "0.71",
+    "-3.3",
+    "-0.16"
+   ],
+   [
+    "Novelty gate only (sν)",
+    "11.1***",
+    "4.71",
+    "15.8**",
+    "2.14",
+    "7.3",
+    "0.38"
+   ],
+   [
+    "Materiality gate only (sμ)",
+    "11.9***",
+    "4.53",
+    "15.1*",
+    "1.89",
+    "10.8",
+    "0.60"
+   ]
+  ],
+  "note": "Largest estimation sample: 48,260 symbol-sessions."
+ },
+ "tab_horserace": {
+  "caption": "The nested horse race. All four terms enter one regression, so each coefficient is the marginal contribution of that term given the others. Multiplicative gating predicts that the gated signal loads and absorbs the lower-order terms. Regressors are standardised; t-statistics are two-way clustered.",
+  "header": [
+   "Term",
+   "H=1 bps",
+   "t",
+   "H=5 bps",
+   "t",
+   "H=21 bps",
+   "t"
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.28,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12
+  ],
+  "rows": [
+   [
+    "Mean polarity",
+    "6.2",
+    "1.26",
+    "23.1*",
+    "1.92",
+    "85.5*",
+    "1.76"
+   ],
+   [
+    "Novelty gate only (sν)",
+    "-9.1",
+    "-1.30",
+    "-15.2",
+    "-0.63",
+    "-103.8*",
+    "-1.77"
+   ],
+   [
+    "Materiality gate only (sμ)",
+    "0.4",
+    "0.05",
+    "-36.2",
+    "-1.25",
+    "-64.7",
+    "-0.59"
+   ],
+   [
+    "Gated signal A",
+    "16.3",
+    "1.58",
+    "50.3",
+    "1.33",
+    "111.8",
+    "0.98"
+   ]
+  ],
+  "note": ""
+ },
+ "tab_gate": {
+  "caption": "Selective forecasting with and without the gated text signal. Precision is the realised up-rate of the most confident 10% of out-of-sample predictions, a fixed coverage that makes the variants comparable without reference to any tuned threshold; AURC is the area under the risk-coverage curve, for which lower is better. All figures are pooled over walk-forward test years.",
+  "header": [
+   "Feature set",
+   "H=1 Prec.",
+   "AURC",
+   "H=5 Prec.",
+   "AURC",
+   "H=21 Prec.",
+   "AURC"
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.28,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12,
+   0.12
+  ],
+  "rows": [
+   [
+    "Price + gated signal A",
+    "51.5",
+    "0.479",
+    "52.4",
+    "0.472",
+    "59.7",
+    "0.458"
+   ],
+   [
+    "Price + filtered polarity",
+    "51.4",
+    "0.482",
+    "53.8",
+    "0.472",
+    "59.1",
+    "0.460"
+   ],
+   [
+    "Price + mean polarity",
+    "51.2",
+    "0.484",
+    "53.4",
+    "0.470",
+    "59.3",
+    "0.459"
+   ],
+   [
+    "Price only",
+    "51.2",
+    "0.485",
+    "54.0",
+    "0.473",
+    "59.0",
+    "0.457"
+   ],
+   [
+    "Text only",
+    "52.8",
+    "0.479",
+    "55.3",
+    "0.468",
+    "58.9",
+    "0.462"
+   ],
+   [
+    "Always-up base rate",
+    "51.8%",
+    "",
+    "53.3%",
+    "",
+    "54.9%",
+    ""
+   ]
+  ],
+  "note": ""
+ },
+ "tab_gapgate": {
+  "caption": "Bootstrapped difference in precision at 10% coverage between the model carrying the gated signal and each comparison model, resampling whole dates so that cross-sectional correlation is preserved.",
+  "header": [
+   "Precision gap at 10% coverage",
+   "Estimate (pp)",
+   "95% CI",
+   "p"
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.38,
+   0.2,
+   0.26,
+   0.16
+  ],
+  "rows": [
+   [
+    "H = 1, vs. price only",
+    "+0.37",
+    "[-1.26, +1.96]",
+    "0.685"
+   ],
+   [
+    "H = 1, vs. filtered polarity",
+    "+0.07",
+    "[-1.70, +1.83]",
+    "0.938"
+   ],
+   [
+    "H = 1, vs. mean polarity",
+    "-0.05",
+    "[-2.23, +2.14]",
+    "0.948"
+   ],
+   [
+    "H = 5, vs. price only",
+    "-1.23",
+    "[-3.52, +1.13]",
+    "0.322"
+   ],
+   [
+    "H = 5, vs. filtered polarity",
+    "-0.83",
+    "[-3.10, +1.40]",
+    "0.482"
+   ],
+   [
+    "H = 5, vs. mean polarity",
+    "-0.65",
+    "[-2.96, +1.64]",
+    "0.587"
+   ],
+   [
+    "H = 21, vs. price only",
+    "+0.01",
+    "[-0.74, +0.72]",
+    "1.000"
+   ],
+   [
+    "H = 21, vs. filtered polarity",
+    "+0.37",
+    "[-0.23, +0.97]",
+    "0.252"
+   ],
+   [
+    "H = 21, vs. mean polarity",
+    "+0.28",
+    "[-0.32, +0.84]",
+    "0.345"
+   ]
+  ],
+  "note": ""
+ },
+ "tab_live": {
+  "caption": "Deployment evidence from the live forecast ledger. Every interval carries a nominal 90% level. Panel B reports the walk-forward conviction gate on the 54-name deployment universe, where precision is the realised up-rate of the fired high-conviction bucket and the base is the unconditional always-up rate.",
+  "header": [
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "align": [
+   "l",
+   "c",
+   "c",
+   "c",
+   "c"
+  ],
+  "widths": [
+   0.28,
+   0.19,
+   0.19,
+   0.19,
+   0.15
+  ],
+  "rows": [
+   [
+    "Panel A: interval coverage by horizon"
+   ],
+   [
+    "Horizon",
+    "Resolved forecasts",
+    "Nominal",
+    "Empirical",
+    ""
+   ],
+   [
+    "5 trading days",
+    "8",
+    "90.0%",
+    "100.0%",
+    ""
+   ],
+   [
+    "10 trading days",
+    "575",
+    "90.0%",
+    "69.2%",
+    ""
+   ],
+   [
+    "20 trading days",
+    "38",
+    "90.0%",
+    "86.8%",
+    ""
+   ],
+   [
+    "All",
+    "621",
+    "90.0%",
+    "70.7%",
+    ""
+   ],
+   [
+    "Panel B: walk-forward conviction gate by test year"
+   ],
+   [
+    "Test year",
+    "Fires",
+    "Fired precision",
+    "Always-up base",
+    "Edge (pp)"
+   ],
+   [
+    "2022",
+    "365",
+    "61.6%",
+    "54.0%",
+    "+7.6"
+   ],
+   [
+    "2023",
+    "290",
+    "68.3%",
+    "65.3%",
+    "+3.0"
+   ],
+   [
+    "2024",
+    "932",
+    "53.3%",
+    "55.7%",
+    "-2.4"
+   ],
+   [
+    "2025",
+    "822",
+    "69.0%",
+    "58.2%",
+    "+10.8"
+   ],
+   [
+    "2026",
+    "431",
+    "54.5%",
+    "47.1%",
+    "+7.4"
+   ],
+   [
+    "Pooled",
+    "2,840",
+    "60.6%",
+    "58.0%",
+    "+2.6"
+   ]
+  ],
+  "note": "The pooled base is the unconditional always-up rate over all out-of-sample rows, not the fires-weighted mean of the yearly bases (55.9%); the pooled edge is therefore the more conservative of the two comparisons."
+ }
+}

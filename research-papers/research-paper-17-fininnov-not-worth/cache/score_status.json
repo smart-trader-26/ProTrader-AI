@@ -1,0 +1,12 @@
+{
+ "scored_this_run": 75000,
+ "failed": 250,
+ "cached_before": 74299,
+ "total_target": 203726,
+ "elapsed_min": 63.1,
+ "headlines_per_min": 1189,
+ "workers": 4,
+ "gap_s": 0.3,
+ "throttles": 35,
+ "eta_min": 45.8
+}

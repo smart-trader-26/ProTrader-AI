@@ -1,0 +1,11 @@
+{
+ "symbols": 35,
+ "sessions": 3521,
+ "rows": 117312,
+ "rows_with_scored_news": 48261,
+ "headlines_scored": 134037,
+ "date_min": "2010-01-05",
+ "date_max": "2023-12-29",
+ "mu0": 0.4,
+ "median_headlines_per_covered_session": 2.0
+}

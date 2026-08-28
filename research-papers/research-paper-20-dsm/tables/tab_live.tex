@@ -1,0 +1,36 @@
+\begin{table}[htbp]
+\caption{Deployment evidence from the live forecast ledger. Every interval
+carries a nominal 90\% level. Panel B reports the walk-forward conviction gate on
+the 54-name deployment universe, where precision is the realised up-rate of the
+fired high-conviction bucket and the base is the unconditional always-up rate.}
+\label{tab:live}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\multicolumn{4}{@{}l}{\textit{Panel A: interval coverage by horizon}} \\
+Horizon & Resolved forecasts & Nominal & Empirical \\
+\midrule
+5 trading days  & 8   & 90.0\% & 100.0\% \\
+10 trading days & 575 & 90.0\% & 69.2\%  \\
+20 trading days & 38  & 90.0\% & 86.8\%  \\
+\textbf{All}    & \textbf{621} & \textbf{90.0\%} & \textbf{70.7\%} \\
+\botrule
+\end{tabular}
+
+\vspace{0.6em}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\multicolumn{5}{@{}l}{\textit{Panel B: walk-forward conviction gate by test year}} \\
+Test year & Fires & Fired precision & Always-up base & Edge (pp) \\
+\midrule
+2022 & 365 & 61.6\% & 54.0\% & $+7.6$ \\
+2023 & 290 & 68.3\% & 65.3\% & $+3.0$ \\
+2024 & 932 & 53.3\% & 55.7\% & $-2.4$ \\
+2025 & 822 & 69.0\% & 58.2\% & $+10.8$ \\
+2026 & 431 & 54.5\% & 47.1\% & $+7.4$ \\
+\textbf{Pooled} & \textbf{2{,}840} & \textbf{60.6\%} & \textbf{58.0\%} & \textbf{$+2.6$} \\
+\botrule
+\end{tabular}
+\footnotetext{The pooled base is the unconditional always-up rate over all
+out-of-sample rows, not the fires-weighted mean of the yearly bases (55.9\%); the
+pooled edge is therefore the more conservative of the two comparisons.}
+\end{table}

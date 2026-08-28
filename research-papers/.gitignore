@@ -1,0 +1,14 @@
+# LaTeX build artifacts
+*.aux
+*.out
+*.bbl
+*.blg
+*.spl
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# regenerable scoring caches (parquet already ignored repo-wide)
+# kept on disk - papers 19 and 20 read from it - but not tracked
+research-paper-17-fininnov-not-worth/cache/scores.db

@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\caption{The two bodies of evidence. The validation panel answers whether the
+decomposition carries information; the deployment ledger answers whether a
+calibrated selective forecaster behaves as designed in production. They are drawn
+from different markets and are never used to support claims about each other.}
+\label{tab:data}
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & \textbf{Validation panel} & \textbf{Deployment ledger} \\
+\midrule
+Market & US listed equities & NSE India large caps \\
+Source & FNSPID headline corpus & Live append-only forecast ledger \\
+Entities & 35 operating companies & 7 names (live), 54 (walk-forward) \\
+Span & 2010-01-05 to 2023-12-29 & 19 Apr 2026 to 12 Jun 2026 \\
+Sessions & 3,521 & -- \\
+Symbol-sessions & 117,312 & -- \\
+\ldots with scored news & 48,261 & -- \\
+Headlines scored & 134,037 & -- \\
+Resolved forecasts & -- & 621 \\
+Question answered & Does gating carry information? & Is the deployed system honest? \\
+\botrule
+\end{tabular}
+\end{table}

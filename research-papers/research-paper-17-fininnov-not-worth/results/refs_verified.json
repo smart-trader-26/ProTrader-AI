@@ -1,0 +1,491 @@
+[
+ {
+  "key": "tetlock2007",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Giving Content to Investor Sentiment: The Role of Media in the Stock Market",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2007",
+  "doi": "10.1111/j.1540-6261.2007.01232.x",
+  "volume": "62",
+  "page": "1139-1168",
+  "matched_via": "doi"
+ },
+ {
+  "key": "tetlock2008",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "More Than Words: Quantifying Language to Measure Firms' Fundamentals",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2008",
+  "doi": "10.1111/j.1540-6261.2008.01362.x",
+  "volume": "63",
+  "page": "1437-1467",
+  "matched_via": "doi"
+ },
+ {
+  "key": "tetlock2011",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "All the News That's Fit to Reprint: Do Investors React to Stale Information?",
+  "crossref_journal": "Review of Financial Studies",
+  "crossref_year": "2011",
+  "doi": "10.1093/rfs/hhq141",
+  "volume": "24",
+  "page": "1481-1512",
+  "matched_via": "doi"
+ },
+ {
+  "key": "antweiler2004",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Is All That Talk Just Noise? The Information Content of Internet Stock Message Boards",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2004",
+  "doi": "10.1111/j.1540-6261.2004.00662.x",
+  "volume": "59",
+  "page": "1259-1294",
+  "matched_via": "doi"
+ },
+ {
+  "key": "loughran2011",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10\u2010Ks",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2011",
+  "doi": "10.1111/j.1540-6261.2010.01625.x",
+  "volume": "66",
+  "page": "35-65",
+  "matched_via": "doi"
+ },
+ {
+  "key": "loughran2016",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Textual Analysis in Accounting and Finance: A Survey",
+  "crossref_journal": "Journal of Accounting Research",
+  "crossref_year": "2016",
+  "doi": "10.1111/1475-679x.12123",
+  "volume": "54",
+  "page": "1187-1230",
+  "matched_via": "doi"
+ },
+ {
+  "key": "boudoukh2019",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Information, Trading, and Volatility: Evidence from Firm-Specific News",
+  "crossref_journal": "The Review of Financial Studies",
+  "crossref_year": "2019",
+  "doi": "10.1093/rfs/hhy083",
+  "volume": "32",
+  "page": "992-1033",
+  "matched_via": "doi"
+ },
+ {
+  "key": "ke2019",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Predicting Returns with Text Data",
+  "crossref_journal": "",
+  "crossref_year": "2019",
+  "doi": "10.2139/ssrn.3389884",
+  "volume": null,
+  "page": null,
+  "matched_via": "doi"
+ },
+ {
+  "key": "garcia2013",
+  "verdict": "MISMATCH",
+  "problems": [
+   "first author 'Garcia' vs crossref 'GARC\u00cdA'"
+  ],
+  "crossref_title": "Sentiment during Recessions",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2013",
+  "doi": "10.1111/jofi.12027",
+  "volume": "68",
+  "page": "1267-1300",
+  "matched_via": "doi"
+ },
+ {
+  "key": "dellavigna2009",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Investor Inattention and Friday Earnings Announcements",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "2009",
+  "doi": "10.1111/j.1540-6261.2009.01447.x",
+  "volume": "64",
+  "page": "709-749",
+  "matched_via": "doi"
+ },
+ {
+  "key": "dang2015",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Commonality in news around the world",
+  "crossref_journal": "Journal of Financial Economics",
+  "crossref_year": "2015",
+  "doi": "10.1016/j.jfineco.2014.11.007",
+  "volume": "116",
+  "page": "82-110",
+  "matched_via": "doi"
+ },
+ {
+  "key": "kelly2021",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Text Selection",
+  "crossref_journal": "Journal of Business &amp; Economic Statistics",
+  "crossref_year": "2021",
+  "doi": "10.1080/07350015.2021.1947843",
+  "volume": "39",
+  "page": "859-879",
+  "matched_via": "doi"
+ },
+ {
+  "key": "hillert2014",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Media Makes Momentum",
+  "crossref_journal": "Review of Financial Studies",
+  "crossref_year": "2014",
+  "doi": "10.1093/rfs/hhu061",
+  "volume": "27",
+  "page": "3467-3501",
+  "matched_via": "doi"
+ },
+ {
+  "key": "brown2020",
+  "verdict": "MANUAL",
+  "title": "Language models are few-shot learners",
+  "type": "inproceedings"
+ },
+ {
+  "key": "huang2023",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "<scp>FinBERT</scp>: A Large Language Model for Extracting Information from Financial Text*",
+  "crossref_journal": "Contemporary Accounting Research",
+  "crossref_year": "2023",
+  "doi": "10.1111/1911-3846.12832",
+  "volume": "40",
+  "page": "806-841",
+  "matched_via": "doi"
+ },
+ {
+  "key": "lopezlira2025",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Can ChatGPT Forecast Stock Price Movements? Return Predictability and Large Language Models",
+  "crossref_journal": "",
+  "crossref_year": "2023",
+  "doi": "10.2139/ssrn.4412788",
+  "volume": null,
+  "page": null,
+  "matched_via": "doi"
+ },
+ {
+  "key": "steyvers2025",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "What large language models know and what people think they know",
+  "crossref_journal": "Nature Machine Intelligence",
+  "crossref_year": "2025",
+  "doi": "10.1038/s42256-024-00976-7",
+  "volume": "7",
+  "page": "221-231",
+  "matched_via": "doi"
+ },
+ {
+  "key": "jha2024",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "ChatGPT and Corporate Policies",
+  "crossref_journal": "",
+  "crossref_year": "2024",
+  "doi": "10.3386/w32161",
+  "volume": null,
+  "page": null,
+  "matched_via": "doi"
+ },
+ {
+  "key": "guo2017",
+  "verdict": "MANUAL",
+  "title": "On calibration of modern neural networks",
+  "type": "inproceedings"
+ },
+ {
+  "key": "platt1999",
+  "verdict": "MANUAL",
+  "title": "Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods",
+  "type": "incollection"
+ },
+ {
+  "key": "zadrozny2002",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Transforming classifier scores into accurate multiclass probability estimates",
+  "crossref_journal": "Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining",
+  "crossref_year": "2002",
+  "doi": "10.1145/775047.775151",
+  "volume": null,
+  "page": "694-699",
+  "matched_via": "doi"
+ },
+ {
+  "key": "brier1950",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "VERIFICATION OF FORECASTS EXPRESSED IN TERMS OF PROBABILITY",
+  "crossref_journal": "Monthly Weather Review",
+  "crossref_year": "1950",
+  "doi": "10.1175/1520-0493(1950)078<0001:vofeit>2.0.co;2",
+  "volume": "78",
+  "page": "1-3",
+  "matched_via": "doi"
+ },
+ {
+  "key": "wolpert1992",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Stacked generalization",
+  "crossref_journal": "Neural Networks",
+  "crossref_year": "1992",
+  "doi": "10.1016/s0893-6080(05)80023-1",
+  "volume": "5",
+  "page": "241-259",
+  "matched_via": "doi"
+ },
+ {
+  "key": "chow1970",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "On optimum recognition error and reject tradeoff",
+  "crossref_journal": "IEEE Transactions on Information Theory",
+  "crossref_year": "1970",
+  "doi": "10.1109/tit.1970.1054406",
+  "volume": "16",
+  "page": "41-46",
+  "matched_via": "doi"
+ },
+ {
+  "key": "geifman2017",
+  "verdict": "MANUAL",
+  "title": "Selective classification for deep neural networks",
+  "type": "inproceedings"
+ },
+ {
+  "key": "elyaniv2010",
+  "verdict": "NOT FOUND",
+  "title": "On the foundations of noise-free selective classification"
+ },
+ {
+  "key": "angelopoulos2023",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Conformal Prediction: A Gentle Introduction",
+  "crossref_journal": "Foundations and Trends\u00ae in Machine Learning",
+  "crossref_year": "2023",
+  "doi": "10.1561/2200000101",
+  "volume": "16",
+  "page": "494-591",
+  "matched_via": "doi"
+ },
+ {
+  "key": "debreu1960",
+  "verdict": "MANUAL",
+  "title": "Topological methods in cardinal utility theory",
+  "type": "incollection"
+ },
+ {
+  "key": "gorman1968",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "The Structure of Utility Functions",
+  "crossref_journal": "The Review of Economic Studies",
+  "crossref_year": "1968",
+  "doi": "10.2307/2296766",
+  "volume": "35",
+  "page": "367",
+  "matched_via": "doi"
+ },
+ {
+  "key": "krantz1971",
+  "verdict": "MANUAL",
+  "title": "Foundations of Measurement, Volume I: Additive and Polynomial Representations",
+  "type": "book"
+ },
+ {
+  "key": "aczel1966",
+  "verdict": "MANUAL",
+  "title": "Lectures on Functional Equations and Their Applications",
+  "type": "book"
+ },
+ {
+  "key": "keeney1976",
+  "verdict": "MANUAL",
+  "title": "Decisions with Multiple Objectives: Preferences and Value Tradeoffs",
+  "type": "book"
+ },
+ {
+  "key": "fama1970",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Efficient Capital Markets: A Review of Theory and Empirical Work",
+  "crossref_journal": "The Journal of Finance",
+  "crossref_year": "1970",
+  "doi": "10.2307/2325486",
+  "volume": "25",
+  "page": "383",
+  "matched_via": "doi"
+ },
+ {
+  "key": "famamacbeth1973",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Risk, Return, and Equilibrium: Empirical Tests",
+  "crossref_journal": "Journal of Political Economy",
+  "crossref_year": "1973",
+  "doi": "10.1086/260061",
+  "volume": "81",
+  "page": "607-636",
+  "matched_via": "doi"
+ },
+ {
+  "key": "neweywest1987",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix",
+  "crossref_journal": "Econometrica",
+  "crossref_year": "1987",
+  "doi": "10.2307/1913610",
+  "volume": "55",
+  "page": "703",
+  "matched_via": "doi"
+ },
+ {
+  "key": "cameron2011",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Robust Inference With Multiway Clustering",
+  "crossref_journal": "Journal of Business &amp; Economic Statistics",
+  "crossref_year": "2011",
+  "doi": "10.1198/jbes.2010.07136",
+  "volume": "29",
+  "page": "238-249",
+  "matched_via": "doi"
+ },
+ {
+  "key": "gu2020",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Empirical Asset Pricing via Machine Learning",
+  "crossref_journal": "The Review of Financial Studies",
+  "crossref_year": "2020",
+  "doi": "10.1093/rfs/hhaa009",
+  "volume": "33",
+  "page": "2223-2273",
+  "matched_via": "doi"
+ },
+ {
+  "key": "bailey2017",
+  "verdict": "MISMATCH",
+  "problems": [
+   "year 2017 vs crossref 2016"
+  ],
+  "crossref_title": "The probability of backtest overfitting",
+  "crossref_journal": "The Journal of Computational Finance",
+  "crossref_year": "2016",
+  "doi": "10.21314/jcf.2016.322",
+  "volume": null,
+  "page": null,
+  "matched_via": "doi"
+ },
+ {
+  "key": "harvey2016",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "\u2026 and the Cross-Section of Expected Returns",
+  "crossref_journal": "Review of Financial Studies",
+  "crossref_year": "2016",
+  "doi": "10.1093/rfs/hhv059",
+  "volume": "29",
+  "page": "5-68",
+  "matched_via": "doi"
+ },
+ {
+  "key": "romano2005",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Stepwise Multiple Testing as Formalized Data Snooping",
+  "crossref_journal": "Econometrica",
+  "crossref_year": "2005",
+  "doi": "10.1111/j.1468-0262.2005.00615.x",
+  "volume": "73",
+  "page": "1237-1282",
+  "matched_via": "doi"
+ },
+ {
+  "key": "parkinson1980",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "The Extreme Value Method for Estimating the Variance of the Rate of Return",
+  "crossref_journal": "The Journal of Business",
+  "crossref_year": "1980",
+  "doi": "10.1086/296071",
+  "volume": "53",
+  "page": "61",
+  "matched_via": "doi"
+ },
+ {
+  "key": "diebold1995",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Comparing Predictive Accuracy",
+  "crossref_journal": "Journal of Business &amp; Economic Statistics",
+  "crossref_year": "1995",
+  "doi": "10.1080/07350015.1995.10524599",
+  "volume": "13",
+  "page": "253-263",
+  "matched_via": "doi"
+ },
+ {
+  "key": "shrout1979",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Intraclass correlations: Uses in assessing rater reliability.",
+  "crossref_journal": "Psychological Bulletin",
+  "crossref_year": "1979",
+  "doi": "10.1037/0033-2909.86.2.420",
+  "volume": "86",
+  "page": "420-428",
+  "matched_via": "doi"
+ },
+ {
+  "key": "dong2024",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "FNSPID: A Comprehensive Financial News Dataset in Time Series",
+  "crossref_journal": "Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining",
+  "crossref_year": "2024",
+  "doi": "10.1145/3637528.3671629",
+  "volume": null,
+  "page": "4918-4927",
+  "matched_via": "doi"
+ },
+ {
+  "key": "kupiec1995",
+  "verdict": "OK",
+  "problems": [],
+  "crossref_title": "Techniques for Verifying the Accuracy of Risk Measurement Models",
+  "crossref_journal": "The Journal of Derivatives",
+  "crossref_year": "1995",
+  "doi": "10.3905/jod.1995.407942",
+  "volume": "3",
+  "page": "73-84",
+  "matched_via": "doi"
+ }
+]

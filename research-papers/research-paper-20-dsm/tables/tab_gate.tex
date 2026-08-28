@@ -1,0 +1,41 @@
+\begin{table}[htbp]
+\caption{Selective forecasting with and without the gated text signal. Precision
+is the realised up-rate of the most confident 10\% of out-of-sample predictions,
+a fixed coverage that makes the variants comparable without reference to any
+tuned threshold; AURC is the area under the risk--coverage curve, for which lower
+is better. All figures are pooled over walk-forward test years. The lower panel
+bootstraps the precision gap by resampling whole dates.}
+\label{tab:gate}
+\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{$H=1$} & \multicolumn{2}{c}{$H=5$} & \multicolumn{2}{c}{$H=21$} \\
+Feature set & Prec. & AURC & Prec. & AURC & Prec. & AURC \\
+\midrule
+Price $+$ gated signal $A$ & 51.5 & 0.479 & 52.4 & 0.472 & 59.7 & 0.458 \\
+Price $+$ filtered polarity & 51.4 & 0.482 & 53.8 & 0.472 & 59.1 & 0.460 \\
+Price $+$ mean polarity & 51.2 & 0.484 & 53.4 & 0.470 & 59.3 & 0.459 \\
+Price only & 51.2 & 0.485 & 54.0 & 0.473 & 59.0 & 0.457 \\
+Text only & 52.8 & 0.479 & 55.3 & 0.468 & 58.9 & 0.462 \\
+\midrule
+Always-up base rate & \multicolumn{2}{c}{51.8\%} & \multicolumn{2}{c}{53.3\%} & \multicolumn{2}{c}{54.9\%} \\
+\botrule
+\end{tabular}
+
+\vspace{0.6em}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Precision gap at 10\% coverage & Estimate (pp) & 95\% CI & $p$ \\
+\midrule
+$H=1$, vs.\ price only & +0.37 & [-1.26, +1.96] & 0.685 \\
+$H=1$, vs.\ filtered polarity & +0.07 & [-1.70, +1.83] & 0.938 \\
+$H=1$, vs.\ mean polarity & -0.05 & [-2.23, +2.14] & 0.948 \\
+$H=5$, vs.\ price only & -1.23 & [-3.52, +1.13] & 0.322 \\
+$H=5$, vs.\ filtered polarity & -0.83 & [-3.10, +1.40] & 0.482 \\
+$H=5$, vs.\ mean polarity & -0.65 & [-2.96, +1.64] & 0.587 \\
+$H=21$, vs.\ price only & +0.01 & [-0.74, +0.72] & 1.000 \\
+$H=21$, vs.\ filtered polarity & +0.37 & [-0.23, +0.97] & 0.252 \\
+$H=21$, vs.\ mean polarity & +0.28 & [-0.32, +0.84] & 0.345 \\
+\botrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,22 @@
+{
+ "GridPerHorizon": 81,
+ "GridTotal": 243,
+ "GridHorizons": 3,
+ "UnivariateFits": 21,
+ "HorseRaceCoefs": 12,
+ "RobustnessFits": 27,
+ "GateFits": 105,
+ "GateYears": 7,
+ "GateVariants": 5,
+ "GateHorizons": 3,
+ "GateYearFirst": "2014",
+ "GateYearLast": "2020",
+ "DownstreamTotal": 408,
+ "ScreenRegressions": 2,
+ "ScreenProfiles": 1,
+ "ScreenModelCalls": 0,
+ "ScreenTotal": 3,
+ "ScoredForScreen": 133933,
+ "HeadlinesScored": 134037,
+ "PriorDocMedian": 38
+}
