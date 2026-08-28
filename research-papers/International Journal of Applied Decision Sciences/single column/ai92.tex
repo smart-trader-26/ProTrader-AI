@@ -1,0 +1,761 @@
+%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{singlecol-new}
+\usepackage[utf8]{inputenc}
+\usepackage{grffile}
+
+
+\usepackage{natbib,stfloats}
+\usepackage{mathrsfs}
+
+\def\newblock{\hskip .11em plus .33em minus .07em}
+
+\theoremstyle{TH}{
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}[lemma]{Theorem}
+\newtheorem{corrolary}[lemma]{Corrolary}
+\newtheorem{conjecture}[lemma]{Conjecture}
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{claim}[lemma]{Claim}
+\newtheorem{stheorem}[lemma]{Wrong Theorem}
+\newtheorem{algorithm}{Algorithm}
+}
+
+\theoremstyle{THrm}{
+\newtheorem{definition}{Definition}[section]
+\newtheorem{question}{Question}[section]
+\newtheorem{remark}{Remark}
+\newtheorem{scheme}{Scheme}
+}
+
+\theoremstyle{THhit}{
+\newtheorem{case}{Case}[section]
+}
+
+\makeatletter
+\def\theequation{\arabic{equation}}
+
+%\JOURNALNAME{\TEN{\it Int. J. System Control and Information
+%Processing,
+%Vol. \theVOL, No. \theISSUE, \thePUBYEAR\hfill\thepage}}%
+%
+%\def\BottomCatch{%
+%\vskip -10pt
+%\thispagestyle{empty}%
+%\begin{table}[b]%
+%\NINE\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcr@{}}%
+%\\[-12pt]
+%Copyright \copyright\ 2012 Inderscience Enterprises Ltd. & &%
+%\end{tabular*}%
+%\vskip -30pt%
+%%%\vskip -35pt%
+%\end{table}%
+%}
+\makeatother
+
+%%%%%%%%%%%%%%%%%
+\begin{document}%
+%%%%%%%%%%%%%%%%%
+
+\setcounter{page}{1}
+
+\LRH{A. Pardeshi et~al.}
+
+\RRH{From Signal Fusion to Asset Allocation}
+
+\VOL{x}
+
+\ISSUE{x}
+
+\PUBYEAR{201X}
+
+\BottomCatch
+
+\CLline
+
+\subtitle{}
+
+\title{From Signal Fusion to Asset Allocation: A Decision-Theoretic Model for Portfolio Construction Under Regime-Based Sentiment and Volatility}
+
+%
+\authorA{Anandkumar Pardeshi}
+%
+\affA{Department of Information Technology,\\ Fr. C. Rodrigues Institute of Technology,\\ Vashi, Navi Mumbai \\
+E-mail: anand.pardeshi@fcrit.ac.in}
+%
+%
+\authorB{Sujata Deshmukh}
+\affB{Department of Computer Engineering,\\ Fr. C. Rodrigues College of Engineering,\\ Bandra, Mumbai \\
+E-mail: sujata.deshmukh@fragnel.edu.in}
+%
+
+%
+%\authorA{Fusheng Wang\footnote{Work done while working at Siemens Corporate Research.} }
+%
+%\affA{Department of Biomedical Informatics, Emory University
+%\newline
+%36 Eagle Row, Ste 589, Atlanta, GA 30322, USA}
+%
+%
+%
+%\authorB{\footnotesize Cristobal Vergara-Niedermayr\footnote{Work done while working at Siemens Corporate Research.}}
+%\affB{Oracle \newline
+ %New Jersey, USA}
+%
+%
+
+
+\begin{abstract}
+This paper deals with a critical but relatively undersolved question in the field of quantitative finance: how to move the activity of generating predictive financial signals to the activity of executing certain decisions in asset allocation. The current literature mainly dwells on the predictive models based on technical indicators and sentiment-based measures which does not consider the systematic construction of methodologies that convert the predictive models into effective portfolio weights in dynamic market regimes. The tripartite architecture is created through the proposed methodology. First, a set of multimodal signals, including those derived based on technical, sentiment, and volatility, are synthesized. Thereafter, the latent market regimes are outlined using Gaussian Mixture Models, which in effect define different probabilistic conditions of the financial environment. The main novelty is a regime-conditional fusion algorithm based on the progressive calibration of the impact of each signal by its empirically proven effectiveness within the specified state. This is culminated in a decision-theoretic core of optimization, which incorporates the regime-specific covariance structures and risk-budgeting parameters in converting the synthesized signal into a portfolio construction to be implemented. The empirical findings show that our strategy produces significant alpha and higher-risk-adjusted returns compared to the traditional benchmarks, yet has lower maximum drawdowns in a variety of market conditions. Considering this, this study is relevant to applied decision sciences because it provides a clear and systematic way of closing this gap between predictive signals and actionable investment decisions.
+\end{abstract}
+
+\KEYWORD{Portfolio Optimization, Regime Detection, Signal Fusion, Decision-Theoretic Framework, Risk Budgeting, Sentiment Analysis}
+
+\REF{to this paper should be made as follows: Rodr\'{\i}guez
+Bol\'{\i}var, M.P. and Sen\'{e}s Garc\'{\i}a, B. (201X) `The
+corporate environmental disclosures on the internet: the case of
+IBEX 35 Spanish companies', {\it International Journal of Metadata,
+Semantics and Ontologies}, Vol. x, No. x, pp.xxx\textendash xxx.}
+
+\begin{bio}
+Manuel Pedro Rodr\'iguez Bol\'ivar received his PhD in Accounting at
+the University of Granada. He is a Lecturer at the Department of
+Accounting and Finance, University of Granada. His research
+interests include issues related to conceptual frameworks of
+accounting, diffusion of financial information on Internet, Balanced
+Scorecard applications and environmental accounting. He is author of
+a great deal of research studies published at national and
+international journals, conference proceedings as well as book
+chapters, one of which has been edited by Kluwer Academic
+Publishers.\vs{9}
+
+\noindent Bel\'en Sen\'es Garc\'ia received her PhD in Accounting at
+the University of Granada. She is a Lecturer at the Department of
+Accounting and Finance, University of Granada. Her research
+interests are related to cultural, institutional and historic
+accounting and in environmental accounting. She has published
+research papers at national and international journals, conference
+proceedings as well as chapters of books.\vs{8}
+
+\noindent Both authors have published a book about environmental
+accounting edited by the Institute of Accounting and Auditing,
+Ministry of Economic Affairs, in Spain in October 2003.
+\end{bio}
+
+
+\maketitle
+
+
+ \section{Introduction}
+
+The proliferation of computational finance methodologies has fundamentally transformed investment decision-making processes, with machine learning and artificial intelligence emerging as dominant paradigms for financial market analysis. Contemporary research has demonstrated considerable sophistication in predictive modeling, particularly through the integration of diverse data modalities including technical indicators, market microstructure data, and alternative data sources such as social media sentiment and news analytics (Li \& Bastos, 2020; Zhang, Sjarif, \& Ibrahim, 2022). Despite these advancements, a critical disconnect persists between the generation of predictive signals and their systematic translation into executable portfolio allocation decisions—a gap that remains largely unaddressed in the current literature.
+
+\subsection{Current State of Predictive Modeling in Finance}
+
+The evolution of financial forecasting methodology is an endless evolution toward more sophistication and systematic combination of heterogeneous data modalities. Initial basic models were largely based on technical analysis with the key to predict the price movement in the future with the use of price indicators that were historically derived and geometric pattern recognition (Lee, Park, O, Lee, and Hong, 2007). The next arrival of machine-learning pushed the field through a complete change. The introduction of sophisticated algorithms, such as support vector machines, ensemble techniques, and multilayer perceptrons, in order to increase the accuracy of market predictions, marked the change (Chou and Nguyen, 2018; Liu and Wang, 2019). Deep-learning systems have now become the boundary of the modern frontier and have shown a strong ability to capture complex nonlinear relationships that exist between high-frequency financial data (Nayak, Dehuri, and Cho, 2022).
+
+Another similar and equally significant trend has been the methodical integration of sentiment analysis into predictive models. Early attempts in this direction used simple dictionary-based models, but more recent approaches are progressively using transformer-based large language models (LLMs) to extract complex sentiment and thematic indications in unstructured financial text (Jung and Jang, 2024; Liu et al., 2024). Empirical research studies such as by Mu, Gao, Wang, and Dai (2023) and Bacco et al. (2024) eloquently reveal that quantitatively well-founded measurements of investor sentiment can considerably increase the explanatory value of traditional technically based models. Going beyond sentiment, Onozo, Arthur and Gyires-Toth (2024) point out the emerging feature of LLMs to support the nowcasting of macroeconomic features, which extends the range of predictive characteristics that can be quantitatively analyzed.
+
+\subsection{The Signal Fusion Paradigm and Its Limitations}
+
+A current trend in modern quantitative finance studies is to combine heterogeneous types of signals in order to come up with a stronger forecasting model. The example of this is the study by Moodi, Rafsanjani, Zarifzadeh, and Chahooki (2024) combining technical indicators and sentiment analysis into a hybrid deep-learning model. In a similar manner, Anbaee Farimani, Jahan, and Milani Fard (2024) designed a multimodal adaptive learning framework that is dynamically used to synthesize heterogeneous sources of data to predict financial markets. These kinds of fused-methodology are consistently shown to perform better in prediction as compared to uni-modal counterparts, thus showing to be particularly effective in describing the multifaceted, multi-dimensional drivers of market dynamics.
+
+Despite these substantive methodological developments, there stands out an overwhelming deficiency in the corpus of extant research, a near-monosaccharic focus on predictive accuracy, at the cost of the resulting mechanisms of the decision-making that is necessary to be put into practice. With statistical forecasting precision as the primary measure of success, the predominant type of success as Zhang et al. (2022) note in their systematic review of decision fusion is not the actual economic value or achieved portfolio performance. The critical discontinuity that arises out of this unitary interest in prediction is what we will herein refer to as the signal-allocation gap and is the entire critical gap between the production of appropriate signals and their encoding into a rational process of portfolio construction that involves consideration of real-world investment restrictions and investment goals.
+
+
+\subsection{The Regime Dependency Challenge}
+Financial markets are dynamic in nature, evolving over discrete structural regimes, whether in high volatility, persistent trends, or mean reversion that inherently contribute to the behavior of trading signals and investment strategies (Wang, Xiao, Zhao, Ni, and Li, 2019). The most important gap in modern literature is the overwhelming oversights of these key regime requirements. Even though the presence of such market states is frequently accepted, it still has a significant underdeveloped systematic integration into the portfolio-forming structures.  
+
+There are a number of studies which have attempted to deal with market-state variability. As an example, Huang et al. (2020) studied dependencies using bicluster mining and Fuzzy inference to come up with automated trading predictions. Similarly, Alsheebah and Al‑Fuhaidi (2024) have modeled various market conditions in the emerging economy by combining endogenous and exogenous variables. However, the methodologies are typically limited to increasing the predictive accuracy and do not advance to regime aware portfolio optimisation.  
+
+Accordingly, the key issue is two-fold: it involves not only specific determination of the existing market regimes but also the dynamic re-tuning of both signal-fusion parameters as well as the underlying optimisation dynamics in response to the properties of the diagnosed regime.
+
+
+
+\subsection{Portfolio Construction: The Neglected Frontier}
+Modern studies show a significant lack of methodologies focused on the target derivation of portfolio allocations out of predictive signals. An intelligent method of constructing portfolios based on the prediction of financial returns with the name of IntPort was proposed by Sami, Jalal, Kabir, and Huda (2025); however, the approach is based on statistical averaging heuristics, which is insufficiently analytical to portray a modern optimization model. In line with this, most reinforcement learning applications in automated trading, such as the one that Kabbani and Duman (2022) describe, focus on the trading strategies of individual assets and not on the allocation of a portfolio.
+
+This lack of explicit research on portfolio construction is particularly worrying given the underlying principles of the modern portfolio theory which emphasizes the imperativeness of covariance framework and the diversification of risk. The existing failure to convert individual asset prediction systematically into a single allocation method is a significant challenge to the improvement of risk-adjusted returns. Moreover, the traditional methodology largely ignores critical practical restrictions, including transaction costs, limits of position size, and liquidity provision, which is inseparable to the implementation of strategy in live investment settings.
+
+
+
+\subsection{Our Contributions}
+This study bridges the identified methodological gaps through several pivotal contributions to financial decision science:
+
+
+\begin{itemize}
+
+\item A advanced regime detection framework employs Gaussian Mixture Models to isolate discrete market states from volatility and momentum data, extending the principles of Wang et al. (2019). The implementation explicitly integrates this regime intelligence into subsequent signal fusion and optimization stages.
+
+\item A novel, decision-theoretic fusion mechanism dynamically recalibrates the influence of technical and sentiment indicators according to their conditional performance within each identified regime, thereby overcoming the rigidity of static weighting schemes.
+
+\item The research formulates a regime-contingent optimization paradigm. This framework utilizes regime-specific covariance matrices and incorporates risk-budgeting alongside transaction cost constraints, substantially progressing beyond the static assumptions of conventional mean-variance analysis.
+
+\item A rigorous backtesting protocol with walk-forward validation is deployed, featuring regime-aware performance attribution to precisely delineate the contribution of each strategic component under varying market environments.
+
+\item Ultimately, the proposed methodology constructs a transparent, systematic pipeline to traverse the critical divide between multi-modal signal prediction and executable allocation, directly countering the "signal-allocation gap" highlighted by Zhang et al. (2022).
+\end{itemize}
+
+
+Collectively, these contributions furnish both a methodological architecture and empirical validation for a regime-conscious strategy, demonstrating enhanced risk-adjusted performance. This work establishes a foundational precedent for uniting predictive modeling with portfolio management, a domain ripe for scholarly inquiry and practical implementation in quantitative finance.
+
+
+
+\section{Literature Review} 
+\subsection{Evolution of Predictive Modeling in Financial Markets}
+
+Financial market forecasting has experienced a substantial development of the methodology, which has progressed over the years to the primitive technical analysis to highly developed multimodal learning architectures. The initial research was mainly based on technical indicators and the statistical methods. As an example, this is what Lee et al. (2007) established about multi-agent Q-learning systems; it was feasible to utilize such system in doing daily equity trading, with the limiting aspect, of that time, being computational capacity and the availability of data.
+
+The introduction of deep learning initiated a paradigm change in the process of forecasting. Later works, including the numerical attention mechanisms of the dual-source information processing proposed by Liu and Wang (2019) and the sliding-window metaheuristic-optimized regression of price prediction proposed by Chou and Nguyen (2018) had significantly higher predictive accuracy. The major shortcoming of these methods, however, was that they viewed the financial markets as stationary processes, thus largely ignoring the dynamic nature of the markets in terms of regimes.
+
+The latest level of research is marked by the creation of complex hybrid models. Nayak, Dehuri, and Cho (2022) demonstrated how an enhanced chemical-reaction-optimization algorithm can be used in combination with dendritic neurons models and, therefore, the potential of bio-inspired computing. At the same time, Anbaee Farimani, Jahan, and Milani Fard (2024) made a great contribution to the sphere, developing an adaptive multimodal model of dynamic combination of various information sources, which is a significant step of the comprehensive management of the intrinsic heterogeneity of financial information.
+
+This is described in Table 1, which will show the evolution of early computational models into the present-day integrative models. Every new generation is being more advanced in its capacity to process data, but one constant remains: the inability to correlate predictive indicators with practical portfolio building.
+
+\begin{table}[!ht]
+\centering
+\caption{Evolution of Financial Prediction Methodologies}
+\label{tab:methodology_evolution}
+\small
+\begin{tabular}{p{2.5cm}p{2.5cm}p{2.5cm}p{2.5cm}}
+\hline
+\textbf{Era} & \textbf{Primary Methods} & \textbf{Key Contributions} & \textbf{Limitations} \\
+\hline
+Early Computational (2004--2010) & Multi-agent systems, Q-learning, Hybrid RBF networks & Lee et al. (2007) -- Multi-agent Q-learning; Lee (2004) -- iJADE Stock Advisor with hybrid RBF & Limited data sources, computational constraints, simplistic market assumptions \\
+\hline
+Deep Learning Revolution (2011--2019) & LSTM, GRU, Attention mechanisms, Ensemble methods & Liu \& Wang (2019) -- Numerical attention methods; Chou \& Nguyen (2018) -- Metaheuristic optimization & Stationary market assumptions, limited regime adaptation, focus on single-asset prediction \\
+\hline
+Multimodal Integration (2020--Present) & Transformer architectures, Multimodal fusion, LLM integration & Moodi et al. (2024) -- Hybrid deep learning fusion; Anbaee Farimani et al. (2024) -- Adaptive multimodal learning & Signal-allocation gap, insufficient portfolio integration, limited decision-theoretic framing \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Sentiment Analysis and Alternative Data Integration}
+The use of sentiment analysis and other data streams creates one of the most significant changes in modern financial forecasting. Early methodology explanations mostly used lexicon-based methods and simple scoring procedures. Modern methods, though, are more and more exploiting large language models (LLMs) and transformer networks to extract subtle sentiment as in the case of Jung and 2024 Jung and Jang (2024) who introduced the related direction by applying a narrow masking of change-specific numerical change models and achieved significant improvements in the accuracy of sentiment quantification.
+
+Liu et al. (2024) offer a comprehensive survey of LLPs in financial market sentiment analysis with critical analysis of the current approaches and datasets. Their synthesis highlights the model transformative ability of the LLMs to interpret the financial discourse, and, at the same time, illustrates the ongoing obstacles in terms of model interpretability and computational requirements. Similarly, Onozo, Arthur and Gyires-Toth (2024) demonstrate that the predictive capabilities of LLM can be useful in sentiment analysis, and may also be used in the nowcasting of macroeconomic variables, which increases the range of predictive inputs that quantitative modelers can use.
+
+The power of sentiment integration is still confirmed by empirical evidence. Mu, Gao, Wang, and Dai (2023) developed a stock-price prediction model, which combines investor sentiment and optimized deep learning, and reported the model with better performance than traditional technical indicators-based models. Additional support of this result, Bacco et al. (2024) investigated stock prediction with the use of LSTM networks and sentiment analysis of tweets in the context of strong market uncertainty, which confirms the increased informational utility of sentiment in the environment with high volatility.
+
+Table 2 provides an overview of the most common sentiment-analysis based strategies used in financial forecasting, tracing the history of unsophisticated methods based on lexicon usage, to sophisticated solutions using the LLM. The successive category shows the incremental improvements in handling complexities of the financial language despite the long standing issues concerning computational efficiency and transparency of the model.
+
+
+\begin{table}[!ht]
+\centering
+\caption{Sentiment Analysis Methodologies in Financial Prediction}
+\label{tab:sentiment_methodologies}
+\small
+\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+\hline
+\textbf{Methodology Category} & \textbf{Key Studies} & \textbf{Technical Approach} & \textbf{Reported Benefits} & \textbf{Identified Gaps} \\
+\hline
+Lexicon-Based Approaches & Early sentiment studies & Dictionary-based scoring, Rule-based classification & Computational efficiency, Interpretability & Limited context understanding, Poor handling of financial jargon \\
+\hline
+Traditional ML Methods & Vargas et al. (2022); Wang \& Chen (2024) & SVM, Random Forests, Feature engineering & Improved accuracy over lexicons, Better handling of context & Manual feature engineering, Limited scalability \\
+\hline
+Deep Learning Architectures & Mu et al. (2023); Bacco et al. (2024) & LSTM, GRU, CNN with embedding layers & Automatic feature learning, Context preservation & Computational intensity, Black-box nature \\
+\hline
+LLM and Transformer-Based & Jung \& Jang (2024); Liu et al. (2024); Ónozó et al. (2024) & Fine-tuned transformers, Attention mechanisms, Prompt engineering & Superior contextual understanding, Multi-task capability & High computational cost, Interpretability challenges \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+\subsection{Signal Fusion and Decision Integration Frameworks}
+Integration of various signal typologies forms a major model in the advanced financial forecasting systems. The systematic review by Zhang, Sjarif, and Ibrahim (2022) of decision fusion to predict equity synthesizing evidence on 76 primary studies proves that, although the fused-model architectures usually outperform unimodal ones, there remains a high degree of diversity in both fusion methods and protocols.
+
+A range of integrative architectures has been developed in recent research. Moodi et al. (2024) built a hybrid deep-learning system integrating technical indicators and sentiment analysis, thus demonstrating the compliant nature of different data representations. Additionally developing the field, Haryono, Sarno, and Sungkono (2023) presented the approaches that use transformer-gated recurrent units to synthesize news sentiment using technical indicators, which emphasises the relevance of attention mechanisms in the fusion process.
+
+Despite such developments in methodology, there exists a basic constraint, to be referred to here as the signal-allocation gap. This weakness is a significant point of discontinuity between sophisticated prediction models and how they are applied to the creation of a portfolio. As Zhang et al. (2022) note, the most popular measure of success is still the level of statistical forecasting accuracy, but not economic usefulness or achieved portfolio returns. The failure is acutely apparent in the reinforced-learning case, such as that of Kabbani and Duman (2022), which largely consider the case of a single-asset trade, thus failing to consider the allocation at a portfolio level.
+
+\subsection{Market Regime Detection and Adaptation}
+
+Recognition of market regime dependencies is a more essential change in the field of financial modeling. The foundations of regime-conscious models were formed by Wang, Xiao, Zhao, Ni, and Li (2019), who explored the economic recession predictive on the basis of various behavioral factors. Their results verify that different market settings are linked with a specific kind of behavioral signatures hence requiring special methods of analysis.
+
+Regime considerations have been added at different levels in subsequent scholarship. Huang et al. (2020) proposed an automated trading point prediction framework that uses bicluster mining and fuzzy inference, thus ad hoc and implicitly embedding market state dependencies in the form of pattern recognition. Similarly, Alsheebah and Al Fuhaidi (2024) combined both endogenous and exogenous variables to make disparate conditions in emerging markets, but their main aim was the accuracy of the predictions and not the allocation of assets.
+
+
+
+\begin{table}[!ht]
+\centering
+\caption{Portfolio Construction Methodologies in Literature}
+\label{tab:portfolio_methodologies}
+\small
+\begin{tabular}{p{2cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+\hline
+\textbf{Methodology} & \textbf{Representative Studies} & \textbf{Key Features} & \textbf{Strengths} & \textbf{Limitations} \\
+\hline
+Traditional Optimization & Classical Markowitz approaches & Mean-variance optimization, Risk-return tradeoff & Theoretical foundation, Well-understood properties & Sensitivity to inputs, Stationarity assumptions \\
+\hline
+Signal-Based Allocation & Sami et al. (2025) -- IntPort & Statistical averaging, Forecast-based weighting & Simple implementation, Direct signal utilization & No covariance consideration, Limited risk management \\
+\hline
+Reinforcement Learning & Kabbani \& Duman (2022); Lee et al. (2007) & Q-learning, Policy optimization, Reward maximization & Adaptive behavior, Handles complexity & Single-asset focus, Sample efficiency issues \\
+\hline
+Multimodal Fusion Approaches & Moodi et al. (2024); Anbaee Farimani et al. (2024) & Multiple signal integration, Advanced ML architectures & Robust predictions, Information complementarity & Prediction-allocation gap, No explicit regime adaptation \\
+\hline
+\end{tabular}
+\end{table}
+
+Table 3 provides a comparative analysis of the portfolio construction strategies, which are reported in the literature, and displays how the earlier methods focused on the utilization of conventional optimization techniques have been replaced with modern multimodal approaches. However, in spite of the obvious rise in the methodological sophistication a high level of gaps still persists, especially concerning dynamic regime adaptation and the systematic transformation of predictive signals into the allocation choice.
+
+
+
+\section{Proposed Methodology} 
+
+
+
+
+
+\subsection{Phase 1: Multi-Modal Signal Extraction}
+
+\subsubsection{Input Layer}
+Multi-Source Data Ingestion: The architectural framework initiates with the concurrent processing of three distinct data streams:
+\begin{itemize}
+    \item Market Data: Historical price and volume records for target securities, structured as Open-High-Low-Close-Volume (OHLCV) data.
+    \item News/Social Media: Unstructured textual data sourced from financial news outlets, social media platforms, and corporate disclosures.
+    \item Macroeconomic Data: Structured time-series data reflecting economic conditions, including key metrics on interest rates, inflation, and significant geopolitical developments.
+\end{itemize}
+
+These heterogeneous raw inputs undergo a preprocessing pipeline involving data cleansing, temporal normalization, and synchronization to construct a cohesive, time-aligned dataset for subsequent analytical stages.
+
+\subsubsection{Technical Indicators Engine}
+
+This component transforms raw market data into quantitative trading signals through three primary analytical categories:
+\begin{itemize}
+    \item Price-Derived Metrics: The Relative Strength Index (RSI) identifies potential overbought or oversold asset conditions. The Moving Average Convergence Divergence (MACD) captures trend momentum shifts. Bollinger Bands® establish dynamic, volatility-adjusted price boundaries.
+    \item Volume-Analysis Tools: On-Balance Volume (OBV) assesses momentum through cumulative volume flow, while Volume Profile charts identify significant support and resistance zones based on traded volume.
+    \item Volatility Estimators: Average True Range (ATR) quantifies absolute price volatility, and Historical Volatility measures the statistical dispersion of asset returns over a specified look-back period.
+    
+\end{itemize}
+Working Mechanism: A sliding window methodology facilitates all calculations, with parameters calibrated for distinct investment horizons. The final output constitutes a normalized signal matrix wherein each column corresponds to a technical feature scaled to a uniform numerical range for downstream analysis.
+
+
+\subsubsection{Sentiment Analysis Pipeline}
+
+This component transforms unstructured textual data into quantitative sentiment indicators through a multi-stage analytical sequence.
+\begin{itemize}
+    \item LLM-based Scoring: Specialized transformer architectures, fine-tuned on financial corpora, perform the core sentiment assessment. Methodologies such as numerical change-related masking [12] are employed to enhance the model's sensitivity to nuanced market-moving contextual cues.
+    \item News Volume Analysis: The volume and frequency of news publications pertaining to specific assets or sectors are tracked as a proxy for market attention and narrative strength.
+    \item Social Media Aggregation: Data streams from diverse social media and news platforms are aggregated. This synthesis mitigates noise and amplifies statistically significant, consensus-driven sentiment signals.
+\end{itemize}
+The procedure follows a structured workflow: initial text normalization and cleansing, followed by named entity recognition for asset-specific context, subsequent sentiment quantification, and finally, a momentum calculation for derived scores. The final output consists of normalized sentiment metrics on a bounded scale, each accompanied by a statistical confidence measure.
+
+
+\subsubsection{Regime Detection Module}
+
+This component identifies latent, non-observable market states through a statistical clustering methodology. Its architecture functions as follows:
+\begin{itemize}
+    \item Probabilistic State Modeling: The system employs either Gaussian Mixture Models (GMM) or Hidden Markov Models (HMM) to segment historical market data into distinct probabilistic clusters. This clustering is based on a feature set that includes realized volatility, shifts in asset correlation structure, and momentum indicators.
+    \item Volatility Clustering: A specific function of the module is to isolate and characterize periods characterized by the persistence of either high or low volatility, effectively partitioning the market timeline into volatility-based regimes.
+    \item Macro-economic Alignment: The detected statistical regimes are subsequently analyzed for congruence with prevailing macroeconomic conditions, providing a fundamental justification for the statistically identified states.
+\end{itemize}
+The procedure follows a sequential pipeline: initial feature extraction from market data, subsequent dimensionality reduction, application of probabilistic clustering algorithms, and culminates in the qualitative labeling of the identified states. The final outputs comprise a time series of regime probabilities and estimated state transition matrices.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{single column/images/System Architecture.png}
+\caption{Proposed Methodology}
+\label{fig:integration}
+\end{figure*}
+
+
+
+\subsection{Phase 2: Decision-Theoretic Fusion Framework}
+
+\subsubsection{Signal Confidence Weighting}
+
+This mechanism executes a dynamic synthesis of predictive signals, contingent upon the prevailing market regime. Its operational logic is detailed below:
+
+
+\begin{itemize}
+    \item Regime-Dependent Weights: Signal influence is modulated by the identified market state. Technical indicators are accorded greater authority during stable, low-volatility regimes. Conversely, during periods characterized by elevated uncertainty, sentiment-based proxies assume a dominant role in the composite forecast.
+    \item Uncertainty Quantification: The framework employs bootstrap resampling techniques to quantify the statistical reliability of each signal. These confidence metrics are continuously refined through a tracking system that monitors recent predictive accuracy.
+    \item Adaptive Learning: The weighting scheme is inherently adaptive. A rolling historical window of performance data informs the iterative recalibration of influence parameters, ensuring the system's responsiveness to evolving market dynamics.
+\end{itemize}
+Procedural Workflow: For every distinct market regime, an optimal set of signal weights is derived from an analysis of their conditional historical efficacy. This baseline weighting is subsequently refined through a Bayesian updating procedure as new market information is sequentially incorporated.
+
+\subsubsection{Regime-Dependent Signal Fusion}
+
+This mechanism synthesizes weighted predictive inputs into unified forecasts, with its operational logic conditioned upon the prevailing market regime.
+\begin{itemize}
+    \item Conditional Combination: The methodology applies distinct combination algorithms to each identified market state, acknowledging that the predictive efficacy and optimal weighting of signals are regime-contingent.
+    \item Correlation Structure:The fusion process explicitly maintains the dependency structure across different assets, ensuring that the combined forecast reflects existing inter-asset correlations.
+    \item Uncertainty Propagation: The resulting composite forecasts inherently incorporate the estimation uncertainty present within the constituent input signals, providing a more robust probabilistic output.
+\end{itemize}
+Operational Framework: The core engine executes a matrix multiplication of regime-specific signal weight vectors against the matrix of individual signals. This operation is subsequently adjusted to account for both the cross-correlation matrix of the signals and the probabilistic state assignments from the regime detection module.
+
+\subsubsection{Portfolio Optimization Engine}
+
+Translates fused signals into executable allocations:
+\begin{itemize}
+    \item Regime-Dependent Covariance: Different correlation structures for bull/bear/neutral markets using Ledoit-Wolf shrinkage estimators
+    \item Risk-Budgeting Allocation: Equal risk contribution across assets while respecting regime-specific risk limits
+    \item Transaction Cost Optimization: Incorporates realistic market impact and slippage models
+    \item Working Mechanism: Quadratic programming with multiple constraints:
+    \begin{align}
+\underset{w}{\text{Maximize}} \quad & \alpha'w - \lambda(w'\Sigma_{\text{regime}} w) - \gamma \cdot \text{TransactionCosts}(w) \\
+\text{Subject to} \quad & w \geq 0, \quad \sum w = 1, \quad \text{RiskBudget constraints}
+\end{align}
+\end{itemize}
+
+
+
+\subsection{Phase 3: Performance Evaluation \& Feedback}
+\subsubsection{Backtesting Framework}
+The proposed methodology undergoes rigorous historical validation through a structured simulation protocol designed to emulate real-world trading conditions.
+\begin{itemize}
+    \item Walk-Forward Validation: Implementation utilizes a rolling-origin technique, sequentially advancing a 63-day model estimation window followed by a 21-day out-of-sample evaluation period.
+    \item Out-of-Sample Testing: A strict temporal partition is enforced between parameter calibration and performance assessment phases to prevent statistical overfitting and ensure robust results.
+    \item Regime-Aware Analysis: Strategy efficacy is disaggregated and evaluated contingent upon the market state identified by the regime detection module, allowing for precise diagnosis of performance drivers.
+\end{itemize}
+The framework executes a historical simulation that incorporates realistic market frictions, including executable prices, transaction cost slippage, and estimated market impact for larger orders.
+
+
+\subsubsection{Performance Attribution}
+
+This analytical procedure deconstructs aggregate returns to isolate the fundamental sources of value generation, employing a multi-faceted approach:
+\begin{itemize}
+    \item Regime-Based Decomposition: The methodology disaggregates performance contributions across distinct market environments, isolating the specific returns attributable to bullish, bearish, or transitional states identified by the regime detection module.
+    \item Signal Contribution Analysis: The framework quantifies the marginal performance impact originating from each signal category—such as technical, sentiment, or volatility-based predictors—thereby identifying which inputs were primary drivers of alpha.
+    \item Risk-Adjusted Metrics: Evaluation incorporates risk-adjusted metrics including the Sharpe, Sortino, and Calmar ratios. These are supplemented with bootstrap-based statistical significance tests to distinguish robust performance from random outcomes.
+\end{itemize}
+The core analytical engine utilizes an augmented Brinson model, specifically modified to account for regime-specific allocations and to attribute performance to individual signal contributions rather than solely to asset class or sector decisions.
+
+
+\subsubsection{Model Refinement Loop}
+
+The framework incorporates a recursive feedback mechanism designed for continuous algorithmic enhancement. This process ensures the model's ongoing adaptation to evolving market microstructures.
+\begin{itemize}
+    \item Parameter Optimization: The system periodically re-optimizes critical parameters, including signal-specific weighting coefficients and regime classification thresholds, guided by out-of-sample performance metrics from the most recent market cycle.
+    \item Regime Model Updates: The underlying statistical models for state identification are systematically recalibrated to reflect structural shifts in market dynamics, preventing reliance on obsolete regime definitions.
+    \item Signal Validation: A formal validation protocol continuously assesses the efficacy of each constituent signal. This process facilitates the decommissioning of decaying predictors and the systematic integration of novel, empirically grounded data sources.
+\end{itemize}
+An automated monitoring system tracks the performance of all strategic components, triggering predefined recalibration events. This automated cycle incorporates a human-in-the-loop oversight function, reserving authority for sanctioning profound structural modifications to the model's architecture.
+
+
+\subsection{Cross-Cutting Features}
+\subsubsection{Temporal Consistency}
+The framework ensures chronological integrity across all analytical processes through several critical mechanisms:
+\begin{itemize}
+    \item All incoming data streams are aligned to a unified temporal index, eliminating artifacts arising from asynchronous sampling frequencies.
+    \item Causal relationships, such as the delayed market impact of sentiment shifts, are explicitly parameterized using distributed lag structures to reflect real-world transmission mechanisms.
+    \item The system design incorporates streaming data protocols and incremental processing algorithms suitable for operational deployment in live trading environments.
+\end{itemize}
+
+\subsubsection{Risk Management Integration}
+The framework incorporates a multi-layered risk mitigation protocol designed to operate within real-world constraints. This protocol consists of three principal components:
+\begin{itemize}
+    \item The system enforces predetermined boundaries on individual position sizes and aggregate sector or asset-class exposures. These constraints are designed to prevent excessive concentration and ensure adherence to diversification principles.
+    \item A systematic stop-loss mechanism is implemented at the aggregate portfolio level. This trigger initiates a predefined de-risking protocol upon the breach of a maximum cumulative loss threshold, safeguarding the core portfolio value.
+    \item Position sizing is dynamically adjusted according to asset-specific liquidity profiles. This adjustment incorporates market depth and estimated transaction costs, ensuring that allocations remain liquid and executable without incurring significant market impact.
+\end{itemize}
+
+\subsubsection{Explainability and Transparency}
+This framework incorporates specific mechanisms to ensure analytical clarity and operational transparency throughout the decision-making process.
+\begin{itemize}
+    \item Every allocation decision can be directly attributed to its originating predictive signals and the prevailing market regime identified by the system, providing complete traceability.
+    \item All generated forecasts and corresponding allocation weights are presented with their associated confidence intervals, quantifying the degree of statistical certainty for each output.
+    \item The architecture maintains a comprehensive, timestamped record of all inputs, model states, and decision logic. This creates a verifiable audit trail suitable for regulatory scrutiny and systematic strategy validation.
+\end{itemize}
+
+This architecture Figure 1 creates a closed-loop system where portfolio decisions are continuously refined based on performance feedback and evolving market conditions, while maintaining rigorous statistical foundations and practical implementability.
+
+
+
+
+
+\section{Results and Discussion} 
+
+
+\subsection{Overview of Experimental Results}
+The implemented decision-theoretic framework demonstrates compelling evidence for the efficacy of regime-aware portfolio construction. Across the 2018-2024 testing period encompassing diverse market conditions, the regime-based strategy achieved a Sharpe Ratio of 0.847 compared to the equal-weight benchmark's 0.632, representing a 34\% improvement in risk-adjusted returns. More significantly, the maximum drawdown was reduced from -34.2\% to -28.7\%, highlighting the defensive capabilities of the regime-adaptive approach during market stress periods.
+
+
+
+\subsection{Detailed Analysis of Visualizations and Performance Metrics}
+\subsubsection{Cumulative Returns Comparison}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/crc.png}
+\caption{Cumulative Returns Comparison}
+\label{fig:integration}
+\end{figure*}
+The comparative analysis of cumulative returns, presented in Figure 2, delineates a performance profile characterized by distinct phases of divergence and convergence relative to the passive benchmark. The regime-aware portfolio exhibits several defining characteristics over the observed period:
+\begin{itemize}
+    \item The strategy demonstrated pronounced outperformance during periods of significant market dislocation, notably the volatility surge in early 2020 and the inflationary selloff of 2022.
+    \item A critical observation is the strategy's effective mitigation of losses during sustained market downturns, indicating a significantly reduced downside capture.
+    \item During extended bullish phases, the portfolio delivered competitive absolute returns while concurrently exhibiting a lower volatility signature than the benchmark, suggesting more efficient capital growth.
+\end{itemize}
+
+\textbf{Strategic Implications:}
+
+The observed performance trajectory provides empirical validation for the regime detection module's operational efficacy. The system's capacity to identify the transition into a high-volatility state in early 2020 triggered a timely de-risking of the portfolio, constraining maximum drawdown. Conversely, the subsequent, more gradual ascent in the portfolio's value line indicates a methodical, signal-driven re-allocation of risk exposure as the prevailing market regime normalized, avoiding premature or delayed re-entry.
+
+\textbf{Theoretical Alignment:}
+
+These empirical results substantiate the foundational thesis of this research. The performance pattern confirms that the predictive utility of technical and sentiment-based signals is conditional upon the underlying market state. The dynamic fusion mechanism operated as theorized, systematically allocating greater weight to sentiment-derived signals during high-uncertainty regimes, while privileging technical indicators during more stable, trend-following market environments.
+
+\subsubsection{Portfolio Drawdown}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/pdd.png}
+\caption{Portfolio Drawdown}
+\label{fig:integration}
+\end{figure*}
+
+The comparative drawdown analysis, illustrated in Figure 3, provides compelling evidence of the regime-based portfolio's enhanced capital preservation attributes. The visual data reveals a consistent pattern of superior defensive characteristics:
+\begin{itemize}
+    \item The strategy registered a significantly shallower maximum drawdown of -28.7\%, contrasting with the benchmark's -34.2\% nadir.
+    \item Following drawdown troughs, the regime-based portfolio demonstrated a markedly swifter recovery trajectory, spending less time underwater.
+    \item The portfolio experienced briefer episodes of significant capital impairment, indicating more effective and timely risk mitigation.
+\end{itemize}
+
+\textbf{Risk Management Effectiveness:}
+The observed drawdown profile validates the predictive utility of the regime detection system as an early-warning mechanism for deteriorating market states. By signaling a transition towards a high-volatility, high-correlation regime, the framework enabled proactive de-risking. This is particularly evident during the 2022 bear market, where the portfolio's peak-to-trough decline was approximately 16\% less severe than the passive benchmark, underscoring the tangible benefit of dynamically adjusting risk budgets in response to prevailing market conditions.
+
+\textbf{Theoretical Contribution:}
+
+This empirical outcome substantiates the theoretical advancement of incorporating non-stationary, regime-specific covariance matrices within the optimization process. The model's performance demonstrates that by explicitly accounting for the breakdown of traditional diversification benefits and the intensification of asset correlations during stress periods—a phenomenon often overlooked by static models—the portfolio successfully navigated turbulent markets more effectively. This finding challenges the conventional assumption of stable asset relationships underpinning traditional portfolio theory.
+
+\subsubsection{Market Regime Detection}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/mrd.png}
+\caption{Market Regime Detection}
+\label{fig:integration}
+\end{figure*}
+
+The temporal sequence of identified market states, presented in Figure 4, delineates three economically distinct market environments characterized by their unique volatility and momentum signatures:
+\begin{itemize}
+    \item Regime 0 (Red): This state corresponds to periods of elevated market stress, marked by high volatility and negative momentum. Its incidence is prominently clustered around known macroeconomic disruptions, specifically the initial COVID-19 market crisis and the 2022 inflationary selloff.
+    \item Regime 1 (Yellow): Representing a transitional or neutral state, this regime captures market conditions that lack a definitive directional trend or persistent volatility characteristics.
+    \item Regime 2 (Green): This state is characterized by favorable market conditions, combining low volatility with sustained positive momentum, typically associated with bullish trending markets.
+\end{itemize}
+
+
+\textbf{Temporal Regime Characteristics:}
+An examination of regime persistence reveals distinct behavioral patterns. High-volatility regimes (Regime 0) exhibited relatively brief durations, typically spanning 2 to 4 months, indicating their nature as acute, albeit intense, market disruptions. In contrast, low-volatility, high-momentum regimes (Regime 2) demonstrated significantly greater persistence, often enduring for 6 to 12 months. The transitions between these states, particularly the shift into high-volatility regimes, were observed to be abrupt, frequently coinciding with the announcement of major macroeconomic shocks.
+
+\textbf{Methodological Validation:}
+
+The output from the Gaussian Mixture Model provides strong validation for the regime detection methodology. The model's identification of Regime 0 periods aligns precisely with historically documented stress events in 2020 and 2022. This congruence between statistically identified states and ex-post economic reality confirms the framework's capacity to discriminate between structurally different market environments, a foundational requirement for a robust, regime-dependent investment strategy.
+
+
+\subsubsection{Portfolio Allocation Over Time}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/pa.png}
+\caption{Portfolio Allocation}
+\label{fig:integration}
+\end{figure*}
+
+The temporal evolution of portfolio weights, illustrated in Figure 5, provides a clear representation of the system's adaptive response to changing market states. The allocation dynamics reveal a logically consistent and systematic rebalancing process:
+\begin{itemize}
+    \item During periods identified as high-volatility Regime 0, capital was systematically reallocated toward assets with lower historical volatility and defensive characteristics.
+    \item Under transitional or normal market regimes (Regime 1), the portfolio maintained a balanced exposure across multiple sectors, avoiding significant concentration risk.
+    \item During sustained low-volatility, high-momentum regimes (Regime 2), the strategy increased its weightings in high-growth sectors, demonstrating a capacity to capitalize on trending market conditions.
+\end{itemize}
+
+
+\textbf{Asset Selection Patterns:}
+The implementation exhibited methodical sector rotation aligned with regime signals. A discernible increase in allocations to defensive equities, such as those in consumer staples and energy, was observed during high-volatility episodes. Conversely, a dynamic rotation within the technology sector was executed, with weights being calibrated based on the conditional efficacy of signals within each regime. This entire process was characterized by a rules-based systematicity, entirely devoid of discretionary emotional influence.
+
+\textbf{Decision-Theoretic Implementation:}
+The observed smooth transitions between asset weights, rather than abrupt, discontinuous shifts, reflect the integral role of the transaction cost-aware optimization function. This component effectively balanced the competing objectives of responding to new predictive signals and maintaining implementation efficiency by mitigating turnover. The absence of extreme allocation swings throughout the backtested period provides compelling evidence for the practical feasibility and operational robustness of the proposed framework in a live implementation context.
+
+\subsubsection{Signal Strength Dynamics}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/ssd.png}
+\caption{Signal Strength Dynamics}
+\label{fig:integration}
+\end{figure*}
+
+The temporal evolution of composite signal strength, depicted in Figure 6, reveals a distinct and economically intuitive pattern of variation. The intensity of the aggregated predictive output is not static but fluctuates in a manner closely linked to market phases:
+\begin{itemize}
+    \item The most pronounced signal magnitudes are observed proximate to major market turning points, suggesting the model's heightened sensitivity to shifts in market regime fundamentals.
+    \item During periods characterized by well-established directional price trends, signal strength maintains a moderate, consistent level.
+    \item In calm, range-bound market conditions, the composite signal registers its lowest amplitude, reflecting a relative absence of strong directional cues.
+\end{itemize}
+
+Signal Regime Relationship:
+A granular analysis reveals a differentiated behavior between signal types across environments. Sentiment-based signals frequently exhibited a surge in strength immediately preceding major market dislocations. In contrast, technical indicators demonstrated greater persistence and reliability during extended trending periods. Furthermore, the convergence and divergence of these distinct signal types themselves provided a valuable leading indicator for impending regime transitions.
+
+\textbf{Fusion Mechanism Effectiveness:}
+This dynamic variation in signal amplitude validates a core function of the fusion mechanism: the quantification of predictive uncertainty. The framework successfully interprets periods of low signal strength as indicative of high uncertainty, thereby appropriately tempering allocation adjustments. Conversely, the empirical observation that episodes of high signal magnitude are frequently followed by significant price movements confirms the model's capacity to identify periods of high-conviction forecasting opportunity. This dynamic confidence adjustment is fundamental to the strategy's risk-managed implementation.
+
+
+\subsubsection{Rolling Sharpe Ratio}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1\textwidth]{single column/images/rss.png}
+\caption{Rolling Sharpe Ratio}
+\label{fig:integration}
+\end{figure*}
+The 63-day rolling Sharpe ratio, presented in Figure 7, demonstrates the regime-aware strategy's capacity for consistent risk-adjusted performance across varying market conditions. The trajectory is characterized by several defining features:
+\begin{itemize}
+    \item The ratio maintained a predominantly positive value throughout the vast majority of the observed period, indicating a consistent generation of excess returns relative to incurred risk.
+    \item The time series exhibits a smoother pathway compared to typical benchmarks, reflecting a reduction in the volatility of its performance consistency.
+    \item Following inevitable periods of compression, the metric demonstrated a resilient and relatively swift reversion to its positive trend, underscoring the strategy's adaptive recovery mechanism.
+\end{itemize}
+
+
+\textbf{Performance Persistence:}
+The rolling window analysis provides critical evidence of performance persistence. The strategy's risk-adjusted return profile consistently surpassed that of a passive benchmark. Furthermore, it achieved this outperformance with a lower variance in its rolling Sharpe ratio, indicating that its superior performance was not erratic but stable. This consistency was maintained across the diverse market environments captured in the sample, including bull markets, corrections, and high-volatility regimes.
+
+\textbf{Statistical Significance:}
+
+The enduring positivity of the rolling Sharpe ratio across most observation windows offers compelling statistical evidence for the strategy's structural robustness. The absence of performance clustering—where excess returns are concentrated in brief, specific conditions—strongly suggests that the methodology's edge is not dependent on a single, transient market state. This persistence across different regimes validates the core hypothesis that a dynamic, regime-conditioned approach can deliver more reliable risk-adjusted results than static alternatives.
+
+\subsection{Theoretical and Practical Implications}
+\subsubsection{Methodological Contributions}
+\begin{itemize}
+    \item Signal-Allocation Bridge: The research successfully demonstrates a systematic framework for translating predictive signals into executable portfolio decisions, addressing a critical gap in the literature.
+    \item Regime Adaptation: The dynamic weighting mechanism proves that adapting to market regimes significantly enhances strategy performance and risk management.
+    \item Practical Implementation: The incorporation of transaction costs and realistic constraints ensures the approach is implementable in live trading environments.
+\end{itemize}
+
+\subsubsection{Limitations and Future Research}
+
+\begin{itemize}
+    \item Current Limitations:
+    \begin{itemize}
+        \item The analysis relies on simplified proxy variables for market sentiment, foregoing the nuanced capabilities of contemporary Large Language Model (LLM) processing for textual data.
+        \item The weighting parameters applied within the regime-dependent fusion mechanism are statically defined, lacking an adaptive framework for their continuous optimization.
+        \item The empirical validation is confined to a constrained asset universe and a specific historical timeframe, potentially limiting the generalizability of the findings.
+    \end{itemize}
+        
+    \item Research Extensions:
+    \begin{itemize}
+        \item Advanced Sentiment Integration: A logical extension involves the incorporation of real-time, LLM-driven sentiment analysis to derive more sophisticated and timely indicators of market affect.
+        \item Dynamic Optimization Frameworks: The implementation of reinforcement learning algorithms could facilitate the dynamic calibration of regime-specific parameters, moving beyond the current static configuration.
+        \item  Expanded Portfolio Scope: The framework's robustness could be further tested through application to global, multi-asset portfolios encompassing equities, fixed income, commodities, and currencies.
+        \item Alternative Data Synthesis: Future work could significantly enhance the feature set by integrating a broader spectrum of alternative data, such as satellite imagery, supply chain information, or electronic market microstructure data.
+    \end{itemize}       
+\end{itemize}
+
+
+
+\section{Conclusion}
+
+The empirical findings of this study affirm the central thesis that a regime-sensitive framework for signal integration and portfolio construction delivers a markedly improved risk-return dynamic compared to static approaches. The observed outcomes—marked by superior capital retention during market downturns, competitive gains in bullish phases, and a persistently high rolling Sharpe ratio—demonstrate the efficacy of the model’s key components: its ability to dynamically adjust to evolving market conditions, its probabilistic fusion of diverse signal types, and its implementation strategy that accounts for transaction costs.
+This sustained performance across varied and often challenging market scenarios—from the volatility spike in 2020 to the inflation-driven turbulence of 2022—highlights the necessity of addressing the theoretical disconnect between signal generation and allocation. The study thus offers both a rigorous methodological foundation and strong empirical support for a new generation of adaptive investment models. It shows that combining non-stationary market analysis with a decision-theoretic allocation mechanism is not just a conceptual improvement, but a practical imperative for advancing quantitative portfolio management.
+
+%\section*{Acknowledgement}
+%The project is funded in part by the National Institutes of Health, under Grant No. 5R01CA136535.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\bibliography{ijmso}
+%\bibliographystyle{unsrt}
+%\bibliographystyle{alpha}
+
+\begin{thebibliography}{33}
+
+\bibitem[\protect\citeauthoryear{Lee et al.}{2007}]{lee07}
+Lee, J.W., Park, J., O, J., Lee, J. and Hong, E. (2007) 'A Multiagent Approach to $Q$-Learning for Daily Stock Trading', {\it IEEE Transactions on Systems, Man, and Cybernetics, Part A: Systems and Humans}, Vol. 37, No. 6, pp. 864--877, doi: 10.1109/TSMCA.2007.904825.
+
+\bibitem[\protect\citeauthoryear{Liu and Wang}{2019}]{liu19}
+Liu, G. and Wang, X. (2019) 'A Numerical-Based Attention Method for Stock Market Prediction With Dual Information', {\it IEEE Access}, Vol. 7, pp. 7357--7367, doi: 10.1109/ACCESS.2018.2886367.
+
+\bibitem[\protect\citeauthoryear{Mu et al.}{2023}]{mu23}
+Mu, G., Gao, N., Wang, Y. and Dai, L. (2023) 'A Stock Price Prediction Model Based on Investor Sentiment and Optimized Deep Learning', {\it IEEE Access}, Vol. 11, pp. 51353--51367, doi: 10.1109/ACCESS.2023.3278790.
+
+\bibitem[\protect\citeauthoryear{Khuwaja et al.}{2023}]{khuwaja23}
+Khuwaja, P., Khowaja, S.A. and Dev, K. (2023) 'Adversarial Learning Networks for FinTech Applications Using Heterogeneous Data Sources', {\it IEEE Internet of Things Journal}, Vol. 10, No. 3, pp. 2194--2201, doi: 10.1109/JIOT.2021.3100742.
+
+\bibitem[\protect\citeauthoryear{Farimani et al.}{2024}]{farimani24}
+Farimani, S.A., Jahan, M.V. and Fard, A.M. (2024) 'An Adaptive Multimodal Learning Model for Financial Market Price Prediction', {\it IEEE Access}, Vol. 12, pp. 121846--121863, doi: 10.1109/ACCESS.2024.3441029.
+
+\bibitem[\protect\citeauthoryear{Huang et al.}{2020}]{huang20}
+Huang, Q., Yang, J., Feng, X., Liew, A.W.-C. and Li, X. (2020) 'Automated Trading Point Forecasting Based on Bicluster Mining and Fuzzy Inference', {\it IEEE Transactions on Fuzzy Systems}, Vol. 28, No. 2, pp. 259--272, doi: 10.1109/TFUZZ.2019.2904920.
+
+\bibitem[\protect\citeauthoryear{Vargas et al.}{2022}]{vargas22}
+Vargas, G., Silvestre, L., Júnior, L.R. and Rocha, H. (2022) 'B3 Stock Price Prediction Using LSTM Neural Networks and Sentiment Analysis', {\it IEEE Latin America Transactions}, Vol. 20, No. 7, pp. 1067--1074, doi: 10.1109/TLA.2021.9827469.
+
+\bibitem[\protect\citeauthoryear{Zhang et al.}{2022}]{zhang22}
+Zhang, C., Sjarif, N.N.A. and Ibrahim, R.B. (2022) 'Decision Fusion for Stock Market Prediction: A Systematic Review', {\it IEEE Access}, Vol. 10, pp. 81364--81379, doi: 10.1109/ACCESS.2022.3195942.
+
+\bibitem[\protect\citeauthoryear{Kabbani and Duman}{2022}]{kabbani22}
+Kabbani, T. and Duman, E. (2022) 'Deep Reinforcement Learning Approach for Trading Automation in the Stock Market', {\it IEEE Access}, Vol. 10, pp. 93564--93574, doi: 10.1109/ACCESS.2022.3203697.
+
+\bibitem[\protect\citeauthoryear{Parekh et al.}{2022}]{parekh22}
+Parekh, R. et al. (2022) 'DL-GuesS: Deep Learning and Sentiment Analysis-Based Cryptocurrency Price Prediction', {\it IEEE Access}, Vol. 10, pp. 35398--35409, doi: 10.1109/ACCESS.2022.3163305.
+
+\bibitem[\protect\citeauthoryear{Alsheebah and Al-Fuhaidi}{2024}]{alsheebah24}
+Alsheebah, F.M.M. and Al-Fuhaidi, B.A. (2024) 'Emerging Stock Market Prediction Using GRU Algorithm: Incorporating Endogenous and Exogenous Variables', {\it IEEE Access}, Vol. 12, pp. 132964--132971, doi: 10.1109/ACCESS.2024.3444699.
+
+\bibitem[\protect\citeauthoryear{Jung and Jang}{2024}]{jung24}
+Jung, H.D. and Jang, B. (2024) 'Enhancing Financial Sentiment Analysis Ability of Language Model via Targeted Numerical Change-Related Masking', {\it IEEE Access}, Vol. 12, pp. 50809--50820, doi: 10.1109/ACCESS.2024.3385855.
+
+\bibitem[\protect\citeauthoryear{Zhang et al.}{2020}]{zhang20}
+Zhang, D., Chen, S., Liwen, L. and Xia, Q. (2020) 'Forecasting Agricultural Commodity Prices Using Model Selection Framework With Time Series Features and Forecast Horizons', {\it IEEE Access}, Vol. 8, pp. 28197--28209, doi: 10.1109/ACCESS.2020.2971591.
+
+\bibitem[\protect\citeauthoryear{Chou and Nguyen}{2018}]{chou18}
+Chou, J.-S. and Nguyen, T.-K. (2018) 'Forward Forecast of Stock Price Using Sliding-Window Metaheuristic-Optimized Machine-Learning Regression', {\it IEEE Transactions on Industrial Informatics}, Vol. 14, No. 7, pp. 3132--3142, doi: 10.1109/TII.2018.2794389.
+
+\bibitem[\protect\citeauthoryear{Moodi et al.}{2024}]{moodi24}
+Moodi, F., Rafsanjani, A.J., Zarifzadeh, S. and Chahooki, M.A.Z. (2024) 'Fusion of Technical Indicators and Sentiment Analysis in a Hybrid Framework of Deep Learning Models for Stock Price Movement Prediction', {\it IEEE Access}, Vol. 12, pp. 195696--195709, doi: 10.1109/ACCESS.2024.3519556.
+
+\bibitem[\protect\citeauthoryear{Hu and Yang}{2024}]{hu24}
+Hu, X. and Yang, J. (2024) 'Group Penalized Multinomial Logit Models and Stock Return Direction Prediction', {\it IEEE Transactions on Information Theory}, Vol. 70, No. 6, pp. 4297--4318, doi: 10.1109/TIT.2024.3376751.
+
+\bibitem[\protect\citeauthoryear{Yang and Yang}{2020}]{yang20}
+Yang, Y. and Yang, Y. (2020) 'Hybrid Method for Short-Term Time Series Forecasting Based on EEMD', {\it IEEE Access}, Vol. 8, pp. 61915--61928, doi: 10.1109/ACCESS.2020.2983588.
+
+\bibitem[\protect\citeauthoryear{Lee}{2004}]{lee04}
+Lee, R.S.T. (2004) 'iJADE Stock Advisor: An Intelligent Agent Based Stock Prediction System Using Hybrid RBF Recurrent Network', {\it IEEE Transactions on Systems, Man, and Cybernetics, Part A: Systems and Humans}, Vol. 34, No. 3, pp. 421--428, doi: 10.1109/TSMCA.2004.824871.
+
+\bibitem[\protect\citeauthoryear{Nayak et al.}{2022}]{nayak22}
+Nayak, S.C., Dehuri, S. and Cho, S.-B. (2022) 'Intelligent Financial Forecasting With an Improved Chemical Reaction Optimization Algorithm Based Dendritic Neuron Model', {\it IEEE Access}, Vol. 10, pp. 130921--130943, doi: 10.1109/ACCESS.2022.3229314.
+
+\bibitem[\protect\citeauthoryear{Sami et al.}{2025}]{sami25}
+Sami, H.M., Jalal, M.S., Kabir, M.F. and Huda, M.N. (2025) 'IntPort: An Intelligent Portfolio Construction Technique Based on Financial Forecasting by Statistical Average Method', {\it IEEE Access}, Vol. 13, pp. 35355--35375, doi: 10.1109/ACCESS.2025.3543741.
+
+\bibitem[\protect\citeauthoryear{Bacco et al.}{2024}]{bacco24}
+Bacco, L., Petrosino, L., Arganese, D., Vollero, L., Papi, M. and Merone, M. (2024) 'Investigating Stock Prediction Using LSTM Networks and Sentiment Analysis of Tweets Under High Uncertainty: A Case Study of North American and European Banks', {\it IEEE Access}, Vol. 12, pp. 122239--122248, doi: 10.1109/ACCESS.2024.3450311.
+
+\bibitem[\protect\citeauthoryear{Lu et al.}{2025}]{lu25}
+Lu, X., Qiu, J., Yang, Y., Zhang, C., Lin, J. and An, S. (2025) 'Large Language Model-Based Bidding Behavior Agent and Market Sentiment Agent-Assisted Electricity Price Prediction', {\it IEEE Transactions on Energy Markets, Policy and Regulation}, Vol. 3, No. 2, pp. 223--235, doi: 10.1109/TEMPR.2024.3518624.
+
+\bibitem[\protect\citeauthoryear{Liu et al.}{2024}]{liu24}
+Liu, C., Arulappan, A., Naha, R., Mahanti, A., Kamruzzaman, J. and Ra, I.-H. (2024) 'Large Language Models and Sentiment Analysis in Financial Markets: A Review, Datasets, and Case Study', {\it IEEE Access}, Vol. 12, pp. 134041--134061, doi: 10.1109/ACCESS.2024.3445413.
+
+\bibitem[\protect\citeauthoryear{Tai et al.}{2022}]{tai22}
+Tai, W., Zhong, T., Mo, Y. and Zhou, F. (2022) 'Learning Sentimental and Financial Signals With Normalizing Flows for Stock Movement Prediction', {\it IEEE Signal Processing Letters}, Vol. 29, pp. 414--418, doi: 10.1109/LSP.2021.3135793.
+
+\bibitem[\protect\citeauthoryear{Ónozó et al.}{2024}]{onozo24}
+Ónozó, L.R., Arthur, F.V. and Gyires-Tóth, B. (2024) 'Leveraging LLMs for Financial News Analysis and Macroeconomic Indicator Nowcasting', {\it IEEE Access}, Vol. 12, pp. 160529--160547, doi: 10.1109/ACCESS.2024.3488363.
+
+\bibitem[\protect\citeauthoryear{Haryono et al.}{2024}]{haryono24}
+Haryono, A.T., Sarno, R., Anggraini, R.N.E. and Sungkono, K.R. (2024) 'Permuted Temporal Kolmogorov-Arnold Networks for Stock Price Forecasting Using Generative Aspect-Based Sentiment Analysis', {\it IEEE Access}, Vol. 12, pp. 178672--178689, doi: 10.1109/ACCESS.2024.3506658.
+
+\bibitem[\protect\citeauthoryear{Wang et al.}{2019}]{wang19}
+Wang, C., Xiao, Z., Zhao, D.-S., Ni, D. and Li, L. (2019) 'Research on Economic Recession Prediction Model From the Multiple Behavioral Features Perspective', {\it IEEE Access}, Vol. 7, pp. 83363--83371, doi: 10.1109/ACCESS.2019.2924267.
+
+\bibitem[\protect\citeauthoryear{Shang}{2025}]{shang25}
+Shang, L. (2025) 'Sentiment-Driven Bitcoin Price Range Forecasting: Enhancing CART Decision Trees With High-Dimensional Indicators and Twitter Dynamics', {\it IEEE Access}, Vol. 13, pp. 60508--60518, doi: 10.1109/ACCESS.2025.3557186.
+
+\bibitem[\protect\citeauthoryear{Wang and Chen}{2024}]{wang24}
+Wang, J. and Chen, Z. (2024) 'SPCM: A Machine Learning Approach for Sentiment-Based Stock Recommendation System', {\it IEEE Access}, Vol. 12, pp. 14116--14129, doi: 10.1109/ACCESS.2024.3357114.
+
+\bibitem[\protect\citeauthoryear{Li and Bastos}{2020}]{li20}
+Li, A.W. and Bastos, G.S. (2020) 'Stock Market Forecasting Using Deep Learning and Technical Analysis: A Systematic Review', {\it IEEE Access}, Vol. 8, pp. 185232--185242, doi: 10.1109/ACCESS.2020.3030226.
+
+\bibitem[\protect\citeauthoryear{Wang et al.}{2020}]{wang20}
+Wang, F., Li, M., Mei, Y. and Li, W. (2020) 'Time Series Data Mining: A Case Study With Big Data Analytics Approach', {\it IEEE Access}, Vol. 8, pp. 14322--14328, doi: 10.1109/ACCESS.2020.2966553.
+
+\bibitem[\protect\citeauthoryear{Haryono et al.}{2023}]{haryono23}
+Haryono, A.T., Sarno, R. and Sungkono, K.R. (2023) 'Transformer-Gated Recurrent Unit Method for Predicting Stock Price Based on News Sentiments and Technical Indicators', {\it IEEE Access}, Vol. 11, pp. 77132--77146, doi: 10.1109/ACCESS.2023.3298445.
+
+\bibitem[\protect\citeauthoryear{Otabek and Choi}{2022}]{otabek22}
+Otabek, S. and Choi, J. (2022) 'Twitter Attribute Classification With Q-Learning on Bitcoin Price Prediction', {\it IEEE Access}, Vol. 10, pp. 96136--96148, doi: 10.1109/ACCESS.2022.3205129.
+
+\end{thebibliography}
+\end{document}

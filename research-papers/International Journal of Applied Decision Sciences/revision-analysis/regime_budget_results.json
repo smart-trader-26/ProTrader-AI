@@ -1,0 +1,219 @@
+{
+  "absolute (as submitted)": {
+    "stats": {
+      "CAGR": 0.0581,
+      "Vol": 0.0739,
+      "Sharpe": 0.7862,
+      "MaxDD": -0.2286,
+      "Calmar": 0.2541
+    },
+    "mean_invested": 0.9999,
+    "min_invested": 0.9825,
+    "binding_rebalances": 1,
+    "n_rebalances": 192,
+    "t_vs_ew": -0.789,
+    "t_vs_matched_flat": NaN,
+    "matched_flat_control": {},
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.0609,
+        "equal_weight": -0.2978,
+        "excess": 0.237
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0699,
+        "equal_weight": -0.0724,
+        "excess": 0.1423
+      },
+      "COVID 2020": {
+        "strategy": -0.077,
+        "equal_weight": -0.2128,
+        "excess": 0.1359
+      },
+      "2022 bear": {
+        "strategy": -0.2103,
+        "equal_weight": -0.2449,
+        "excess": 0.0346
+      }
+    }
+  },
+  "relative 1.00/0.75/0.50": {
+    "stats": {
+      "CAGR": 0.0459,
+      "Vol": 0.0622,
+      "Sharpe": 0.7384,
+      "MaxDD": -0.1899,
+      "Calmar": 0.2417
+    },
+    "mean_invested": 0.9193,
+    "min_invested": 0.5,
+    "binding_rebalances": 56,
+    "n_rebalances": 192,
+    "t_vs_ew": -1.211,
+    "t_vs_matched_flat": 0.012,
+    "matched_flat_control": {
+      "multiplier": 0.919,
+      "Sharpe": 0.6881,
+      "MaxDD": -0.2231,
+      "CAGR": 0.0454
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.0705,
+        "equal_weight": -0.2978,
+        "excess": 0.2274
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0341,
+        "equal_weight": -0.0724,
+        "excess": 0.1066
+      },
+      "COVID 2020": {
+        "strategy": -0.0629,
+        "equal_weight": -0.2128,
+        "excess": 0.1499
+      },
+      "2022 bear": {
+        "strategy": -0.1675,
+        "equal_weight": -0.2449,
+        "excess": 0.0774
+      }
+    }
+  },
+  "relative 1.00/0.80/0.60": {
+    "stats": {
+      "CAGR": 0.0474,
+      "Vol": 0.0643,
+      "Sharpe": 0.7374,
+      "MaxDD": -0.1994,
+      "Calmar": 0.2377
+    },
+    "mean_invested": 0.9354,
+    "min_invested": 0.6,
+    "binding_rebalances": 56,
+    "n_rebalances": 192,
+    "t_vs_ew": -1.171,
+    "t_vs_matched_flat": 0.073,
+    "matched_flat_control": {
+      "multiplier": 0.935,
+      "Sharpe": 0.6932,
+      "MaxDD": -0.2245,
+      "CAGR": 0.0467
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.0702,
+        "equal_weight": -0.2978,
+        "excess": 0.2276
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0362,
+        "equal_weight": -0.0724,
+        "excess": 0.1086
+      },
+      "COVID 2020": {
+        "strategy": -0.068,
+        "equal_weight": -0.2128,
+        "excess": 0.1448
+      },
+      "2022 bear": {
+        "strategy": -0.1782,
+        "equal_weight": -0.2449,
+        "excess": 0.0667
+      }
+    }
+  },
+  "relative 1.00/0.60/0.30": {
+    "stats": {
+      "CAGR": 0.0423,
+      "Vol": 0.0575,
+      "Sharpe": 0.736,
+      "MaxDD": -0.1662,
+      "Calmar": 0.2546
+    },
+    "mean_invested": 0.874,
+    "min_invested": 0.3,
+    "binding_rebalances": 56,
+    "n_rebalances": 192,
+    "t_vs_ew": -1.301,
+    "t_vs_matched_flat": -0.122,
+    "matched_flat_control": {
+      "multiplier": 0.874,
+      "Sharpe": 0.6808,
+      "MaxDD": -0.2144,
+      "CAGR": 0.0427
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.0643,
+        "equal_weight": -0.2978,
+        "excess": 0.2336
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0307,
+        "equal_weight": -0.0724,
+        "excess": 0.1032
+      },
+      "COVID 2020": {
+        "strategy": -0.0545,
+        "equal_weight": -0.2128,
+        "excess": 0.1584
+      },
+      "2022 bear": {
+        "strategy": -0.1434,
+        "equal_weight": -0.2449,
+        "excess": 0.1015
+      }
+    }
+  },
+  "relative 1.00/0.50/0.25": {
+    "stats": {
+      "CAGR": 0.0407,
+      "Vol": 0.0553,
+      "Sharpe": 0.7356,
+      "MaxDD": -0.1571,
+      "Calmar": 0.2591
+    },
+    "mean_invested": 0.8464,
+    "min_invested": 0.25,
+    "binding_rebalances": 56,
+    "n_rebalances": 192,
+    "t_vs_ew": -1.337,
+    "t_vs_matched_flat": -0.093,
+    "matched_flat_control": {
+      "multiplier": 0.846,
+      "Sharpe": 0.6748,
+      "MaxDD": -0.2097,
+      "CAGR": 0.041
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.0538,
+        "equal_weight": -0.2978,
+        "excess": 0.244
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0294,
+        "equal_weight": -0.0724,
+        "excess": 0.1019
+      },
+      "COVID 2020": {
+        "strategy": -0.0526,
+        "equal_weight": -0.2128,
+        "excess": 0.1602
+      },
+      "2022 bear": {
+        "strategy": -0.1291,
+        "equal_weight": -0.2449,
+        "excess": 0.1158
+      }
+    }
+  },
+  "equal_weight": {
+    "CAGR": 0.0733,
+    "Vol": 0.138,
+    "Sharpe": 0.5316,
+    "MaxDD": -0.3608,
+    "Calmar": 0.2033
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "main": {
+    "Regime-conditional strategy": {
+      "CAGR": 0.1702,
+      "Vol": 0.1487,
+      "Sharpe": 1.1445,
+      "MaxDD": -0.2045,
+      "Calmar": 0.8321
+    },
+    "Equal-weight": {
+      "CAGR": 0.3352,
+      "Vol": 0.2445,
+      "Sharpe": 1.3707,
+      "MaxDD": -0.3363,
+      "Calmar": 0.9966
+    },
+    "Equal-weight at strategy volatility": {
+      "CAGR": 0.2008,
+      "Vol": 0.1487,
+      "Sharpe": 1.3502,
+      "MaxDD": -0.2141,
+      "Calmar": 0.9377
+    },
+    "No regime timing, same average exposure": {
+      "CAGR": 0.1882,
+      "Vol": 0.1682,
+      "Sharpe": 1.1189,
+      "MaxDD": -0.3036,
+      "Calmar": 0.6199
+    }
+  },
+  "mean_exposure": 0.9158,
+  "period": [
+    "2019-01-07",
+    "2026-08-26",
+    1920
+  ],
+  "excess_ann": -0.15094,
+  "t": -2.791,
+  "p": 0.0053,
+  "concentration": {
+    "mean_top_weight": 0.25,
+    "mean_effective_assets": 4.93
+  },
+  "episodes": {
+    "COVID 2020": {
+      "strategy": -0.1997,
+      "equal_weight": -0.3246,
+      "excess": 0.125
+    },
+    "2022 bear": {
+      "strategy": -0.1572,
+      "equal_weight": -0.2833,
+      "excess": 0.126
+    }
+  },
+  "years": [
+    {
+      "year": 2019,
+      "strat_sharpe": 1.602,
+      "ew_sharpe": 2.172,
+      "strat_dd": -0.111,
+      "ew_dd": -0.15,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2020,
+      "strat_sharpe": 0.784,
+      "ew_sharpe": 1.558,
+      "strat_dd": -0.205,
+      "ew_dd": -0.336,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2021,
+      "strat_sharpe": 1.765,
+      "ew_sharpe": 2.2,
+      "strat_dd": -0.046,
+      "ew_dd": -0.082,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2022,
+      "strat_sharpe": -0.31,
+      "ew_sharpe": -0.898,
+      "strat_dd": -0.181,
+      "ew_dd": -0.335,
+      "sharpe_win": true,
+      "dd_win": true
+    },
+    {
+      "year": 2023,
+      "strat_sharpe": 1.271,
+      "ew_sharpe": 2.907,
+      "strat_dd": -0.086,
+      "ew_dd": -0.104,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2024,
+      "strat_sharpe": 1.668,
+      "ew_sharpe": 2.344,
+      "strat_dd": -0.053,
+      "ew_dd": -0.12,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2025,
+      "strat_sharpe": 1.973,
+      "ew_sharpe": 1.219,
+      "strat_dd": -0.124,
+      "ew_dd": -0.223,
+      "sharpe_win": true,
+      "dd_win": true
+    },
+    {
+      "year": 2026,
+      "strat_sharpe": 2.767,
+      "ew_sharpe": 1.157,
+      "strat_dd": -0.055,
+      "ew_dd": -0.097,
+      "sharpe_win": true,
+      "dd_win": true
+    }
+  ],
+  "dd_wins": 8,
+  "sharpe_wins": 3
+}

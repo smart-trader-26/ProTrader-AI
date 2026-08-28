@@ -1,0 +1,106 @@
+{
+  "main": {
+    "Regime-conditional strategy": {
+      "CAGR": 0.1342,
+      "Vol": 0.1658,
+      "Sharpe": 0.8097,
+      "MaxDD": -0.2045,
+      "Calmar": 0.6563
+    },
+    "Equal-weight": {
+      "CAGR": 0.3362,
+      "Vol": 0.2668,
+      "Sharpe": 1.26,
+      "MaxDD": -0.3363,
+      "Calmar": 0.9995
+    },
+    "Equal-weight at strategy volatility": {
+      "CAGR": 0.2075,
+      "Vol": 0.1658,
+      "Sharpe": 1.2517,
+      "MaxDD": -0.2184,
+      "Calmar": 0.9498
+    },
+    "No regime timing, same average exposure": {
+      "CAGR": 0.1578,
+      "Vol": 0.1877,
+      "Sharpe": 0.8407,
+      "MaxDD": -0.2975,
+      "Calmar": 0.5306
+    }
+  },
+  "mean_exposure": 0.9042,
+  "period": [
+    "2019-01-07",
+    "2023-12-29",
+    1255
+  ],
+  "excess_ann": -0.18598,
+  "t": -2.709,
+  "p": 0.0068,
+  "concentration": {
+    "mean_top_weight": 0.25,
+    "mean_effective_assets": 4.82
+  },
+  "episodes": {
+    "COVID 2020": {
+      "strategy": -0.1997,
+      "equal_weight": -0.3246,
+      "excess": 0.125
+    },
+    "2022 bear": {
+      "strategy": -0.1572,
+      "equal_weight": -0.2833,
+      "excess": 0.126
+    }
+  },
+  "years": [
+    {
+      "year": 2019,
+      "strat_sharpe": 1.602,
+      "ew_sharpe": 2.172,
+      "strat_dd": -0.111,
+      "ew_dd": -0.15,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2020,
+      "strat_sharpe": 0.784,
+      "ew_sharpe": 1.558,
+      "strat_dd": -0.205,
+      "ew_dd": -0.336,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2021,
+      "strat_sharpe": 1.765,
+      "ew_sharpe": 2.2,
+      "strat_dd": -0.046,
+      "ew_dd": -0.082,
+      "sharpe_win": false,
+      "dd_win": true
+    },
+    {
+      "year": 2022,
+      "strat_sharpe": -0.31,
+      "ew_sharpe": -0.898,
+      "strat_dd": -0.181,
+      "ew_dd": -0.335,
+      "sharpe_win": true,
+      "dd_win": true
+    },
+    {
+      "year": 2023,
+      "strat_sharpe": 1.271,
+      "ew_sharpe": 2.907,
+      "strat_dd": -0.086,
+      "ew_dd": -0.104,
+      "sharpe_win": false,
+      "dd_win": true
+    }
+  ],
+  "dd_wins": 5,
+  "sharpe_wins": 1
+}

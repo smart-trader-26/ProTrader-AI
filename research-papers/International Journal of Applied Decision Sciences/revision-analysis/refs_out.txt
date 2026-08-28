@@ -1,0 +1,349 @@
+====================================================================================================
+RESOLVED CANDIDATES
+====================================================================================================
+
+1952  The Journal of Finance
+   Markowitz, H.
+   Portfolio Selection
+   vol 7 no 1 pp 77  doi 10.2307/2975974
+
+2004  Journal of Multivariate Analysis
+   Ledoit, O., Wolf, M.
+   A well-conditioned estimator for large-dimensional covariance matrices
+   vol 88 no 2 pp 365-411  doi 10.1016/s0047-259x(03)00096-4
+
+1987  Econometrica
+   Newey, W.K., West, K.D.
+   A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix
+   vol 55 no 3 pp 703  doi 10.2307/1913610
+
+1994  Journal of the American Statistical Association
+   Politis, D.N., Romano, J.P.
+   The Stationary Bootstrap
+   vol 89 no 428 pp 1303-1313  doi 10.1080/01621459.1994.10476870
+
+1989  Econometrica
+   Hamilton, J.D.
+   A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle
+   vol 57 no 2 pp 357  doi 10.2307/1912559
+
+2002  Review of Financial Studies
+   Ang, A., Bekaert, G.
+   International Asset Allocation With Regime Shifts
+   vol 15 no 4 pp 1137-1187  doi 10.1093/rfs/15.4.1137
+
+2009  Review of Financial Studies
+   DeMiguel, V., Garlappi, L., Uppal, R.
+   Optimal Versus Naive Diversification: How Inefficient is the 1/
+                    <i>N</i>
+                    Portfolio Strategy?
+   vol 22 no 5 pp 1915-1953  doi 10.1093/rfs/hhm075
+
+2017  The Journal of Finance
+   MOREIRA, A., MUIR, T.
+   Volatility‐Managed Portfolios
+   vol 72 no 4 pp 1611-1644  doi 10.1111/jofi.12513
+
+2016  The Journal of Portfolio Management
+   López de Prado, M.
+   Building Diversified Portfolios that Outperform Out of Sample
+   vol 42 no 4 pp 59-69  doi 10.3905/jpm.2016.42.4.059
+
+2011  The Journal of Finance
+   LOUGHRAN, T., MCDONALD, B.
+   When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10‐Ks
+   vol 66 no 1 pp 35-65  doi 10.1111/j.1540-6261.2010.01625.x
+
+2014  The Journal of Portfolio Management
+   Bailey, D.H., López de Prado, M.
+   The Deflated Sharpe Ratio:
+                    <i>Correcting for Selection Bias, Backtest</i>
+                    <i>Overfitting, and Non-Normality</i>
+   vol 40 no 5 pp 94-107  doi 10.3905/jpm.2014.40.5.094
+
+2015  The Journal of Portfolio Management
+   Harvey, C.R., Liu, Y.
+   Backtesting
+   vol 42 no 1 pp 13-28  doi 10.3905/jpm.2015.42.1.013
+
+2008  Journal of Empirical Finance
+   Ledoit, O., Wolf, M.
+   Robust performance hypothesis testing with the Sharpe ratio
+   vol 15 no 5 pp 850-859  doi 10.1016/j.jempfin.2008.03.002
+
+2012  Financial Analysts Journal
+   Kritzman, M., Page, S., Turkington, D.
+   Regime Shifts: Implications for Dynamic Strategies (corrected)
+   vol 68 no 3 pp 22-39  doi 10.2469/faj.v68.n3.3
+
+2018  The Review of Financial Studies
+   Bollerslev, T., Hood, B., Huss, J., Pedersen, L.H.
+   Risk Everywhere: Modeling and Managing Volatility
+   vol 31 no 7 pp 2729-2773  doi 10.1093/rfs/hhy041
+
+2015  Journal of Financial Economics
+   Barroso, P., Santa-Clara, P.
+   Momentum has its moments
+   vol 116 no 1 pp 111-120  doi 10.1016/j.jfineco.2014.11.010
+
+2020  The Review of Financial Studies
+   Gu, S., Kelly, B., Xiu, D.
+   Empirical Asset Pricing via Machine Learning
+   vol 33 no 5 pp 2223-2273  doi 10.1093/rfs/hhaa009
+
+2007  The Journal of Finance
+   TETLOCK, P.C.
+   Giving Content to Investor Sentiment: The Role of Media in the Stock Market
+   vol 62 no 3 pp 1139-1168  doi 10.1111/j.1540-6261.2007.01232.x
+
+====================================================================================================
+RECENT (2025+) CANDIDATES BY TOPIC
+====================================================================================================
+
+--- regime switching asset allocation portfolio
+   2025 | Mathematics                                          | Regime-Switching Asset Allocation Using a Framework Combing a Jump Model
+        Li, X., Chen, J., Tao, X., Ji, Y. | vol 13 no 17 pp 2837 | 10.3390/math13172837
+   2026 | The Journal of Financial Data Science                | Regime-Aware Asset Allocation with Dual-Regime Signals and Regime-Depend
+        Luo, Y., Mulvey, J.M. | vol 8 no 3 pp 104-134 | 10.3905/jfds.2026.013
+   2026 | Asian Review of Financial Research                   | The Impact of Incorporating Bitcoin on Portfolio Performance : A Dynamic
+        Professor, Ewha Womans University; President, Korea Capital Market Institute, Kim, S.W., Seo, M., Yang, S. | vol 39 no 2 pp 67-96 | 10.37197/arfr.2026.39.2.3
+   2025 | International Journal of Mathematics in Operational  | Optimal mean-variance portfolio selection with uncertain time horizon in
+        Keykhaei, R. | vol 30 no 3 pp 392-414 | 10.1504/ijmor.2025.145756
+   2026 | Finance &amp; Economics                              | Markowitz Portfolio Theory for Household Asset Allocation
+        Yin, Y. | vol 3 no 16 pp  | 10.61173/x93eh252
+   2026 | Journal of the Korea Academia-Industrial cooperation | An Asset Allocation Strategy Recommendation System using Markov Regime S
+        Shin, S.J. | vol 27 no 4 pp 211-219 | 10.5762/kais.2026.27.4.211
+   2026 | Practical Applications                               | Snapshots of Regime-Aware Asset Allocation with Dual-Regime Signals and 
+        Derived from original PMR research written by Yirui Luo and John M. Mulvey using AI and an editor | vol  no  pp snp.2026.jfds.011 | 10.3905/snp.2026.jfds.011
+   2026 | The Journal of Portfolio Management                  | False Precision in Portfolio Construction: Misconceptions That Undermine
+        Fabozzi, F.J., Yelnik, I. | vol 52 no 5 pp 162-177 | 10.3905/jpm.2026.1.812
+   2026 | The Journal of Beta Investment Strategies            | REITs in a Multi-Asset Portfolio: An Asset Allocation Framework for Infl
+        de Longis, A., Li, D. | vol  no  pp jbis.2026.009 | 10.3905/jbis.2026.009
+   2025 | The Journal of Portfolio Management                  | Editor’s Introduction for the 2025 Special Issue on Multi-Asset Strategi
+        Fabozzi, F.J. | vol 51 no 5 pp 1-5 | 10.3905/jpm.2025.1.693
+   2026 | The Journal of Portfolio Management                  | Editor’s Introduction for the 2026 Special Issue on Multi-Asset Strategi
+        Fabozzi, F.J. | vol 52 no 5 pp 1-5 | 10.3905/jpm.2026.1.831
+
+--- machine learning portfolio construction optimization
+   2026 | Journal of Investment, Banking and Finance           | Black-Litterman Portfolio Optimization using Machine-Learning, Deep Lear
+        Vasilevich, S.I., Byers, J.W. | vol 04 no 01 pp 01-11 | 10.33140/jibf.04.01.04
+   2026 | INTERNATIONAL JOURNAL OF ENGINEERING DEVELOPMENT AND | Portfolio Optimization Using Modern Portfolio Theory and Machine Learnin
+        D, P., C, C., Sharfunisa.N, S. | vol 14 no 3 pp  | 10.56975/ijedr.v14i3.308921
+   2026 | Mathematics                                          | Portfolio Construction Under Behavioral Distortions and Narrow Framing: 
+        Tsomidis, G. | vol 14 no 4 pp 607 | 10.3390/math14040607
+   2026 | Financial Innovation                                 | Machine learning-based portfolio optimization: comparative analysis with
+        Ha, Y.S., Kang, J., Kim, J., Chun, D. | vol 12 no 1 pp  | 10.1186/s40854-026-00927-8
+   2025 | Journal of Advanced Management Studies               | How Machine Learning Is Reshaping Portfolio Optimization
+        Aarav Parakh,  | vol 2 no 3 pp 93-119 | 10.36676/jams.v2.i3.80
+   2025 | Iranian Journal of Finance                           | Smart-Beta Portfolio Optimization Using Machine Learning Techniques
+        Salehirad, F., Tondnevis, F. | vol 9 no 4 pp 91-116 | 10.66224/ijf.2025.524928.1518
+   2025 | PLOS One                                             | Retraction: An analysis of machine learning risk factors and risk parity
+        The PLOS One Editors | vol 20 no 5 pp e0323221 | 10.1371/journal.pone.0323221
+   2025 | Automation in Construction                           | Optimization and performance evaluation of machine learning classifiers 
+        Fan, C.L. | vol 179 no  pp 106470 | 10.1016/j.autcon.2025.106470
+   2025 | Scientific Reports                                   | A machine learning approach to risk based asset allocation in portfolio 
+        Agal, S., Raulji, K., Odedra, N.D. | vol 15 no 1 pp  | 10.1038/s41598-025-26337-x
+   2026 | International Journal of Financial Studies           | A Hybrid Genetic Algorithm with Learning-to-Rank-to-Optimization for US 
+        Kottas, F. | vol 14 no 4 pp 95 | 10.3390/ijfs14040095
+   2026 | International Journal of Financial Studies           | Machine Learning-Driven Portfolio Optimization Using Money Flow Index-Ba
+        Singsiri, P., Yokrattanasak, J. | vol 14 no 5 pp 112 | 10.3390/ijfs14050112
+   2025 | Results in Engineering                               | Deep learning and machine learning models for portfolio optimization: En
+        Ashrafzadeh, M., Sadrani, M., Zolfani, S.H. | vol 27 no  pp 106263 | 10.1016/j.rineng.2025.106263
+
+--- deep reinforcement learning portfolio allocation
+   2026 | Journal of Investment, Banking and Finance           | Black-Litterman Portfolio Optimization using Machine-Learning, Deep Lear
+        Vasilevich, S.I., Byers, J.W. | vol 04 no 01 pp 01-11 | 10.33140/jibf.04.01.04
+   2026 | Asian Journal of Economics and Banking               | Deep reinforcement learning for portfolio allocation: a comparative stud
+        Saijai, W., Pankwaen, K. | vol 10 no 2 pp 174-191 | 10.1108/ajeb-10-2025-0168
+   2025 | International Review of Economics &amp; Finance      | High-dimensional multi-period portfolio allocation using deep reinforcem
+        Jiang, Y., Olmo, J., Atwi, M. | vol 98 no  pp 103996 | 10.1016/j.iref.2025.103996
+   2025 | Engineering: Open Access                             | Portfolio Optimization through a Multi-modal Deep Reinforcement Learning
+        National University of Singapore, Singapore, JiaJie, W., LiLi, L., National University of Singapore, Singapore | vol 3 no 4 pp 01-08 | 10.33140/eoa.03.04.a03
+   2025 | Engineering: Open Access                             | Portfolio Optimization through a Multi-modal Deep Reinforcement Learning
+        National University of Singapore, Singapore, JiaJie, W., LiLi, L., National University of Singapore, Singapore | vol 3 no 4 pp 01-08 | 10.33140/eoa.03.04.03
+   2025 | International Journal of Research Publication and Re | Deep Reinforcement Learning for Energy-Efficient Resource Allocation in 
+        Marjanibenisi, A., Tajik, M. | vol 6 no 11 pp 8380-8392 | 10.55248/gengpi.06.1125.39114
+   2025 | Systems                                              | Hybrid Deep Learning-Reinforcement Learning for Adaptive Human-Robot Tas
+        Urrea, C. | vol 13 no 8 pp 631 | 10.3390/systems13080631
+   2025 | International Journal of Research Publication and Re | Optimizing Resource Allocation in Cloud-Based Deep Learning Systems Usin
+        Jaman, M.N., Sarangerel, A., Boorchi, T., Erdene-Ochir, O. | vol 6 no 5 pp 6504-6511 | 10.55248/gengpi.6.0525.1787
+   2025 | IEEE Access                                          | Simul-RL Portfolio Framework: Black-Scholes-Merton and Reinforcement Lea
+        Ahn, J., Kang, H.G. | vol 13 no  pp 52697-52710 | 10.1109/access.2025.3552713
+   2026 | International Journal of Computational Science and E | Quantum-Inspired Portfolio Optimization Using Reinforcement Learning for
+        Sambangi, K.K. | vol 3 no 3 pp 50 | 10.63328/ijcser-v3ri3p7
+   2025 | Scientific Reports                                   | Graph attention-based heterogeneous multi-agent deep reinforcement learn
+        Zhang, B. | vol 16 no 1 pp  | 10.1038/s41598-025-32408-w
+
+--- market regime detection clustering financial markets
+   2025 | Journal of International Financial Markets, Institut | Exchange rate regime changes and market efficiency: An event study
+        Corzo, T., Martin-Bujack, K., Portela, J., Rodríguez-Gallego, A. | vol 100 no  pp 102132 | 10.1016/j.intfin.2025.102132
+   2026 | Journal of Digital Market and Digital Currency       | Market Regime Detection in Bitcoin Time Series Using K-Means Clustering 
+        Haryani, C.A. | vol 3 no 1 pp 75-95 | 10.47738/jdmdc.v3i1.57
+   2026 | Journal of Financial Markets                         | Microstructure and market dynamics in crypto markets
+        Easley, D., O'Hara, M., Yang, S., Zhang, Z. | vol  no  pp 101071 | 10.1016/j.finmar.2026.101071
+   2026 | Journal of Financial Markets                         | The effect of stock market indexing on option market conditions
+        Chang, E.C., Ge, L., Lin, T.C., Ma, X. | vol 78 no  pp 101026 | 10.1016/j.finmar.2025.101026
+   2026 | Law and Financial Markets Review                     | Valuing Dissent: Reassessing Minimum Payouts under India’s Insolvency Re
+        Singh, A. | vol 19 no 2 pp 129-140 | 10.1080/17521440.2026.2673820
+   2025 | The American Journal of Management and Economics Inn | Volatility Clustering and Market Sentiment: A Quantitative Assessment of
+        Senior Financial Markets Dealer, Nassau, The Bahamas, Yakymashko, V. | vol 07 no 07 pp 59-66 | 10.37547/tajmei/volume07issue07-07
+   2026 | Journal of Financial Markets                         | High-frequency traders’ single-dealer platforms and market quality
+        Aramian, L., Nordén, L.L. | vol  no  pp 101074 | 10.1016/j.finmar.2026.101074
+
+--- financial sentiment analysis large language models stock
+   2025 | Finance &amp; Economics                              | Financial Sentiment Analysis with Large Language Models
+        Cheng, X. | vol 1 no 6 pp  | 10.61173/gvntfv56
+   2026 | Acta Informatica Pragensia                           | Operationalising Large Language Models for Financial Sentiment Analysis:
+        Carnaz, G., Carvalho, J.M., Marques, R.P. | vol  no  pp  | 10.18267/j.aip.328
+   2026 | PeerJ Computer Science                               | Augmenting large language models for financial sentiment analysis: a heu
+        Li, D., Li, Y., Chen, X., Zhang, W. | vol 12 no  pp e3607 | 10.7717/peerj-cs.3607
+   2026 | Advances in Economics, Management and Political Scie | Sentiment Analysis of Stock Market Live Streaming Content Based on Large
+        Pang, R., Zhang, H. | vol 253 no 1 pp 1-5 | 10.54254/2754-1169/2026.33665
+   2026 | International Journal of Data Science and Analytics  | Benchmarking large language models for target-based financial sentiment 
+        Muhammad, I., Rospocher, M., Knez, T., Žitnik, S. | vol 22 no 1 pp  | 10.1007/s41060-026-01201-x
+   2025 | Big Data and Cognitive Computing                     | Chinese Financial News Analysis for Sentiment and Stock Prediction: A Co
+        Chuang, H.M., He, H.C., Hu, M.C. | vol 9 no 10 pp 263 | 10.3390/bdcc9100263
+   2025 | Journal of Theoretical and Applied Electronic Commer | Leveraging Large Language Models for Sentiment Analysis and Investment S
+        Mun, Y., Kim, N. | vol 20 no 2 pp 77 | 10.3390/jtaer20020077
+   2025 | International Journal of Advanced Research in Scienc | Forecasting of Marketing News in Financial Sector for Sentiment Analysis
+        Sandeep Gupta,  | vol  no  pp 462-475 | 10.48175/ijarsct-28347
+   2026 | Information                                          | Event-Based Sentiment Analysis of Financial News Using Large Language Mo
+        Kulkarni, A., Dogra, V. | vol 17 no 6 pp 558 | 10.3390/info17060558
+   2026 | Applied and Computational Engineering                | A Survey of Zero-Shot and Few-Shot Learning with Large Language Models f
+        Gao, L. | vol 254 no 1 pp 89-95 | 10.54254/2755-2721/2026.ld35648
+   2025 | Journal of Electronic Research and Application       | Correlation Analysis Between Investor Sentiment and Stock Price Fluctuat
+        Ren, G., Luo, Z., Zhang, N., Yang, Y. | vol 9 no 5 pp 30-37 | 10.26689/jera.v9i5.12198
+   2026 | Information Sciences                                 | Financial news sentiment meets market data: A large language model-based
+        Officioso, G., Sperlì, G., Vignali, A. | vol 754 no  pp 123711 | 10.1016/j.ins.2026.123711
+
+--- volatility targeting risk budgeting portfolio
+   2025 | The Journal of Portfolio Management                  | Volatility Targeting Is Trendy: How Trend Following Explains Alpha in Vo
+        Hood, B.T., Raughtigan, C. | vol 52 no 1 pp 100-121 | 10.3905/jpm.2025.1.764
+   2025 | Insurance: Mathematics and Economics                 | Portfolio selection and risk sharing via risk budgeting
+        Asimit, V., Chong, W.F., Tunaru, R., Zhou, F. | vol 125 no  pp 103139 | 10.1016/j.insmatheco.2025.103139
+   2026 | American Journal of Student Research                 | Dynamic Multi-Asset Portfolio Optimization: Evaluating Risk-Return Trade
+        Das, A. | vol  no  pp 52-61 | 10.70251/hyjr2348.435261
+   2025 | International Journal of Financial Studies           | Inverse DEA for Portfolio Volatility Targeting: Industry Evidence from T
+        Kehinde, T.O., Chung, S.H., Olanrewaju, O.A. | vol 13 no 4 pp 192 | 10.3390/ijfs13040192
+   2025 | Highlights in Business, Economics and Management     | The Impact of Liquidity and Volatility Weighting on Risk-Adjusted Portfo
+        Liu, M. | vol 54 no  pp 182-188 | 10.54097/ra1xqk40
+   2025 | The Journal of Portfolio Management                  | Implied Volatility Style Analysis: Risk Aversion versus Uncertainty
+        Fassas, A.P., Papadamou, S. | vol 51 no 6 pp 122-132 | 10.3905/jpm.2025.1.684
+   2026 | The Journal of Portfolio Management                  | Price of Risk: Are Volatility-Controlled Indices Priceless?
+        Engle, R.F., Karagozoglu, A.K. | vol 52 no 9 pp 54-84 | 10.3905/jpm.2026.037
+   2026 | International Journal of Academic and Industrial Res | Crypto–Traditional Portfolio Contagion: Modeling Volatility Clustering a
+        Pasupuleti, M.K. | vol 06 no 02 pp 166-185 | 10.62311/nesx/rp-f92026
+   2025 | The Journal of Portfolio Management                  | Using Large Language Models to Estimate Novel Risk: Impact on Volatility
+        Gupta, S., Yan, H. | vol 51 no 7 pp 230-247 | 10.3905/jpm.2025.1.710
+   2025 | WSEAS TRANSACTIONS ON BUSINESS AND ECONOMICS         | Machine Learning–Enhanced Risk-Adjusted Portfolio Optimization under Vol
+        Muratore, A., Aiello, G., Quaranta, S., Carollo, F. | vol  no  pp 2877 | 10.37394/23207.2025.22.226
+   2025 | Borsa Istanbul Review                                | Investor attention and its impact on portfolio volatility and sectoral r
+        Özdemir, M., Taş, O. | vol 25 no 1 pp 107-126 | 10.1016/j.bir.2024.12.014
+   2025 | International Journal of Research Publication and Re | Advanced Budgeting and Dynamic Allocation Strategies for Maximizing Fina
+        Edo-Osagie, E. | vol 6 no 3 pp 1060-1077 | 10.55248/gengpi.6.0325.1130
+
+--- covariance shrinkage estimation portfolio optimization
+   2025 | Montenegrin Journal of Economics                     | Covariance Matrix Estimation for Portfolio Selection: Linear and Non-Lin
+        Minh Nhat, N. | vol 21 no 4 pp  | 10.14254/1800-5845/2025.21-4.17
+   2025 | Entropy                                              | Nonlinear Shrinkage Estimation of Higher-Order Moments for Portfolio Opt
+        Lu, W., Tian, Z. | vol 27 no 10 pp 1083 | 10.3390/e27101083
+   2026 | Axioms                                               | Noise-Adjusted Shrinkage Covariance Estimation in High Dimensions
+        Pamukçu, E. | vol 15 no 6 pp 468 | 10.3390/axioms15060468
+   2026 | Results in Applied Mathematics                       | Portfolio selection based on the spectral decomposition of the sample co
+        Sun, R., Wang, K., Ma, T., Liu, S. | vol 30 no  pp 100720 | 10.1016/j.rinam.2026.100720
+   2025 | Economic Modelling                                   | Improving minimum-variance portfolio through shrinkage of large covarian
+        Shi, F., Shu, L., He, F., Huang, W. | vol 144 no  pp 106981 | 10.1016/j.econmod.2024.106981
+   2025 | Results in Control and Optimization                  | Portfolio optimization with MOPSO-Shrinkage hybrid model
+        Tran, M., Nguyen, N.M. | vol 19 no  pp 100553 | 10.1016/j.rico.2025.100553
+   2026 | Symmetry                                             | Blockwise Exponential Covariance Modeling for High-Dimensional Portfolio
+        Fan, C., Tham, J. | vol 18 no 1 pp 171 | 10.3390/sym18010171
+   2026 | International Journal For Multidisciplinary Research | Spectral Shrinkage in High-Dimensional Statistics: From Random Matrix Th
+        Nsabimana, I. | vol 8 no 4 pp  | 10.36948/ijfmr.2026.v08i04.85840
+   2026 | International Journal of Mathematics And Computer Re | Mean-Variance Portfolio Optimization Based on Ledoit-Wolf Shrinkage With
+        Saranga, K.A.P.C., Rusgiyono, A., Hoyyi, A. | vol 14 no 06 pp  | 10.47191/ijmcr/v14i6.08
+   2025 | Investment Analysts Journal                          | Adaptive Beta Shrinkage estimation of covariance matrices
+        Staal, H., Flint, E. | vol 54 no 3 pp 387-407 | 10.1080/10293523.2025.2553255
+   2025 | Scientific Reports                                   | Application of regularized covariance matrices in logistic regression an
+        Sun, F., Huang, X. | vol 15 no 1 pp  | 10.1038/s41598-025-08712-w
+   2025 | Statistical Papers                                   | Unveiling outliers with robust covariance matrix estimation: a shrinkage
+        Vijayalakshmi, S., Sebastian, N., Sajesh, T.A. | vol 66 no 4 pp  | 10.1007/s00362-025-01694-x
+
+--- backtest overfitting evaluation trading strategies
+   2026 | Journal of Risk and Financial Management             | The GT-Score: A Robust Objective Function for Reducing Overfitting in Da
+        Sheppert, A.P. | vol 19 no 1 pp 60 | 10.3390/jrfm19010060
+   2026 | International Journal of Computational Mathematical  | Physics-Informed Neural Networks for Portfolio Optimisation and Algorith
+        S. Satyanarayana,  | vol 18 no 01 pp 202600180088-202600180095 | 10.70153/ijcmi/2026.18109
+   2025 | Journal of Applied Economics and Policy Studies      | A Kelly Quantitative Trading Investment Strategy Improved by Overfitting
+        Zhang, Z., Chen, X., Li, X. | vol 17 no 1 pp 50-55 | 10.54254/2977-5701/2025.21121
+   2025 | Advances in Computer and Communication               | Robustness Optimization Strategies for Mitigating Overfitting in Machine
+        Sun, J., Xu, Y., Li, Y. | vol 6 no 3 pp 139-143 | 10.26855/acc.2025.07.006
+   2025 | Revista Gestão &amp; Tecnologia                      | Comparative Analysis of Various Strategies Used in Algorithmic Trading
+        Modwel, G., Tandon, C. | vol 25 no 2 pp 46-73 | 10.20397/2177-6652/2025.v25i2.3154
+   2025 | KnE Social Sciences                                  | Design and Evaluation of an AI-based Intelligent Trading Bot: An Analyti
+        Obaid, M.K., Abdulhameed, M.M., Abdulhameed, M.M. | vol 10 no 19 pp 821-848 | 10.18502/kss.v10i19.19649
+   2026 | International Journal of Research Publication and Re | A Study of Options Trading Strategies Using Greeks
+        Sharma, M.S., Patel, D.S. | vol 7 no 5 pp 2589-2596 | 10.55248/gengpi.07.0526.c1146
+   2025 | Archives of Acoustics                                | The Impact of Training Strategies on Overfitting in Vowel Classification
+        Gmyrek, S., Libal, U., Hossa, R. | vol  no  pp 371-382 | 10.24425/aoa.2025.154823
+   2026 | International Journal of Social Sciences, Language a | Leveraging Microstate Diplomacy: Monaco's Strategies for Enhancing Tradi
+        ILCUS, C. | vol 06 no 03 pp 71-159 | 10.55640/ijssll-06-03-09
+   2026 | Journal of Financial Risk Management                 | When Strategies Work Too Well: Volatility-Based Investing, Overfitting a
+        Valls, F.B., Steurer, E. | vol 15 no 03 pp 189-211 | 10.4236/jfrm.2026.153012
+   2025 | Journal of Integrated Science and Technology         | A review of bidding strategies and energy trading models in peer-to-peer
+        Telagi, K., Pedapenki, K.K. | vol 13 no 4 pp  | 10.62110/sciencein.jist.2025.v13.1077
+   2026 | Financial Innovation                                 | Optimizing stock market prediction and stock trading strategies with dee
+        Wang, H., Xie, D., Duan, Y., Xiong, W. | vol 12 no 1 pp  | 10.1186/s40854-026-00929-6
+
+--- multimodal fusion stock prediction
+   2025 | Economics &amp; Management Information               | Stock Price Prediction Using LSTM with Attention-Based Multimodal Fusion
+        Sun, J. | vol  no  pp 1-5 | 10.62836/emi.v4i4.506
+   2025 | Complex &amp; Intelligent Systems                    | Stock movement prediction with multimodal stable fusion via gated cross-
+        Zong, C., Wan, J., Cascone, L., Zhou, H. | vol 11 no 9 pp  | 10.1007/s40747-025-02023-3
+   2026 | IEEE Access                                          | A Multimodal Deep Fusion Method for Stock Movement Prediction Using Hete
+        Wen Wang, T., Sook Lu, Y., Soon Ku, C., Mohammed, O. | vol 14 no  pp 9882-9896 | 10.1109/access.2026.3654950
+   2025 | Actuators                                            | Fast Multimodal Trajectory Prediction for Vehicles Based on Multimodal I
+        Ge, L., Wang, S., Wang, G. | vol 14 no 3 pp 136 | 10.3390/act14030136
+   2026 | Information Fusion                                   | Multimodal information compression, completion, and adaptive fusion for 
+        Gao, G., Gan, T., Yang, J., Rao, N. | vol 136 no  pp 104548 | 10.1016/j.inffus.2026.104548
+   2027 | Information Fusion                                   | Lane-driven and goal-focused refinement transformer for multimodal traje
+        Bharilya, V., Kumar, N. | vol 137 no  pp 104640 | 10.1016/j.inffus.2026.104640
+   2025 | Information Fusion                                   | A deep multimodal network for multi-task trajectory prediction
+        Lei, D., Xu, M., Wang, S. | vol 113 no  pp 102597 | 10.1016/j.inffus.2024.102597
+   2026 | International Journal of Science and Research (IJSR) | Physics-Informed Machine Learning for Agricultural Drought Prediction in
+        Khajuria, A. | vol  no  pp 1581-1593 | 10.21275/sr26629131639
+   2027 | Information Fusion                                   | QMF-MAP: A quantum multimodal fusion model for molecular activity predic
+        Li, M., Liu, W., Shi, L., Li, Y. | vol 137 no  pp 104584 | 10.1016/j.inffus.2026.104584
+   2025 | Information Fusion                                   | Multimodal fusion for large-scale traffic prediction with heterogeneous 
+        Yan, Y., Cui, S., Liu, J., Zhao, Y. | vol 114 no  pp 102695 | 10.1016/j.inffus.2024.102695
+   2025 | International Journal of Research Publication and Re | AI driven dynamic Prediction System for Stock Market Trends using Multim
+        Patil, M., Mahandule, D., Parab, M., Gaykar, M. | vol 6 no 4 pp 6817-6821 | 10.55248/gengpi.6.0425.14156
+   2025 | Frontiers in Toxicology                              | MoltiTox: a multimodal fusion model for molecular toxicity prediction
+        Park, J., Lee, S. | vol 7 no  pp  | 10.3389/ftox.2025.1720651
+
+--- decision making under uncertainty investment portfolio
+   2026 | Humanities and Social Sciences Communications        | Forecasting meets Portfolio Theory: A Bibliometric Approach to Decision-
+        Raimundo, B., Bravo, J.M. | vol 13 no 1 pp  | 10.1057/s41599-026-07252-6
+   2025 | Jurnal Manajemen Motivasi                            | Investment Decision-Making Under Uncertainty: The Role of Representative
+        Hariyanto, D. | vol 21 no 2 pp 705-722 | 10.29406/jmm.v21i2.8002
+   2026 | The American Journal of Management and Economics Inn | Features of Decision Making Under Uncertainty
+        O‘g‘li, M.S.D., Abdumuminovna, I.S. | vol 8 no 4 pp 14-18 | 10.37547/tajmei/volume08issue04-03
+   2026 | Herald of the Economic Sciences of Ukraine           | Behavioral aspects of investment decision-making under uncertainty: anal
+        Pozhuiev, D. | vol  no 1(50) pp 201 | 10.37405/3041-1629.2026.1(50).201-209
+   2025 | International Journal of Science and Research (IJSR) | Thinking in the Dark "Neuropsychological Insights into Decision Making u
+        Singh, M. | vol  no  pp 819-823 | 10.21275/sr25917171447
+   2026 | Advances in Machine Learning &amp; Artificial Intell | PlanningEFEMix: Hybrid Active Inference for Sequential Decision-Making u
+        Chokhawala, B., Mohammad, A.F. | vol 07 no 02 pp 01-17 | 10.33140/amlai.07.02.03
+   2025 | Advances in Economics and Management Research        | Consumption and Investment Portfolio Problem Under Distributional Uncert
+        Yan, Z., Zhao, P. | vol 13 no 1 pp 123 | 10.56028/aemr.13.1.123.2025
+   2026 | Statistics, Optimization &amp; Information Computing | Optimal Investment Decision Making Under Two Factor Uncertainty Using L´
+        Mokoka, P.O., Chikodza, E., Tshelametse, R. | vol 15 no 5 pp 3897-3922 | 10.19139/soic-2310-5070-2727
+   2025 | Research journal                                     | Data-Driven Decision-Making under Humanitarian Uncertainty
+        Yang, C., Yang, L. | vol 1 no 1 pp  | 10.65281/702798
+   2026 | Applied Energy                                       | Optimal energy portfolio investment strategies for data centers under de
+        Abdelhady, M., Iakovou, E., Pistikopoulos, E.N. | vol 410 no  pp 127510 | 10.1016/j.apenergy.2026.127510
+   2025 | Journal of Cleaner Production                        | Research on investment decision-making of renewable power producers unde
+        Song, X., Zhang, L., Han, J., Li, Q. | vol 518 no  pp 145867 | 10.1016/j.jclepro.2025.145867
+   2025 | Human Computer Interaction                           | Quantum Cognition Models for Decision-Making Under Uncertainty
+        Öztürkmen, A. | vol 9 no 1 pp  | 10.62802/drmqg024
+
+saved refs_candidates.json

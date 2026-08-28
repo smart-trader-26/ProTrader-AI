@@ -1,0 +1,118 @@
+{
+  "MULTI-ASSET 2008-2023": {
+    "main": {
+      "regime-conditional covariance": {
+        "CAGR": 0.059174,
+        "Vol": 0.07513,
+        "Sharpe": 0.787626,
+        "MaxDD": -0.243795,
+        "Calmar": 0.242721
+      },
+      "single trailing covariance": {
+        "CAGR": 0.058163,
+        "Vol": 0.073889,
+        "Sharpe": 0.787167,
+        "MaxDD": -0.228627,
+        "Calmar": 0.254403
+      },
+      "equal-weight": {
+        "CAGR": 0.07334,
+        "Vol": 0.137955,
+        "Sharpe": 0.53162,
+        "MaxDD": -0.360772,
+        "Calmar": 0.203286
+      }
+    },
+    "sweep": [
+      {
+        "blend": 0.25,
+        "sharpe": 0.7885,
+        "mdd": -0.2347,
+        "beats_single": false
+      },
+      {
+        "blend": 0.5,
+        "sharpe": 0.8028,
+        "mdd": -0.2438,
+        "beats_single": true
+      },
+      {
+        "blend": 0.75,
+        "sharpe": 0.8008,
+        "mdd": -0.245,
+        "beats_single": false
+      },
+      {
+        "blend": 1.0,
+        "sharpe": 0.8081,
+        "mdd": -0.2456,
+        "beats_single": true
+      }
+    ],
+    "diff_ann": 0.0010467809155506318,
+    "t": 0.4524645778037129,
+    "p": 0.6509587306537448,
+    "sharpe_rc": 0.8028497372208663,
+    "sharpe_base": 0.8021594135774095,
+    "mdd_rc": -0.24379497552370777,
+    "mdd_base": -0.22862668324483404
+  },
+  "SECTORS 2008-2023": {
+    "main": {
+      "regime-conditional covariance": {
+        "CAGR": 0.086251,
+        "Vol": 0.130687,
+        "Sharpe": 0.659977,
+        "MaxDD": -0.371448,
+        "Calmar": 0.232201
+      },
+      "single trailing covariance": {
+        "CAGR": 0.084446,
+        "Vol": 0.134304,
+        "Sharpe": 0.628765,
+        "MaxDD": -0.334894,
+        "Calmar": 0.252156
+      },
+      "equal-weight": {
+        "CAGR": 0.098107,
+        "Vol": 0.198119,
+        "Sharpe": 0.495191,
+        "MaxDD": -0.509186,
+        "Calmar": 0.192674
+      }
+    },
+    "sweep": [
+      {
+        "blend": 0.25,
+        "sharpe": 0.7014,
+        "mdd": -0.3503,
+        "beats_single": true
+      },
+      {
+        "blend": 0.5,
+        "sharpe": 0.6986,
+        "mdd": -0.3714,
+        "beats_single": true
+      },
+      {
+        "blend": 0.75,
+        "sharpe": 0.6797,
+        "mdd": -0.3884,
+        "beats_single": true
+      },
+      {
+        "blend": 1.0,
+        "sharpe": 0.7153,
+        "mdd": -0.3714,
+        "beats_single": true
+      }
+    ],
+    "diff_ann": 0.0011791572080914652,
+    "t": 0.17920274014148485,
+    "p": 0.8577875365644709,
+    "sharpe_rc": 0.6985944722365001,
+    "sharpe_base": 0.6710018518399343,
+    "mdd_rc": -0.37144817668722263,
+    "mdd_base": -0.33489378984894225
+  }
+}

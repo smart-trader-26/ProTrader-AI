@@ -1,0 +1,230 @@
+{
+  "T1_main": {
+    "Regime-conditional strategy": {
+      "CAGR": 0.0581,
+      "Vol": 0.0739,
+      "Sharpe": 0.7862,
+      "MaxDD": -0.2286,
+      "Calmar": 0.2541
+    },
+    "Equal-weight": {
+      "CAGR": 0.0733,
+      "Vol": 0.138,
+      "Sharpe": 0.5316,
+      "MaxDD": -0.3608,
+      "Calmar": 0.2033
+    },
+    "Inverse-volatility": {
+      "CAGR": 0.0674,
+      "Vol": 0.0882,
+      "Sharpe": 0.764,
+      "MaxDD": -0.2409,
+      "Calmar": 0.2798
+    },
+    "Equal-weight at strategy volatility": {
+      "CAGR": 0.0411,
+      "Vol": 0.0739,
+      "Sharpe": 0.5562,
+      "MaxDD": -0.2074,
+      "Calmar": 0.1982
+    }
+  },
+  "T5_ablation": {
+    "Full framework": {
+      "CAGR": 0.0581,
+      "Vol": 0.0739,
+      "Sharpe": 0.7862,
+      "MaxDD": -0.2286,
+      "Calmar": 0.2541
+    },
+    "No regime layer": {
+      "CAGR": 0.0579,
+      "Vol": 0.0737,
+      "Sharpe": 0.7855,
+      "MaxDD": -0.2253,
+      "Calmar": 0.2571
+    },
+    "No signal layer": {
+      "CAGR": 0.0563,
+      "Vol": 0.0737,
+      "Sharpe": 0.7644,
+      "MaxDD": -0.2283,
+      "Calmar": 0.2468
+    },
+    "Equal-weight": {
+      "CAGR": 0.0733,
+      "Vol": 0.138,
+      "Sharpe": 0.5316,
+      "MaxDD": -0.3608,
+      "Calmar": 0.2033
+    },
+    "vs_no_regime": {
+      "excess_ann": 0.00019,
+      "t": 0.305,
+      "p": 0.7601
+    },
+    "vs_no_signal": {
+      "excess_ann": 0.00168,
+      "t": 0.825,
+      "p": 0.4093
+    }
+  },
+  "T7_concentration": {
+    "mean_top_weight": 0.25,
+    "mean_effective_assets": 5.38,
+    "mean_invested": 0.9999,
+    "mean_cash": 0.0001,
+    "turnover_per_rebalance": 0.01,
+    "turnover_annual": 0.119
+  },
+  "T7_cost": {
+    "0 bps": {
+      "CAGR": 0.0453,
+      "Sharpe": 0.6186,
+      "MaxDD": -0.2436,
+      "turnover_annual": 4.031
+    },
+    "5 bps": {
+      "CAGR": 0.0569,
+      "Sharpe": 0.7756,
+      "MaxDD": -0.2348,
+      "turnover_annual": 0.407
+    },
+    "10 bps": {
+      "CAGR": 0.0581,
+      "Sharpe": 0.7862,
+      "MaxDD": -0.2286,
+      "turnover_annual": 0.119
+    },
+    "25 bps": {
+      "CAGR": 0.0555,
+      "Sharpe": 0.7198,
+      "MaxDD": -0.2448,
+      "turnover_annual": 0.019
+    }
+  },
+  "T8_order": [
+    {
+      "k": 2,
+      "AIC": 19053.0,
+      "BIC": 19123.0,
+      "loglik": -9515.5
+    },
+    {
+      "k": 3,
+      "AIC": 17900.3,
+      "BIC": 18008.3,
+      "loglik": -8933.1
+    },
+    {
+      "k": 4,
+      "AIC": 17719.3,
+      "BIC": 17865.5,
+      "loglik": -8836.7
+    },
+    {
+      "k": 5,
+      "AIC": 17624.0,
+      "BIC": 17808.4,
+      "loglik": -8783.0
+    },
+    {
+      "k": 6,
+      "AIC": 17481.4,
+      "BIC": 17703.8,
+      "loglik": -8705.7
+    }
+  ],
+  "T8_dynamics": {
+    "transition": [
+      [
+        0.964,
+        0.036,
+        0.0
+      ],
+      [
+        0.065,
+        0.928,
+        0.007
+      ],
+      [
+        0.0,
+        0.045,
+        0.955
+      ]
+    ],
+    "share": {
+      "0": 0.611,
+      "1": 0.337,
+      "2": 0.052
+    },
+    "mean_run_days": {
+      "0": 27.7,
+      "1": 13.9,
+      "2": 22.1
+    },
+    "median_run_days": {
+      "0": 8.5,
+      "1": 4.0,
+      "2": 1.0
+    },
+    "ann_vol": {
+      "0": 0.12,
+      "1": 0.2034,
+      "2": 0.4942
+    },
+    "ann_mom": {
+      "0": 0.1497,
+      "1": -0.0019,
+      "2": -0.2011
+    },
+    "oos_share": {
+      "0": 0.708,
+      "1": 0.261,
+      "2": 0.031
+    }
+  },
+  "T9_significance": {
+    "excess_ann": -0.02109,
+    "t": -0.789,
+    "p": 0.4304,
+    "nw_t": -1.006,
+    "strat_sharpe": 0.8012,
+    "ew_sharpe": 0.5821,
+    "bootstrap": {
+      "strat_ci": [
+        0.267,
+        1.386
+      ],
+      "ew_ci": [
+        0.123,
+        1.089
+      ],
+      "diff_ci": [
+        -0.141,
+        0.565
+      ],
+      "p_diff_le_0": 0.1115
+    },
+    "capture": {
+      "downside": 0.3794,
+      "upside": 0.4178
+    },
+    "worst_5pct_days": {
+      "n": 201,
+      "strategy": -0.00636,
+      "equal_weight": -0.02069,
+      "cushion": 0.01433
+    }
+  },
+  "rolling_sharpe": {
+    "strat_frac_positive": 0.829,
+    "ew_frac_positive": 0.833,
+    "strat_frac_above_ew": 0.578
+  },
+  "period": [
+    "2008-01-07",
+    "2023-12-29",
+    4024
+  ]
+}

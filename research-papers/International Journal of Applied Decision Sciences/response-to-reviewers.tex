@@ -1,0 +1,403 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\setlist[itemize]{leftmargin=1.4em, topsep=2pt}
+
+\newcommand{\rc}[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand{\cmt}[1]{\par\noindent\textit{#1}\par\smallskip}
+\newcommand{\resp}{\par\noindent\textbf{Response.}\ }
+\newcommand{\where}[1]{\par\smallskip\noindent\textcolor{blue!55!black}{\textbf{Where:} #1}\par}
+
+\title{\vspace{-2.2cm}Response to Reviewers\\[4pt]
+\large IJADS-312370 --- ``From Signal Fusion to Asset Allocation: A Decision-Theoretic
+Framework for Regime-Conditional Portfolio Construction''}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-2.2cm}
+
+\section*{Summary of the revision}
+
+We thank both reviewers and the Editor for a careful and demanding review. Every
+mandatory recommendation has been addressed, and all five optional suggestions have been
+implemented as well. Page, table, figure and equation numbers below refer to the revised
+manuscript.
+
+One change is larger than a normal revision and we describe it plainly at the outset,
+because the reviewers will notice it immediately.
+
+Reviewer~2's third comment asked for robustness checks across rolling windows and for
+sensitivity analysis. Implementing those checks exposed a defect in our own
+implementation. The fused signal was being passed into the mean-variance objective in
+the raw units of the underlying indicators; on-balance volume takes values of order
+$10^{8}$ to $10^{9}$, whereas annualised variances are of order $10^{-2}$. The linear
+term therefore dominated the quadratic risk term by roughly ten orders of magnitude, the
+risk model had no influence on the solution, and the optimiser returned a corner
+solution holding a single asset on almost every rebalance date. This is precisely the
+behaviour Reviewer~2 identified in comment~4 as inconsistent with the described
+risk-budgeting approach. The reviewer was right, and the cause was a defect rather than
+a design choice.
+
+A second defect surfaced from the same investigation. The regime-dependent volatility
+targets were specified as absolute levels of 10 to 20~per cent annualised. On a
+diversified portfolio those levels are never reached, so the constraint bound in one
+rebalance out of 224 and the regime layer --- the central mechanism of the paper --- had
+no effect on the portfolio at all.
+
+We corrected both defects: expected returns are now scaled to a return metric
+(Equation~(4), p.~10) and the regime risk budget is expressed as a fraction of the
+portfolio's own volatility rather than as an absolute target (Equation~(7), p.~11).
+Following Reviewer~2's optional comment~4, we also extended the evaluation from the
+original five-year, ten-equity study to an eighteen-year, ten-instrument multi-asset
+study covering four major stress episodes. The evaluation window runs to every session
+available at the date the analysis was run, 26~August 2026, rather than stopping at the
+original submission date. This is not a favourable window chosen after the fact: the
+2008--2023 block reproduces exactly the figures the corrected pipeline produced before
+the extension, and the 665 sessions from January~2024 onward postdate every
+specification decision in the study. We therefore report them separately, in a new
+Section~4.2, as an out-of-sample holdout. On that holdout the framework records a higher
+Sharpe ratio and a smaller maximum drawdown than all three benchmarks, including the two
+that beat it on Sharpe ratio before 2024.
+
+The consequence is that all reported numbers have changed, and the conclusions are
+narrower than in the submitted version. The framework's drawdown and stress-period
+results survive and are now supported across 18 of 18 specifications; the claim of
+significant alpha does not survive and has been removed; and the signal fusion layer is
+now reported as a tested null, since ablation shows it contributes nothing. We judged
+that reporting corrected results with weaker claims was the only defensible course, and
+we would rather present this to the reviewers now than have it discovered later.
+
+\bigskip
+\hrule
+\section*{Reviewer 1}
+
+\subsection*{Changes which must be made before publication}
+
+\rc{R1.1 Please fix your literature review. A typical academic paper should have around
+45 academic references with about 10 relevant references published in ACADEMIC JOURNALS
+in 2025 and 2026. Remove all self-citations and limit them to no more than 2--3
+references. \dots\ no more than three citations should be attributed to the same journal
+or author. In addition, please avoid citing references in clusters of more than three at
+a time.}
+
+\resp The reference list has been rebuilt from the ground up. It now contains
+\textbf{49 references}, of which \textbf{27 were published in 2025 or 2026}, well beyond
+the ten requested. Every entry was resolved against CrossRef, so authors, titles,
+volume, issue, pages and DOI are taken from the publisher record rather than from
+memory.
+
+\begin{itemize}
+\item \textbf{Journal concentration.} The submitted version drew 24 of its 33 references
+from a single journal. No journal now supplies more than three: the maximum of three is
+reached by The Journal of Finance, The Journal of Portfolio Management, IEEE Access and
+this journal. Where a further article from this journal was worth citing, it replaced a
+less relevant one rather than being added on top, so the limit of three is respected.
+\item \textbf{Author concentration.} No author appears more than twice.
+\item \textbf{Self-citations.} There are none, and there were none in the submitted
+version.
+\item \textbf{Citation clusters.} Every citation command in the manuscript was checked
+programmatically; none groups more than three references.
+\item \textbf{Scholarly sources.} All 49 entries are journal articles, apart from one
+standard monograph (Grinold and Kahn, 2000) cited for the information-ratio scaling used
+in Equation~(4). There are no conference proceedings, magazines or trade publications.
+\item \textbf{IJADS references.} Following the Editor's request, three relevant articles
+from this journal are now cited: Khodamoradi et~al. (2023) on robust
+mean-conditional-value-at-risk portfolio optimisation, Zhang et~al. (2025) on the gap
+between in-sample and out-of-sample model selection, and Mazzotta and Baidoo (2025) on
+the informational value of alternative data.
+\end{itemize}
+\where{References, pp.~28--31; new citations throughout Section~2, pp.~4--7.}
+
+\rc{R1.2 The paper has some serious acronym-related problems. \dots\ You need to expand
+an acronym once in the abstract upon the first use and once in the body upon the first
+use.}
+
+\resp The abstract has been rewritten and now contains no unexpanded acronym. In the
+body, every acronym is expanded at first use: compound annual growth rate (CAGR) and
+maximum drawdown (Max DD) in Section~3.8; the Akaike and Bayesian information criteria
+(AIC, BIC) in Section~3.4; information coefficient (IC) in Section~3.5; percentage
+points (pp) in the caption to Table~6. The five technical indicators are defined in full
+in Table~2 (p.~9), which is their first appearance anywhere in the manuscript. We also
+reduced acronym use overall, writing ``maximum drawdown'' in running text and reserving
+the abbreviation for table headings.
+\where{Abstract, p.~1; Sections~3.4, 3.5 and 3.8, pp.~10--12; Table~2, p.~9.}
+
+\rc{R1.3 Please carefully polish and clean up all figures and tables. All figures and
+tables in a paper must be consistent. Please make sure all figures are high-resolution
+(300 dpi).}
+
+\resp All eight figures have been regenerated at exactly 300~dpi from the corrected
+pipeline, in a single consistent visual style: one typeface, one colour palette, matched
+line weights, matched axis treatment and matched figure widths. The framework diagram
+(Figure~1) was redrawn from scratch, both for resolution and because the submitted
+version depicted a news and text ingestion path that the implementation does not
+contain.
+
+Two further faults in the submitted version have been corrected. All seven figures
+previously shared the same \verb|\label|, so every cross-reference resolved to the same
+figure; each figure now carries a unique label and is referenced individually in the
+text. All tables have been rebuilt to a single format.
+\where{Figures~1--8, pp.~8, 14, 17, 20, 22; Tables~1--13 throughout.}
+
+\bigskip
+\hrule
+\section*{Reviewer 2}
+
+\subsection*{Changes which must be made before publication}
+
+\rc{R2.1 The methodology should be explained more clearly so that other researchers can
+understand and reproduce the work.}
+
+\resp Section~3 has been rewritten with reproduction as its explicit objective, and now
+runs from p.~7 to p.~12. It states the study universe instrument by instrument, the data
+source and adjustment, the download window and the resulting evaluation period; gives
+the exact formula and window for all nine input features in a single table; specifies
+the mixture model and its refit protocol; states the fusion rule and the confidence term
+as equations; gives the optimisation problem with every constraint; and sets out the
+walk-forward protocol and the evaluation design. Nothing in the framework is now
+described only in prose.
+\where{Section~3, pp.~7--12.}
+
+\rc{R2.2 More implementation details are needed, particularly regarding the data sources
+used, sampling frequency, sentiment analysis model, feature extraction process, Gaussian
+Mixture Model settings, and the optimization solver applied.}
+
+\resp Each item is now specified explicitly.
+
+\begin{itemize}
+\item \textbf{Data source and sampling frequency.} Daily OHLCV series from Yahoo Finance
+through the \texttt{yfinance} interface, adjusted for splits and dividends; download
+window 1~January 2007 to 27~August 2026; evaluation period January~2008 to
+August~2026, comprising 4{,}689 sessions, of which the final 665 are held out
+(Section~3.1, p.~7).
+\item \textbf{Sentiment model.} See R2.o3 below. In short: there is none, and the
+manuscript now says so.
+\item \textbf{Feature extraction.} Table~2 (p.~9) gives the closed-form definition and
+rolling window of all nine features, followed by the cross-sectional standardisation in
+Equation~(1) and the two composite definitions.
+\item \textbf{Gaussian mixture settings.} Three components, full covariance matrices,
+three random restarts, fixed seed, fitted on two standardised features, refitted at
+every rebalance on an expanding window with a minimum of 252 observations
+(Section~3.4, p.~10).
+\item \textbf{Solver.} CVXPY with the Clarabel interior-point solver; covariance by
+Ledoit--Wolf shrinkage on 252 trailing sessions (Section~3.6, p.~11).
+\end{itemize}
+
+We also documented one implementation detail that is easy to miss and that we ourselves
+initially handled incorrectly: mixture component indices permute freely between refits,
+so labels must be anchored --- here by sorting components on fitted volatility --- or the
+regime series is silently scrambled (Section~3.4, p.~10).
+\where{Section~3, pp.~7--12; Table~2, p.~9.}
+
+\rc{R2.3 The experimental results also need stronger statistical support \dots\
+statistical significance tests, confidence intervals, robustness checks using different
+rolling windows, turnover statistics, and sensitivity analysis.}
+
+\resp All five are now reported, and this comment is what led to the corrections
+described in the summary above.
+
+\begin{itemize}
+\item \textbf{Significance tests.} Paired $t$-test and a Newey--West $t$-statistic with
+ten lags on daily excess returns (Table~13, p.~23).
+\item \textbf{Confidence intervals.} A stationary block bootstrap with 21-session blocks
+and 2{,}000 replications gives interval estimates for the Sharpe ratio of the strategy,
+of the benchmark, and of their difference (Table~13, p.~23).
+\item \textbf{Robustness across windows.} A full sweep of three random seeds $\times$ two
+covariance estimation windows $\times$ three rebalancing intervals. All eighteen cells
+are reported, not a summary (Table~5, p.~16).
+\item \textbf{Turnover statistics.} Annual one-way turnover, turnover per rebalance,
+mean and minimum effective number of assets, mean largest weight, and mean and minimum
+invested exposure (Table~11, p.~21).
+\item \textbf{Sensitivity analysis.} Transaction costs varied from 0 to 25 basis points
+(Table~11, p.~21), the regime risk budget varied over five specifications (Table~9,
+p.~19), and component ablations at matched exposure (Table~8, p.~18).
+\end{itemize}
+
+We draw the reviewer's attention to what this analysis shows. The Sharpe improvement
+over the benchmark is \emph{not} statistically significant: its bootstrap interval is
+$[-0.102, 0.574]$ and includes zero. Section~4.11 (p.~23) says so directly, and the
+abstract now states it too. What the evidence supports is consistency rather than
+significance --- 18 of 18 specifications, 18 of 19 calendar years, 4 of 4 stress
+episodes, and a holdout period the specification never saw --- and the manuscript is
+careful not to conflate the two.
+\where{Sections~4.3, 4.6, 4.7, 4.9 and 4.11; Tables~5, 8, 9, 11 and 13.}
+
+\rc{R2.4 The portfolio allocation results require further clarification. In Figure~5,
+the portfolio appears concentrated in only a few assets during certain periods, which
+does not fully align with the described risk-budgeting approach. This behaviour should
+be explained more clearly.}
+
+\resp The reviewer identified a real defect, and we are grateful for it. The
+concentration was not a property of the strategy but an artefact of unit mismatch in the
+objective function, described in the summary above. In the submitted version the
+portfolio held exactly one asset on nearly every date --- an effective number of assets
+of 1.00, with a single holding persisting for 1{,}364 of 1{,}421 sessions --- because the
+raw indicator scale overwhelmed the risk term by roughly ten orders of magnitude.
+
+Equation~(4) (p.~10) now scales the fused score to a return metric before it enters the
+objective, which resolves the mismatch. The corrected allocation is diversified and
+stable: the effective number of assets averages 5.40 and never falls below 4.60, and
+annual one-way turnover is 0.96 times portfolio value. Section~4.9 (pp.~20--22) explains
+the failure mode explicitly rather than quietly replacing the figure, since the
+diagnosis is itself a useful contribution.
+\where{Equation~(4), p.~10; Section~4.9, pp.~20--22; Table~11, p.~21; Figures~5 and~6,
+pp.~21--22.}
+
+\rc{R2.5 The regime detection section also needs stronger justification. The choice of
+three market regimes should be supported using model selection measures such as AIC,
+BIC, or regime persistence statistics.}
+
+\resp Table~12 (p.~23) now reports AIC and BIC for two through six components, together
+with the persistence statistics for the three-state solution: the full transition
+matrix, self-transition probabilities, mean run lengths, in-sample and out-of-sample
+state shares, and the annualised volatility and momentum characterising each state.
+
+We report an outcome that does not support our choice, and say so. Both AIC and BIC fall
+monotonically across the range tested, so neither criterion selects three components;
+this is the expected behaviour of a mixture fitted to persistent, heavy-tailed financial
+features, which absorbs tail observations into additional components indefinitely. The
+choice of three is therefore justified on persistence and interpretability instead, and
+Table~12 supplies the grounds: the three states are economically distinct (annualised
+volatility of 12.0, 20.3 and 49.4~per cent), they persist (self-transition probabilities
+of 0.928 to 0.964, mean run lengths of 14 to 28 sessions), and the transition matrix is
+close to tridiagonal, so the volatility ordering recovered by the model is economically
+meaningful. Finer partitions produce states too short-lived for a monthly rebalancing
+schedule to act on.
+\where{Section~4.10, pp.~22--24; Table~12, p.~23; Figure~7, p.~24.}
+
+\rc{R2.6 In addition, the language and presentation require careful revision. There are
+grammatical inconsistencies, sudden changes in writing style, and some unfinished
+formatting elements, including incomplete AI declaration text.}
+
+\resp The manuscript has been rewritten end to end in a single voice, so the style
+discontinuities are gone. Two specific faults the reviewer will have noticed are also
+fixed: a stray sentence of reviewer-style commentary that had been left inside
+Section~3.1.1 of the submitted version, and the misspelling of ``LLMs'' as ``LLPs'' in
+Section~2.2.
+
+The AI declaration placeholder has been replaced. We have also added a data and code
+availability statement.
+\where{Throughout; declarations on p.~29.}
+
+\rc{R2.7 Finally, the equations should be explained in greater detail, with clear
+definitions of all parameters and constraints used in the optimization model.}
+
+\resp Section~3.6 (pp.~11--12) now presents the optimisation as two explicit steps and
+defines every symbol. The objective terms and every constraint are given, along with the
+values used and the reason for each: risk aversion $\lambda = 2$; position cap
+$w_{\max} = 0.25$; turnover penalty $\kappa = c \cdot 252 / h$ with $c = 10$ basis points
+and $h = 21$ sessions, annualised so that trading cost is on the same basis as return
+and risk; the full-investment equality that makes the first step purely relative; and
+the regime multiplier $k_r$ that sets total risk in the second step. Equations~(1)
+through~(7) each carry an explanation of what the expression does and why it takes that
+form, including why Ledoit--Wolf shrinkage is required and why the risk budget is
+relative rather than absolute.
+\where{Section~3.6, pp.~11--12; Equations~(1)--(7), pp.~9--12.}
+
+\subsection*{Suggestions which would improve the quality of the article}
+
+All five optional suggestions have been implemented.
+
+\rc{R2.o1 The literature review can be strengthened by adding sharper critical
+comparison between the proposed framework and recent portfolio allocation models.}
+
+\resp Section~2.1 now compares the framework against mean--variance optimisation, naive
+diversification, shrinkage-based optimisation, risk parity and hierarchical risk parity,
+volatility management, regime-switching allocation and learning-based allocation.
+Table~1 (p.~5) sets out each paradigm's basis of allocation, its principal limitation
+and where this study sits, with our own limitation stated in the same terms as everyone
+else's.
+\where{Section~2, pp.~4--7; Table~1, p.~5.}
+
+\rc{R2.o2 Figures would benefit from more technical interpretation, especially regime
+transitions, signal confidence behaviour, allocation stability.}
+
+\resp Every figure is now interpreted in the text rather than merely described.
+Regime transitions are analysed through the transition matrix and run lengths
+(Section~4.10), including the finding that direct calm-to-stress transitions have
+estimated probability zero. Allocation stability is quantified --- effective number of
+assets, largest weight, turnover --- and a new figure (Figure~6, p.~22) plots invested
+exposure with the transitional and stress states shaded, so the de-risking mechanism is
+directly visible. Signal behaviour is shown in Figure~8 (p.~24) and interpreted together
+with the information coefficients in Table~10.
+\where{Sections~4.1, 4.5, 4.9 and 4.10; Figures~2--8.}
+
+\rc{R2.o3 The sentiment-analysis section may be improved by explicitly stating whether
+domain-specific transformer models or lexicon-based methods were used.}
+
+\resp Neither, and the revised manuscript states this plainly in a subsection written
+for the purpose (Section~3.3, p.~9). No news article, social media post, corporate
+announcement or any other text is read at any point in the study, and no lexicon,
+classifier or language model is applied. What the submitted version described as a
+sentiment pipeline is in fact a composite of four price and volume features, now
+correctly named the market-state composite and defined in Table~2.
+
+We went further than disclosure. Section~4.8 (pp.~19--20) measures the predictive
+content of that composite directly and reports that it has none: its information
+coefficient against next-session cross-sectional returns is $-0.026$
+($t = -2.26$), and the regime-conditional weighting hypothesis --- that market-state
+information becomes relatively more informative under stress --- is not supported: the
+calm-to-stress contrast is insignificant ($t = -1.46$, $p = 0.145$) with point estimates
+running the other way. Splitting at the holdout boundary also shows that the negative
+coefficient is era-specific and disappears after 2023, so the layer cannot be rescued by
+inverting its sign either. The corresponding portfolio-level ablation shows that removing
+the layer entirely does not harm performance.
+\where{Section~3.3, p.~9; Section~4.8, pp.~19--20; Table~10, p.~20; Table~8, p.~18.}
+
+\rc{R2.o4 Future work may include cross-market validation, larger asset universes,
+reinforcement learning-based adaptive parameter tuning.}
+
+\resp Two of the three are now in the paper rather than deferred. The evaluation has
+moved to a ten-instrument multi-asset universe spanning US, developed and emerging
+equity, government and corporate fixed income, gold and real estate, over eighteen years
+(Section~3.1, p.~7), and the original mega-capitalisation equity universe is retained as
+a secondary study in Section~4.12 (p.~25). That secondary result is unfavourable and is
+reported as such: the framework loses on risk-adjusted return in a concentrated
+single-sector universe while retaining its drawdown advantage, which identifies the
+condition under which the framework is useful.
+
+Reinforcement-learning parameter tuning is retained as future work, now stated concretely
+as learning the risk-budget multipliers, with the overfitting caveats that apply
+(Section~5.5, p.~28).
+\where{Section~3.1, p.~7; Section~4.12, p.~25; Table~14, p.~25; Section~5.5, p.~28.}
+
+\rc{R2.o5 The manuscript would benefit from minor restructuring to reduce repetition in
+Sections~4.2 and~4.3.}
+
+\resp Those two sections have been merged. Section~4 is now organised so that each
+subsection answers a distinct question --- headline performance, out-of-sample
+holdout, robustness, stress
+behaviour, annual consistency, ablation, budget form, signal content, allocation
+behaviour, regime diagnostics, significance, secondary universe --- with no overlapping
+material. Interpretation that previously appeared twice has been consolidated into
+Section~5.
+\where{Sections~4 and~5, pp.~13--28.}
+
+\bigskip
+\hrule
+\section*{Changes not requested by the reviewers}
+
+For completeness, three changes were made that no reviewer asked for.
+
+\begin{itemize}
+\item \textbf{Title.} ``Sentiment'' has been removed. Once Section~3.3 states that no
+text or language model is used, the previous title asserted something the methodology
+contradicts.
+\item \textbf{Abstract.} The claim of ``significant alpha'' has been removed, because the
+corrected results do not support it. The abstract now states the return sacrifice and
+the absence of statistical significance alongside the positive findings.
+\item \textbf{Contributions.} The list has been rewritten around what the evidence
+supports: the two-step separation of composition from total risk, the matched-exposure
+ablation design, the relative risk budget, and two documented failure modes.
+\end{itemize}
+
+We believe the revised manuscript is a substantially more careful piece of work than the
+version submitted, and we thank the reviewers for the comments that forced it.
+
+\end{document}

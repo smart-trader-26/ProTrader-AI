@@ -1,0 +1,1812 @@
+%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{singlecol-new}
+\usepackage[utf8]{inputenc}
+\usepackage{grffile}
+
+
+\usepackage{natbib,stfloats}
+\usepackage{mathrsfs}
+
+\def\newblock{\hskip .11em plus .33em minus .07em}
+
+\theoremstyle{TH}{
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}[lemma]{Theorem}
+\newtheorem{corrolary}[lemma]{Corrolary}
+\newtheorem{conjecture}[lemma]{Conjecture}
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{claim}[lemma]{Claim}
+\newtheorem{stheorem}[lemma]{Wrong Theorem}
+\newtheorem{algorithm}{Algorithm}
+}
+
+\theoremstyle{THrm}{
+\newtheorem{definition}{Definition}[section]
+\newtheorem{question}{Question}[section]
+\newtheorem{remark}{Remark}
+\newtheorem{scheme}{Scheme}
+}
+
+\theoremstyle{THhit}{
+\newtheorem{case}{Case}[section]
+}
+
+\makeatletter
+\def\theequation{\arabic{equation}}
+
+%\JOURNALNAME{\TEN{\it Int. J. System Control and Information
+%Processing,
+%Vol. \theVOL, No. \theISSUE, \thePUBYEAR\hfill\thepage}}%
+%
+%\def\BottomCatch{%
+%\vskip -10pt
+%\thispagestyle{empty}%
+%\begin{table}[b]%
+%\NINE\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcr@{}}%
+%\\[-12pt]
+%Copyright \copyright\ 2012 Inderscience Enterprises Ltd. & &%
+%\end{tabular*}%
+%\vskip -30pt%
+%%%\vskip -35pt%
+%\end{table}%
+%}
+\makeatother
+
+%%%%%%%%%%%%%%%%%
+\begin{document}%
+%%%%%%%%%%%%%%%%%
+
+\setcounter{page}{1}
+
+%\LRH{A. Pardeshi et~al.}
+
+\RRH{From Signal Fusion to Asset Allocation}
+
+\VOL{x}
+
+\ISSUE{x}
+
+\PUBYEAR{201X}
+
+\BottomCatch
+
+%\CLline
+
+\subtitle{}
+
+\title{From Signal Fusion to Asset Allocation: A Decision-Theoretic Framework for Regime-Conditional Portfolio Construction}
+
+%
+%\authorA{Anandkumar Pardeshi}
+%
+%affA{Department of Information Technology,\\ Fr. C. Rodrigues Institute of Technology,\\ Vashi, Navi Mumbai \\
+%E-mail: anand.pardeshi@fcrit.ac.in}
+%
+%
+%\authorB{Sujata Deshmukh}
+%
+%\affB{Department of Computer Engineering,\\ Fr. C. Rodrigues College of Engineering,\\ Bandra, Mumbai \\
+%E-mail: sujata.deshmukh@fragnel.edu.in}
+%
+
+%
+%\authorA{Fusheng Wang\footnote{Work done while working at Siemens Corporate Research.} }
+%
+%\affA{Department of Biomedical Informatics, Emory University
+%\newline
+%36 Eagle Row, Ste 589, Atlanta, GA 30322, USA}
+%
+%
+%
+%\authorB{\footnotesize Cristobal Vergara-Niedermayr\footnote{Work done while working at Siemens Corporate Research.}}
+%\affB{Oracle \newline
+ %New Jersey, USA}
+%
+%
+
+
+\begin{abstract}
+Predictive modelling in finance has advanced faster than the machinery that converts a
+prediction into a position. This paper specifies and tests a decision-theoretic
+framework for that conversion. Latent market states are identified by a Gaussian
+mixture model fitted on an expanding window; technical and market-state composites are
+fused with state-dependent weights and scaled to a return metric; the fused signal
+enters a constrained quadratic program with covariance shrinkage and an explicit
+turnover penalty; and the resulting portfolio is scaled by a regime-dependent risk
+budget. Evaluated on ten liquid multi-asset instruments over eighteen years under a
+walk-forward protocol with transaction costs, the framework attains a Sharpe ratio of
+0.88 against 0.63 for an equal-weighted benchmark and reduces maximum drawdown from
+$-36.1$ to $-19.0$ per cent, at the cost of a lower compound return. It outperforms in
+all four stress episodes in the sample and in 18 of 18 specifications examined, though
+the Sharpe improvement is not statistically significant. The final 665 sessions
+postdate every specification decision and are reported as a holdout; on them the
+framework records a higher Sharpe ratio and a smaller maximum drawdown than all three
+benchmarks considered. Ablation at matched average exposure isolates the source: timing
+risk by market state improves both the Sharpe ratio and the drawdown with no change in
+mean return, whereas the signal fusion layer contributes nothing and the
+state-dependent weighting hypothesis is unsupported. The paper also identifies two
+failure modes in frameworks of this kind: an absolute volatility target that never
+binds, and a signal-to-allocation conversion in which mismatched units rather than
+information determine the solution.
+\end{abstract}
+
+\KEYWORD{Portfolio Optimisation; Regime Detection; Risk Budgeting;
+Decision-Theoretic Framework; Signal Fusion; Ablation Analysis; Asset Allocation}
+
+\REF{}
+
+\begin{bio}
+
+\end{bio}
+
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+Quantitative finance has invested heavily in prediction and comparatively little in the
+step that follows it. A large body of work now forecasts returns, directions or
+volatilities with machine learning, and reports its success in statistical terms:
+accuracy, error, or the significance of a coefficient \citep{gu20, zhang22}. Far less
+work specifies what an investor should then hold. That second step is not a
+formality. A forecast becomes an investment only after it has been reconciled with a
+covariance structure, a risk budget, position limits and the cost of trading, and the
+translation can destroy the value of a forecast as easily as preserve it. This paper
+refers to the missing step as the \emph{signal--allocation gap}.
+
+\subsection{The Signal--Allocation Gap}
+
+The gap is visible in how results are reported. Systematic reviews of fusion-based
+prediction find that statistical accuracy remains the dominant success criterion, with
+economic value reported inconsistently or not at all \citep{zhang22}. Where allocation
+is addressed, it is often through heuristics rather than optimisation: the IntPort
+framework of \citet{sami25}, for instance, converts forecasts into weights by
+statistical averaging, without a covariance structure or an explicit risk objective.
+Reinforcement learning approaches optimise a policy directly and so avoid the
+translation problem, but the majority are formulated for a single instrument
+\citep{saijai26, jiang25}, which leaves the portfolio-level question open.
+
+This matters because the properties an investor cares about are portfolio properties.
+Diversification, drawdown and the stability of holdings are not visible at the level of
+an individual forecast, and \citet{demiguel09} showed that optimisation which ignores
+estimation error can underperform naive equal weighting out of sample. Any framework
+that claims to bridge prediction and allocation must therefore be judged on portfolio
+outcomes under realistic frictions, not on the quality of its forecasts.
+
+\subsection{Regime Dependence}
+
+Financial markets do not behave homogeneously through time. Since \citet{hamilton89},
+regime-switching models have been used to represent discrete shifts in the statistical
+behaviour of financial series, and \citet{angbekaert02} demonstrated that accounting for
+such shifts materially changes optimal international allocations. \citet{kritzman12}
+made the practical case that regime awareness alters what a dynamic strategy should do,
+not merely how it should be described. More recent work continues in this direction,
+combining regime identification with allocation rules \citep{li25, luo26}.
+
+Two consequences follow for a framework of the kind proposed here. The first is that a
+predictive signal's reliability is conditional: an indicator that is informative in a
+quiet trending market need not be informative when the market is disturbed. The second
+is that the appropriate amount of risk to carry is itself state-dependent, which is the
+premise behind volatility-managed strategies \citep{moreira17, hood25} and behind risk
+budgeting more generally \citep{asimit25}. A framework that detects regimes but acts on
+them in only one of these two ways will leave part of its own premise untested.
+
+\subsection{What This Paper Does}
+
+This paper specifies a three-stage decision-theoretic framework and tests it end to
+end. Latent market states are identified by a Gaussian mixture model fitted on an
+expanding window. Two composite signals---one technical, one derived from price and
+volume dynamics---are fused with regime-conditional weights and converted to expected
+excess returns using information-ratio scaling. The fused signal then enters a
+constrained quadratic program with Ledoit--Wolf covariance shrinkage
+\citep{ledoit04} and an explicit turnover penalty, and the resulting sleeve is scaled by
+a regime-dependent risk budget.
+
+The framework is evaluated on ten liquid exchange-traded funds spanning equities, fixed
+income, credit, gold and real estate over eighteen years, under a walk-forward protocol
+with transaction costs. The evaluation is designed to answer not only whether the
+framework works but which of its parts is responsible, and it reports the answer in
+both directions. The regime risk budget is shown to be the effective component: at
+identical average exposure, timing the de-risking by regime improves both the Sharpe
+ratio and the maximum drawdown. The signal fusion layer is shown not to be: the
+information coefficients of both composites are statistically indistinguishable from
+zero or significantly negative, and the regime-conditional weighting hypothesis is
+rejected by the data that motivated it.
+
+Reporting the second finding is a deliberate choice. Component-level nulls are rarely
+published, which is one reason architectures accumulate layers whose contribution has
+never been isolated. \citet{harvey15} and \citet{valls26} document how easily an
+unreported specification search inflates apparent performance in this setting, and
+\citet{demiguel09} showed the practical cost of trusting an unvalidated component. An
+ablation that locates the source of a result is more useful to a practitioner than an
+aggregate number that does not.
+
+\subsection{Contributions}
+
+\begin{itemize}
+
+\item A fully specified regime-conditional allocation framework, given in enough detail
+to be reproduced from the text alone: exact feature definitions, the mixture model and
+its label-anchoring requirement, the optimisation problem with all constraints, and the
+walk-forward protocol.
+
+\item A two-step separation of the allocation decision into relative composition and
+total risk. The paper shows that expressing the regime risk budget as a fraction of the
+portfolio's own volatility, rather than as an absolute volatility target, is what keeps
+the regime layer active: absolute targets calibrated for concentrated equity portfolios
+bind in one rebalance out of 224 on a diversified universe and render the layer inert.
+
+\item An ablation design that isolates component contributions at matched risk. Because
+scaling a portfolio toward cash changes both its return and its volatility, comparing a
+de-risked strategy with a fully invested benchmark confounds risk timing with risk
+level. Holding average exposure fixed separates the two, and shows that the regime
+layer earns its place through timing rather than through simply holding less.
+
+\item A reported null on regime-conditional signal fusion, together with the
+information coefficients that produce it, measured overall and within each state.
+
+\item A documented diagnosis of a failure mode in signal-to-allocation conversion:
+passing an unscaled indicator into a mean-variance objective allows the ratio of units
+between the linear and quadratic terms, rather than the information in the signal, to
+determine the solution, producing a degenerate single-asset portfolio.
+
+\end{itemize}
+
+\subsection{Organisation}
+
+Section~2 reviews portfolio construction, regime-aware allocation and the treatment of
+textual sentiment, and positions this study against them. Section~3 specifies the
+framework. Section~4 reports the results, including robustness, ablation and the
+negative findings. Section~5 discusses implications and limitations, and Section~6
+concludes.
+
+\section{Literature Review}
+\label{sec:lit}
+
+\subsection{From Mean--Variance Optimisation to Risk-Based Allocation}
+
+Modern portfolio construction begins with \citet{markowitz52}, who formalised
+allocation as a trade-off between expected return and variance. The framework is
+theoretically complete and practically fragile: its solutions are highly sensitive to
+the expected-return vector, and sample covariance matrices estimated from short windows
+on many assets are poorly conditioned in exactly the directions the optimiser exploits.
+\citet{demiguel09} quantified the consequence, finding that a naive equal-weighted
+portfolio outperformed a range of optimised alternatives out of sample once estimation
+error was taken into account.
+
+Two responses dominate. The first improves the inputs. \citet{ledoit04} introduced a
+shrinkage estimator that trades a small bias for a large variance reduction and yields
+a well-conditioned covariance matrix; the approach remains standard, and recent work
+extends shrinkage to higher moments \citep{lu25}. The second abandons expected returns
+altogether in favour of risk-based construction. Inverse-volatility weighting, risk
+parity and hierarchical risk parity \citep{prado16} allocate on the basis of the risk
+model alone, and \citet{asimit25} develop the risk-budgeting formulation further by
+linking portfolio selection to risk sharing; \citet{khodamoradi23} pursue a related
+robustness objective through multi-interval mean-conditional-value-at-risk
+optimisation, and \citet{kehinde25} evaluate volatility targeting through an inverse
+data-envelopment formulation. Volatility management is a related idea
+applied at the portfolio level rather than the asset level: \citet{moreira17} showed
+that scaling exposure inversely to recent volatility improves risk-adjusted returns
+across a range of factors, and \citet{hood25} examine how much of that improvement is
+attributable to trend following rather than to volatility management itself.
+
+Table~\ref{tab:paradigms} positions the present study against these paradigms.
+This study sits between the two responses. It retains an expected-return term, but
+scales it explicitly so that its magnitude is commensurate with the risk term, and it
+separates the composition decision from the total-risk decision so that the two can be
+evaluated independently.
+
+\begin{table}[!ht]
+\centering
+\caption{Portfolio construction paradigms and the position of this study}
+\label{tab:paradigms}
+\small
+\begin{tabular}{p{2.4cm}p{2.4cm}p{2.6cm}p{2.6cm}}
+\hline
+\textbf{Paradigm} & \textbf{Representative work} & \textbf{Basis of allocation} & \textbf{Principal limitation} \\
+\hline
+Mean--variance optimisation & \citet{markowitz52} & Expected returns and covariance & Extreme sensitivity to estimated inputs \\
+\hline
+Naive diversification & \citet{demiguel09} & None; equal weights & Ignores risk structure entirely \\
+\hline
+Shrinkage-based optimisation & \citet{ledoit04, lu25} & Regularised covariance & Still requires expected returns \\
+\hline
+Risk-based construction & \citet{prado16, asimit25} & Risk model only & Forgoes signal information by design \\
+\hline
+Volatility management & \citet{moreira17, hood25} & Total risk scaled by recent volatility & Does not address composition \\
+\hline
+Regime-switching allocation & \citet{angbekaert02, kritzman12, luo26} & State-dependent parameters & Component contributions rarely isolated \\
+\hline
+Learning-based allocation & \citet{jiang25, ashrafzadeh25, agal25} & Learned policy or predicted returns & Interpretability; frequently single-asset \\
+\hline
+\textbf{This study} & --- & Regime-conditional signal, plus a relative regime risk budget & Signal layer tested and found not to contribute \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Regime Dependence and Regime-Aware Allocation}
+
+The premise that financial series alternate between statistically distinct states dates
+to \citet{hamilton89}, whose Markov-switching formulation remains the reference point.
+\citet{angbekaert02} applied regime switching to international allocation and found that
+correlations rise in bear states, weakening diversification precisely when it is most
+needed---an observation that motivates state-dependent covariance and state-dependent
+risk budgets alike. \citet{kritzman12} argued that regime awareness should change the
+strategy rather than only the commentary, and \citet{barroso15} demonstrated a
+closely related mechanism at the factor level, showing that managing the volatility of
+a momentum strategy removes most of its crash risk.
+
+Contemporary work continues along three lines. The first identifies regimes with
+increasingly flexible statistical machinery: \citet{li25} combine a jump model with
+allocation rules, \citet{luo26} construct dual-regime signals with regime-dependent
+parameters, and \citet{bukhari26} make the state explicit inside a forecasting network by
+learning separate static and dynamic dependency graphs for each regime. The second
+replaces discrete states with data-driven grouping or with directly modelled
+time-varying volatility: \citet{kehinde26} cluster assets dynamically and forecast within
+the resulting clusters, while \citet{naidoo25} estimate volatility as a mixed-frequency
+process driven by investor sentiment. The third embeds state-dependence inside a
+learning system, where the regime is implicit in the learned policy \citep{jiang25}.
+Across all three lines, the common gap is evidential rather than methodological. Regime-aware systems are usually
+evaluated against regime-unaware benchmarks in aggregate, so the reader learns that the
+system as a whole performs well but not which of its state-dependent components is
+responsible. The ablation design in Section~4 is intended to close that gap for the
+framework proposed here.
+
+\subsection{Machine Learning and Multimodal Signals}
+
+Machine learning entered this field early and has since become routine. Agent-based
+and reinforcement formulations were applied to daily equity trading by \citet{lee07},
+metaheuristic-optimised regression to price forecasting by \citet{chou18}, and pattern
+mining with fuzzy inference to trading-point detection by \citet{huang20}; each
+improved predictive accuracy without addressing what the resulting forecasts imply for a
+portfolio. \citet{gu20} provide the benchmark comparative study in asset pricing,
+finding consistent gains from flexible models while noting that measured predictability
+is small. Applications to allocation
+are more recent: \citet{ashrafzadeh25} combine deep learning with stock clustering for
+portfolio construction, \citet{agal25} apply learned risk estimates to asset
+allocation, \citet{ha26} compare machine-learning portfolios against a fixed
+all-weather allocation, and \citet{singsiri26} build portfolios directly on money-flow
+indicators of the kind used in this study. Reinforcement learning has been extended from single assets to
+multi-period, high-dimensional allocation \citep{jiang25, saijai26}, and
+\citet{wang26} couple prediction with an explicit trading strategy.
+
+Fusion of heterogeneous signals is a parallel development. \citet{zhang22} review
+decision fusion for equity prediction across a large body of primary studies and find
+that fused architectures usually outperform unimodal ones, while also documenting wide
+variation in fusion protocol and evaluation. \citet{farimani24} propose an adaptive
+multimodal model that weights sources dynamically, and \citet{zong25} use gated
+cross-attention to stabilise multimodal fusion for movement prediction. What these
+studies establish is that fusion can help prediction. Whether a particular fusion rule
+helps a particular allocation decision is a separate question, and one that requires a
+component-level test rather than an aggregate comparison.
+
+\subsection{Textual Sentiment and Market-Derived Proxies}
+
+Textual sentiment entered finance through dictionary methods, and
+\citet{loughran11} demonstrated that general-purpose sentiment lexicons misclassify
+financial language badly enough to require domain-specific alternatives. Transformer
+models and large language models have since displaced lexicons: \citet{officioso26}
+combine language-model sentiment with market data, \citet{muhammad26} benchmark large
+language models for target-based financial sentiment, \citet{mun25} derive investment
+signals from language-model sentiment, and \citet{chuang25} compare language models on
+financial news for sentiment and price prediction. Collectively these studies indicate
+that genuine textual sentiment carries information beyond price history.
+\citet{george25}, in this journal, illustrate what extracting it actually involves: a
+corpus of more than twenty thousand stock-related messages, five feature-extraction
+schemes and fourteen classifiers, evaluated as a classification problem in its own
+right before any allocation question is reached.
+
+They also indicate what such a study requires: a time-stamped corpus with coverage of
+the traded instruments. That requirement is binding. For broad exchange-traded funds
+there is no instrument-level news corpus of comparable coverage, which is why studies
+of this kind are almost always conducted on individual equities. The present study
+therefore uses market-derived proxies for attention and stress rather than textual
+sentiment, states this explicitly in Section~3.3, and---rather than assuming the proxies
+are adequate---measures their predictive content directly and reports that they are
+not.
+
+\subsection{Evaluation Practice}
+
+A final strand concerns whether reported results should be believed.
+\citet{harvey15} show that conventional significance thresholds are inadequate once the
+number of strategies examined is taken into account, and \citet{valls26} document the
+same problem specifically for volatility-based strategies, while \citet{sheppert26}
+proposes an objective function designed to resist it. \citet{zhangz25} make the related
+point that the model selected as optimal in sample is frequently not the one that
+performs best out of it. \citet{ledoit08} provide
+robust inference for Sharpe ratio comparisons under non-normal, autocorrelated returns,
+and \citet{politis94} supply the stationary block bootstrap used here to construct
+interval estimates that respect serial dependence. \citet{newey87} remains the standard
+correction for autocorrelated and heteroskedastic test statistics.
+\citet{raimundo26} survey the broader intersection of forecasting and portfolio theory
+and reach a similar conclusion about the weight placed on point estimates.
+
+This study adopts these practices as design constraints rather than as afterthoughts:
+every specification examined is reported, inference is corrected for serial dependence,
+interval estimates accompany point estimates, and the comparison against a costless
+daily-rebalanced equal-weighted benchmark is deliberately unfavourable to the proposed
+framework.
+
+\section{Proposed Methodology}
+\label{sec:method}
+
+This section specifies the framework in full: the data, the exact form of every input
+feature, the regime model, the fusion rule, the optimisation problem, and the
+walk-forward protocol under which it is evaluated. The level of detail is deliberate,
+so that the study can be reproduced independently from this description alone.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_architecture.png}
+\caption{The proposed framework. Stage~1 constructs causal, cross-sectionally
+standardised features; stage~2 identifies the market state and fuses the two composites;
+stage~3 separates relative composition from total risk; stage~4 evaluates the result and
+ablates its components.}
+\label{fig:architecture}
+\end{figure*}
+
+\subsection{Data and Study Universe}
+
+The primary study universe consists of ten exchange-traded funds selected to span the
+major liquid asset classes available to a diversified allocator: US large capitalisation
+equity (SPY), US large capitalisation growth equity (QQQ), US small capitalisation
+equity (IWM), developed international equity (EFA), emerging market equity (EEM),
+long-maturity US Treasuries (TLT), intermediate-maturity US Treasuries (IEF),
+investment-grade corporate credit (LQD), gold (GLD) and US real estate (VNQ). Breadth
+matters for the research question. A framework whose stated purpose is to redirect risk
+across market states can only be tested where there is somewhere else for risk to go;
+a single-sector universe offers no such destination, a point returned to in
+Section~\ref{sec:megacap}.
+
+Daily open, high, low, close and volume series are obtained from Yahoo Finance through
+the \texttt{yfinance} interface, adjusted for splits and dividends. The download window
+is 1~January 2007 to 27~August 2026. The end date is not a modelling choice: it is
+every session available at the date the analysis was run, so the sample boundary
+carries no information about the results. Indicator warm-up and the 252-session covariance
+estimation window consume the first year, so the evaluated out-of-sample period runs
+from January 2008 to August 2026 and covers the global financial crisis, the 2011
+sovereign debt episode, the 2020 pandemic crash, the 2022 inflation-driven bear market
+and the subsequent recovery.
+
+Sessions from 1~January 2024 onward are treated as a holdout. That block postdates
+the design of the framework and every specification decision reported here; none of
+it was examined while the model was being built. It enters the full-sample results
+for completeness and is reported separately in Section~\ref{sec:holdout}, where it
+serves as an out-of-sample check rather than as evidence used in fitting. A secondary
+universe of ten mega-capitalisation US equities over 2018--2026 is carried through the
+same pipeline and reported separately in Section~\ref{sec:megacap}.
+
+\subsection{Feature Construction}
+
+Nine features are computed for each asset on each session. All are causal: every value
+at session $t$ uses only information available at the close of session $t$. Table~\ref{tab:features}
+gives the exact definition of each, and no other input enters the framework.
+
+\begin{table}[!ht]
+\centering
+\caption{Input features. $C_t$, $H_t$, $L_t$ and $V_t$ denote close, high, low and
+volume. All features are computed per asset, then cross-sectionally standardised.}
+\label{tab:features}
+\small
+\begin{tabular}{p{2.0cm}p{1.8cm}p{5.2cm}p{1.5cm}}
+\hline
+\textbf{Feature} & \textbf{Composite} & \textbf{Definition} & \textbf{Window} \\
+\hline
+RSI & Technical & Relative strength index, centred: $\mathrm{RSI}_t - 50$ & 14 \\
+\hline
+MACD & Technical & Moving average convergence divergence line, scaled by price: $\mathrm{MACD}_t / C_t$ & 12, 26, 9 \\
+\hline
+Stochastic & Technical & Stochastic oscillator \%K, centred: $\%K_t - 50$ & 14, smooth 3 \\
+\hline
+MFI & Technical & Money flow index, centred: $\mathrm{MFI}_t - 50$ & 14 \\
+\hline
+OBV flow & Technical & Twenty-session change in on-balance volume, normalised by average volume: $(\mathrm{OBV}_t - \mathrm{OBV}_{t-20}) / \overline{V}_{t,20}$ & 20 \\
+\hline
+Return & Market state & Five-session simple return: $C_t / C_{t-5} - 1$ & 5 \\
+\hline
+Relative volume & Market state & $V_t / \overline{V}_{t,20}$ & 20 \\
+\hline
+Realised volatility & Market state & Annualised standard deviation of daily returns, entered with a negative sign & 20 \\
+\hline
+Volume instability & Market state & Standard deviation of daily volume changes, entered with a negative sign & 20 \\
+\hline
+\end{tabular}
+\end{table}
+
+Each feature is standardised cross-sectionally on every session, so that a value
+expresses how an asset ranks against its peers that day rather than against its own
+history. Writing $x_{i,t}$ for the raw feature of asset $i$ and $N$ for the number of
+assets,
+\begin{equation}
+z_{i,t} = \frac{x_{i,t} - \bar{x}_t}{s_t}, \qquad
+\bar{x}_t = \frac{1}{N}\sum_{j} x_{j,t}, \qquad
+s_t = \mathrm{sd}_j(x_{j,t}).
+\end{equation}
+Cross-sectional standardisation is used rather than time-series standardisation because
+the allocation problem is a relative one: the optimiser must decide which assets to
+prefer today, not whether today is unusual by historical standards. It also removes the
+common market factor from the scores, so that a market-wide move does not appear as a
+signal on every asset simultaneously.
+
+The standardised features are then averaged into two composites. The technical
+composite is the equally weighted mean of the five technical features. The market-state
+composite is the equally weighted mean of the four market-state features, taken with
+the signs given in Table~\ref{tab:features}, so that recent strength and active participation raise the
+score while realised volatility and unstable volume lower it.
+
+\subsection{What the Second Composite Is, and What It Is Not}
+\label{sec:notsentiment}
+
+The second composite is constructed entirely from price and volume. No news article,
+social media post, corporate announcement or any other text is read at any point in
+this study, and no lexicon, classifier or language model is applied. The composite is a
+market-derived proxy for the same latent quantities that textual sentiment measures aim
+to capture---attention, participation and stress---and it is reported here as exactly
+that.
+
+This is stated plainly because the distinction is material to how the results should be
+read. Proxy construction of this kind is common in the literature and inexpensive to
+compute, but it cannot be credited with the contextual information a transformer model
+extracts from financial text, and it should not be described as though it could.
+Section~\ref{sec:ic} measures the predictive content of both composites directly and
+reports the outcome, including where that outcome is unfavourable. Extending the
+framework to genuine textual sentiment requires a time-stamped news corpus with
+coverage of the traded universe; for broad exchange-traded funds no such corpus exists
+at instrument level, which is a limitation of the design rather than an oversight, and
+Section~5 sets out what would be needed to remove it.
+
+\subsection{Regime Identification}
+
+Market states are identified with a Gaussian mixture model over two features, each
+computed as a cross-sectional average across the universe: the twenty-session rolling
+standard deviation of daily returns, and the ten-session rolling mean of daily returns.
+The first captures the volatility of the environment, the second its direction. Both
+are standardised before fitting.
+
+The mixture uses $K = 3$ components with full covariance matrices, three random
+restarts and a fixed seed. It is refitted at every rebalance date on an expanding
+window containing only sessions strictly earlier than that date, with a minimum of 252
+observations; the state of the current session is then obtained by prediction from that
+fit. No observation ever contributes to the model that labels it.
+
+One implementation detail is essential and is easy to overlook. The component indices
+returned by a mixture fit are arbitrary and permute freely between refits, so labels
+from consecutive fits are not comparable unless they are anchored. Components are
+therefore sorted in ascending order of fitted mean volatility before use, which makes
+regime~0 the calm state, regime~1 the transitional state and regime~2 the stress state
+consistently across every refit. Omitting this step does not produce an error; it
+produces a silently scrambled regime series and, if the resulting labels are compared
+across fits, a spurious appearance of instability.
+
+The choice $K = 3$ is not selected by information criterion. As
+Section~\ref{sec:regimefit} reports, both the Akaike information criterion (AIC)
+and the Bayesian information criterion (BIC) continue to fall as components are added
+over the range tested, which is the usual behaviour of mixture models on
+persistent financial series and reflects their tendency to absorb heavy tails with
+additional components. The choice is instead made on persistence and interpretability:
+three components yield states that last long enough to act on and that admit a clear
+economic reading, whereas finer partitions fragment into short-lived states that a
+monthly rebalancing schedule cannot exploit. This is a modelling judgement and is
+reported as such.
+
+\subsection{Regime-Conditional Signal Fusion}
+
+The two composites are combined into a single score using weights that depend on the
+prevailing regime, together with a per-asset confidence term. Let $T_{i,t}$ and
+$M_{i,t}$ denote the standardised technical and market-state composites for asset $i$,
+and let $r_t \in \{0,1,2\}$ be the regime. The fused score is
+\begin{equation}
+z_{i,t} = c_{i,t} \left[ w^{T}_{r_t} T_{i,t} + w^{M}_{r_t} M_{i,t} \right],
+\end{equation}
+with regime weights $(w^T, w^M)$ of $(0.7, 0.3)$ in the calm state, $(0.5, 0.5)$ in the
+transitional state and $(0.3, 0.7)$ in the stress state. The direction of this schedule
+follows the hypothesis stated in Section~1, that trend-following information is more
+reliable in quiet trending markets while attention and stress information becomes
+relatively more informative when markets are disturbed. Section~\ref{sec:ic} tests that
+hypothesis rather than assuming it.
+
+The confidence term $c_{i,t}$ down-weights assets whose two composites disagree:
+\begin{equation}
+c_{i,t} = \mathrm{clip}\!\left(0.5 + 0.5\,\rho^{(63)}_{i,t}, \; 0.1, \; 1.0\right),
+\end{equation}
+where $\rho^{(63)}_{i,t}$ is the trailing 63-session correlation between the two
+composites for that asset. Agreement between independent views is treated as evidence;
+disagreement is treated as noise and shrinks the score toward zero.
+
+The fused score is converted into an expected excess return using the standard
+information-ratio scaling of \citet{grinold00}, which places the score on a return
+scale rather than leaving it as a dimensionless quantity:
+\begin{equation}
+\alpha_{i,t} = \mathrm{IC} \cdot \sigma_{i,t} \cdot z_{i,t},
+\label{eq:alpha}
+\end{equation}
+where $\sigma_{i,t}$ is the annualised volatility of asset $i$ from the current
+covariance estimate and $\mathrm{IC} = 0.05$ is an assumed information coefficient (IC).
+
+Equation~(\ref{eq:alpha}) is not a cosmetic step. If a raw indicator is passed to a
+mean-variance objective directly, the units of the linear term and of the quadratic
+risk term are unrelated, and their ratio---not the information in the signal---decides
+the solution. An indicator such as on-balance volume takes values of order $10^{8}$ to
+$10^{9}$, whereas annualised variances are of order $10^{-2}$; the linear term then
+dominates by ten orders of magnitude and the optimiser degenerates to a corner
+solution, holding a single asset regardless of the risk model. Section~\ref{sec:alloc}
+documents this failure mode explicitly, because it is the source of a behaviour visible
+in the originally submitted results.
+
+\subsection{Portfolio Construction}
+
+Allocation proceeds in two steps, which separate two decisions that are often conflated:
+which assets to hold relative to one another, and how much total risk to carry.
+
+\paragraph{Step 1: relative allocation.} The risky sleeve solves a quadratic program
+with a linear transaction-cost penalty,
+\begin{align}
+\max_{w} \quad & \alpha_t^{\top} w - \lambda \, w^{\top} \Sigma_t w
+- \kappa \left\| w - w_{t-1} \right\|_1 \\
+\text{s.t.} \quad & w \geq 0, \qquad w \leq w_{\max}, \qquad \mathbf{1}^{\top} w = 1,
+\end{align}
+where $\Sigma_t$ is the annualised covariance matrix, $\lambda = 2$ is the risk
+aversion coefficient, $w_{\max} = 0.25$ caps any single position at one quarter of the
+sleeve, and $w_{t-1}$ is the weight vector carried in from the previous rebalance. The
+turnover penalty $\kappa = c \cdot 252 / h$ annualises a one-way cost of $c = 10$ basis
+points over a rebalancing interval of $h = 21$ sessions, so that the cost of trading is
+expressed on the same annual basis as the return and risk terms.
+
+The equality constraint $\mathbf{1}^{\top} w = 1$ is what makes this step purely
+relative. It fixes the sleeve to be fully invested, so the optimiser can only express a
+view about composition, never about how much risk to take. That second decision is made
+explicitly in step~2 instead of emerging as a by-product of the constraint set.
+
+$\Sigma_t$ is estimated by Ledoit--Wolf shrinkage \citep{ledoit04} on the trailing 252
+daily returns and annualised by a factor of 252. Shrinkage is used because a sample
+covariance matrix estimated from 252 observations on ten assets is poorly conditioned,
+and a mean-variance optimiser will concentrate weight precisely on the directions in
+which the estimate is least reliable. The problem is convex and is solved with CVXPY
+using the Clarabel interior-point solver.
+
+\paragraph{Step 2: regime risk budget.} The sleeve is then scaled by a factor that
+depends only on the regime:
+\begin{equation}
+w^{\ast}_t = k_{r_t} \, \tilde{w}_t, \qquad
+k = \{\,\text{calm}: 1.00, \;\; \text{transitional}: 0.75, \;\; \text{stress}: 0.50\,\},
+\label{eq:budget}
+\end{equation}
+with the residual $1 - k_{r_t}$ held in cash, which is assumed to earn zero. Scaling is
+one-sided: the framework de-risks in disturbed states but never levers up in calm ones,
+so any performance difference is attributable to risk reduction rather than to leverage.
+
+The budget in Equation~(\ref{eq:budget}) is expressed as a fraction of the sleeve's own
+risk rather than as an absolute volatility target, and this choice is consequential.
+An absolute target de-risks only when the sleeve's estimated volatility exceeds the
+target level, so its effect depends on the volatility of the universe it is applied to.
+Targets calibrated for a concentrated equity portfolio---of the order of 10 to 20 per
+cent annualised---are simply never reached by a diversified ten-asset sleeve whose own
+realised volatility is close to 7~per~cent. Under those targets the constraint binds in
+one rebalance out of 224 in this study, and the regime layer is inert: it is present in
+the specification, consumes computation, and does nothing. A relative budget is
+scale-free by construction and remains active in any universe.
+Section~\ref{sec:ablation} reports both variants and the difference between them.
+
+\subsection{Walk-Forward Protocol}
+
+The framework is rebalanced every 21 sessions. Between rebalances positions are held
+and allowed to drift with realised returns, so that reported turnover reflects trading
+actually undertaken rather than a notional daily reweighting. One-way transaction costs
+of 10 basis points are charged on the traded fraction $\|w^{\ast}_t - w_{t-1}\|_1$ on
+the rebalance session; Section~\ref{sec:cost} varies this assumption from 0 to 25 basis
+points.
+
+Every estimated quantity uses only data preceding the decision it informs: the
+covariance matrix from the trailing 252 sessions before the rebalance date, the mixture
+model from an expanding window strictly earlier than that date, and all features from
+causal rolling windows. No parameter is tuned on the evaluation period; the
+configuration reported as primary is the one specified above, and
+Section~\ref{sec:robust} reports the full grid of alternatives rather than the best
+cell of it.
+
+\subsection{Evaluation Design}
+
+Performance is summarised by compound annual growth rate (CAGR), annualised
+volatility, Sharpe ratio computed at a zero risk-free rate, maximum drawdown (Max DD)
+and Calmar ratio. Three
+benchmarks are used. The first is an equal-weighted portfolio of the same ten assets,
+rebalanced daily and charged no transaction costs, which is deliberately a generous
+comparator. The second is an inverse-volatility portfolio using trailing 60-session
+standard deviations, also costless, which isolates whether the framework adds anything
+beyond elementary risk weighting. The third rescales the equal-weighted portfolio to
+the strategy's realised volatility, which removes the mechanical advantage a
+lower-risk portfolio enjoys in ratio comparisons.
+
+Statistical inference on daily excess returns uses a paired $t$-test, a Newey--West
+$t$-statistic with ten lags to accommodate autocorrelation and heteroskedasticity, and
+a stationary block bootstrap with 21-session blocks and 2{,}000 replications for
+interval estimates of the Sharpe ratio and of the Sharpe difference. Component
+contributions are isolated by ablation: removing the regime layer while holding average
+exposure fixed, removing it while holding full exposure, and removing the signal layer
+entirely. Robustness is assessed over a grid of random seeds, covariance estimation
+windows and rebalancing frequencies, with every cell reported.
+
+\section{Results}
+\label{sec:results}
+
+All results in this section come from the single specification set out in Section~3.
+No parameter was selected by reference to the evaluation period, and every
+specification examined is reported, including those that are unfavourable to the
+framework.
+
+\subsection{Headline Performance}
+
+Table~\ref{tab:main} reports the primary comparison over the 4{,}689 trading sessions from
+7~January 2008 to 26~August 2026.
+
+\begin{table}[!ht]
+\centering
+\caption{Primary results, ten-asset universe, January 2008 to August 2026. Sharpe
+ratios use a zero risk-free rate and are computed as compound annual growth divided by
+annualised volatility. Benchmarks are rebalanced daily and charged no transaction costs.}
+\label{tab:main}
+\small
+\begin{tabular}{p{4.4cm}rrrrr}
+\hline
+& \textbf{CAGR} & \textbf{Volatility} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Calmar} \\
+\hline
+Regime-conditional strategy & 5.65\% & 6.44\% & 0.878 & $-18.98$\% & 0.298 \\
+Equal-weight benchmark & 8.45\% & 13.45\% & 0.628 & $-36.08$\% & 0.234 \\
+Inverse-volatility benchmark & 7.46\% & 8.78\% & 0.849 & $-24.09$\% & 0.309 \\
+Equal-weight at strategy volatility & 4.19\% & 6.44\% & 0.651 & $-18.69$\% & 0.224 \\
+\hline
+\end{tabular}
+\end{table}
+
+Three readings of Table~\ref{tab:main} are warranted, and they do not all favour the framework.
+
+Against the equal-weighted benchmark the framework improves the Sharpe ratio from 0.628
+to 0.878, a gain of 40 per cent, and reduces maximum drawdown from $-36.08$ per cent to
+$-18.98$ per cent, a reduction of 47 per cent. It does so while earning a lower
+compound return, 5.65 per cent against 8.45 per cent per annum. The framework is not a
+return-enhancing strategy and is not presented as one; it is a risk-reduction strategy
+whose return sacrifice is smaller than its risk reduction.
+
+Against the volatility-matched equal-weighted benchmark, which removes the mechanical
+advantage a lower-risk portfolio enjoys in any ratio comparison, the framework retains
+a Sharpe advantage of 0.878 against 0.651, but loses on maximum drawdown, $-18.98$ per
+cent against $-18.69$ per cent. Deleveraging a diversified benchmark is therefore a
+competitive way to reduce worst-case loss, and the framework's drawdown advantage over
+the unlevered benchmark should not be read as evidence that it dominates every
+risk-reduced alternative.
+
+Against the inverse-volatility benchmark the comparison is mixed. The framework holds a
+higher Sharpe ratio, 0.878 against 0.849, and a materially smaller maximum drawdown,
+$-18.98$ per cent against $-24.09$ per cent, but a lower Calmar ratio, 0.298 against
+0.309, because inverse-volatility weighting compounds faster. Elementary risk weighting
+remains a strong comparator on a diversified multi-asset universe, and the margin over
+it is narrow enough that it should be read as a tie on risk-adjusted return rather than
+as a win.
+
+Figure~2 shows the cumulative growth of one unit of capital and Figure~3 the drawdown
+profile of each series.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_cumret.png}
+\caption{Cumulative growth of one unit of capital, logarithmic scale}
+\label{fig:cumret}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_drawdown.png}
+\caption{Drawdown from running peak}
+\label{fig:drawdown}
+\end{figure*}
+
+The two figures make the shape of the result visible. The framework's equity curve
+tracks below the benchmark through extended advances---most conspicuously 2013, 2017,
+2021 and 2023---and separates upward during 2008, 2011, 2020 and 2022. The drawdown
+plot shows the same asymmetry more directly: the benchmark reaches $-36$ per cent in
+2008 and $-25$ per cent in 2022, while the framework's deepest excursions are
+approximately half as large. Recovery is correspondingly faster, since a shallower loss
+requires a smaller subsequent gain to restore the previous peak.
+
+\subsection{Out-of-Sample Holdout, 2024--2026}
+\label{sec:holdout}
+
+Every specification decision in this study---the universe, the feature set, the number of
+regimes, the risk budget, the rebalancing interval and the cost assumption---was fixed
+before any session after December~2023 was examined. The 665 sessions from January~2024
+to August~2026 therefore function as a holdout rather than as a further robustness check
+on the same data. Table~\ref{tab:holdout} reports both blocks side by side.
+
+\begin{table}[!ht]
+\centering
+\caption{Performance before and after the holdout boundary. The two blocks are disjoint;
+the full-sample results of Table~\ref{tab:main} pool them.}
+\label{tab:holdout}
+\small
+\begin{tabular}{p{4.9cm}rrrr}
+\hline
+& \multicolumn{2}{c}{\textbf{2008--2023} ($n=4{,}024$)} & \multicolumn{2}{c}{\textbf{2024--2026} ($n=665$)} \\
+& \textbf{Sharpe} & \textbf{Max DD} & \textbf{Sharpe} & \textbf{Max DD} \\
+\hline
+Regime-conditional strategy & 0.738 & $-18.98$\% & 1.614 & $-5.48$\% \\
+Equal-weight benchmark & 0.532 & $-36.08$\% & 1.391 & $-10.13$\% \\
+Inverse-volatility benchmark & 0.764 & $-24.09$\% & 1.397 & $-6.70$\% \\
+Equal-weight at strategy volatility & 0.560 & $-17.66$\% & 1.378 & $-7.04$\% \\
+No regime timing, full exposure & 0.785 & $-22.53$\% & 1.710 & $-6.47$\% \\
+\hline
+\end{tabular}
+\end{table}
+
+In the holdout the framework records a higher Sharpe ratio than all three benchmarks,
+1.614 against 1.391, 1.397 and 1.378, and a smaller maximum drawdown than all three,
+$-5.48$ per cent against $-10.13$, $-6.70$ and $-7.04$ per cent. Two of those comparisons
+reverse the in-sample ordering: the inverse-volatility benchmark and the
+volatility-matched equal-weighted benchmark both beat the framework on Sharpe ratio
+before 2024 and both trail it afterwards. The deepest equal-weighted drawdown in the
+holdout, the 34-session decline from 20~February to 8~April~2025, returned $-10.05$\% for
+the benchmark against $-4.63$\% for the framework, an advantage of 5.42 percentage points
+that is consistent with the four earlier episodes in Table~\ref{tab:episodes}.
+
+Three qualifications limit what this establishes. First, 665 sessions are too few to
+settle anything on their own: the bootstrap interval for the Sharpe difference in the
+holdout is $[-0.352, 0.742]$, wider than the full-sample interval and comfortably
+containing zero, and the framework again earns less in absolute terms, giving up 3.07
+percentage points of annual return ($p = 0.348$). Second, the holdout contains no
+episode comparable to 2008 or 2020; every series in it posts a Sharpe ratio above 1.3,
+so the period is benign and the relevant information is the ordering rather than the
+level. Third, the ablation ordering is unchanged---the variant with no regime timing at
+full exposure again records the highest Sharpe ratio, 1.710---so the holdout does not
+rescue any claim that Section~\ref{sec:ablation} rejects.
+
+What the holdout does establish is narrower and still worth stating. The framework's
+defensive behaviour is not an artefact of the sample on which it was specified. It was
+built without reference to these sessions, and on them it continues to reduce drawdown
+against every benchmark considered while remaining competitive on risk-adjusted return.
+
+\subsection{Robustness Across Specifications}
+\label{sec:robust}
+
+The primary configuration fixes a random seed, a covariance estimation window and a
+rebalancing interval. Table~\ref{tab:sweep} reports every combination of three seeds, two estimation
+windows and three rebalancing intervals, so that the reported result can be located
+within the distribution of specifications rather than presented in isolation.
+
+\begin{table}[!ht]
+\centering
+\caption{Specification sweep. All eighteen cells reported; the last two columns record
+whether the cell beats the equal-weight benchmark on each measure. Sharpe ratios here are
+the annualised arithmetic mean over volatility, so that all eighteen cells are computed
+identically; on the same basis the equal-weight benchmark attains 0.670 with a maximum
+drawdown of $-36.1$\%.}
+\label{tab:sweep}
+\small
+\begin{tabular}{rrrrrcc}
+\hline
+\textbf{Seed} & \textbf{Cov. window} & \textbf{Rebalance} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Sharpe win} & \textbf{DD win} \\
+\hline
+0 & 126 & 10 & 0.868 & $-20.7$\% & yes & yes \\
+0 & 126 & 21 & 0.954 & $-19.6$\% & yes & yes \\
+0 & 126 & 42 & 0.924 & $-19.7$\% & yes & yes \\
+0 & 252 & 10 & 0.823 & $-20.8$\% & yes & yes \\
+0 & 252 & 21 & 0.905 & $-19.0$\% & yes & yes \\
+0 & 252 & 42 & 0.899 & $-20.4$\% & yes & yes \\
+7 & 126 & 10 & 0.881 & $-20.6$\% & yes & yes \\
+7 & 126 & 21 & 0.956 & $-19.6$\% & yes & yes \\
+7 & 126 & 42 & 0.912 & $-19.6$\% & yes & yes \\
+7 & 252 & 10 & 0.818 & $-21.1$\% & yes & yes \\
+7 & 252 & 21 & 0.891 & $-19.0$\% & yes & yes \\
+7 & 252 & 42 & 0.888 & $-20.4$\% & yes & yes \\
+42 & 126 & 10 & 0.853 & $-20.6$\% & yes & yes \\
+42 & 126 & 21 & 0.928 & $-19.6$\% & yes & yes \\
+42 & 126 & 42 & 0.893 & $-19.7$\% & yes & yes \\
+42 & 252 & 10 & 0.813 & $-21.1$\% & yes & yes \\
+42 & 252 & 21 & 0.887 & $-19.0$\% & yes & yes \\
+42 & 252 & 42 & 0.853 & $-20.4$\% & yes & yes \\
+\hline
+\end{tabular}
+\end{table}
+
+Every one of the eighteen specifications beats the equal-weighted benchmark on both the
+Sharpe ratio and maximum drawdown. The Sharpe ratio ranges from 0.813 to 0.956 and the
+maximum drawdown from $-21.1$ to $-19.0$ per cent. The primary configuration appears in
+this table at 0.887, which is the median of the eighteen values: it is not the best cell,
+and the best cell exceeds it by 0.069. Sensitivity to the random seed is small, which
+indicates that the mixture fit is stable; sensitivity to the rebalancing interval is
+larger, with ten-session rebalancing consistently weakest because it incurs more turnover
+for no additional information.
+
+The same sweep is unfavourable on one comparison. In none of the eighteen cells does
+the framework beat the volatility-matched equal-weighted benchmark on maximum drawdown.
+This is a consistent finding rather than an artefact of the primary configuration, and
+it bounds the drawdown claim precisely: the framework reduces drawdown relative to an
+unlevered diversified benchmark, not relative to every portfolio held at the same
+volatility.
+
+\subsection{Behaviour in Stress Episodes}
+
+Table~\ref{tab:episodes} reports cumulative returns over four episodes chosen before the analysis on the
+basis of documented market history rather than by inspection of the results.
+
+\begin{table}[!ht]
+\centering
+\caption{Cumulative return over stress episodes. Differences are stated in percentage
+points (pp).}
+\label{tab:episodes}
+\small
+\begin{tabular}{p{3.6cm}rrrr}
+\hline
+\textbf{Episode} & \textbf{Sessions} & \textbf{Strategy} & \textbf{Equal-weight} & \textbf{Difference} \\
+\hline
+Global financial crisis, Sep 2008--Mar 2009 & 130 & $-7.05$\% & $-29.78$\% & $+22.74$ pp \\
+Euro area crisis, Jul--Oct 2011 & 65 & $+3.41$\% & $-7.24$\% & $+10.65$ pp \\
+COVID-19 crash, Feb--Mar 2020 & 24 & $-6.29$\% & $-21.28$\% & $+14.99$ pp \\
+Inflation bear market, Jan--Oct 2022 & 196 & $-16.76$\% & $-24.49$\% & $+7.73$ pp \\
+\hline
+\end{tabular}
+\end{table}
+
+The framework outperforms in all four episodes, by between 7.7 and 22.7 percentage
+points. All four predate the holdout boundary; the deepest benchmark decline after it,
+analysed in Section~\ref{sec:holdout}, produced an advantage of 5.4 percentage points. The mechanism is visible in the exposure series: the mixture model classifies
+these periods into the transitional or stress state, and the risk budget reduces
+invested exposure accordingly. The margin is widest in 2008, the longest and deepest of
+the four, and narrowest in 2022, which is consistent with the design---a gradual,
+correlated decline across both equities and bonds offers less scope for a de-risking
+rule than an abrupt volatility shock does.
+
+Complementing the episode analysis, the framework's average return on the worst
+5~per~cent of benchmark sessions ($n = 234$) is $-0.59$ per cent against $-2.01$ per
+cent for the benchmark, a cushion of 1.42 percentage points per session. Downside
+capture is 0.38 and upside capture 0.41, giving a capture ratio of 0.93. The ratio
+being close to unity is informative: the framework participates less in both directions
+in roughly equal proportion, so its advantage comes predominantly from carrying less
+risk in adverse states rather than from any directional skill.
+
+\subsection{Year-by-Year Performance}
+
+Table~\ref{tab:years} reports every calendar year in the sample, with both wins and losses shown.
+
+\begin{table}[!ht]
+\centering
+\caption{Calendar year performance. Sharpe and maximum drawdown computed within each
+year. 2026 covers January to August only; the sample ends on 26~August 2026.}
+\label{tab:years}
+\small
+\begin{tabular}{rrrrrcc}
+\hline
+\textbf{Year} & \textbf{Strategy} & \textbf{Equal-weight} & \textbf{Strat. Sharpe} & \textbf{EW Sharpe} & \textbf{Sharpe win} & \textbf{DD win} \\
+\hline
+2008 & $-2.28$\% & $-16.32$\% & $-0.33$ & $-0.47$ & yes & yes \\
+2009 & $+4.36$\% & $+24.91$\% & $0.60$ & $1.18$ & no & yes \\
+2010 & $+13.75$\% & $+18.31$\% & $2.05$ & $1.40$ & yes & yes \\
+2011 & $+10.36$\% & $+5.75$\% & $1.73$ & $0.45$ & yes & yes \\
+2012 & $+8.91$\% & $+13.49$\% & $1.96$ & $1.58$ & yes & yes \\
+2013 & $-0.58$\% & $+6.17$\% & $-0.06$ & $0.72$ & no & yes \\
+2014 & $+13.03$\% & $+9.97$\% & $2.94$ & $1.49$ & yes & yes \\
+2015 & $-0.48$\% & $-1.56$\% & $-0.05$ & $-0.13$ & yes & yes \\
+2016 & $+4.85$\% & $+8.49$\% & $0.94$ & $0.97$ & no & yes \\
+2017 & $+10.92$\% & $+16.59$\% & $2.65$ & $3.15$ & no & yes \\
+2018 & $-3.51$\% & $-5.26$\% & $-0.78$ & $-0.52$ & no & yes \\
+2019 & $+15.72$\% & $+22.55$\% & $2.84$ & $3.02$ & no & yes \\
+2020 & $+9.63$\% & $+19.32$\% & $1.23$ & $0.96$ & yes & yes \\
+2021 & $-0.78$\% & $+10.15$\% & $-0.08$ & $1.12$ & no & no \\
+2022 & $-12.99$\% & $-19.30$\% & $-1.55$ & $-1.23$ & no & yes \\
+2023 & $+6.83$\% & $+16.53$\% & $0.90$ & $1.52$ & no & yes \\
+2024 & $+9.38$\% & $+9.58$\% & $1.25$ & $1.00$ & yes & yes \\
+2025 & $+18.53$\% & $+20.17$\% & $2.24$ & $1.67$ & yes & yes \\
+2026 & $+4.80$\% & $+10.93$\% & $0.96$ & $1.34$ & no & yes \\
+\hline
+\end{tabular}
+\end{table}
+
+The framework wins on Sharpe ratio in 9 of 19 years and on drawdown in 18 of 19. This
+distribution is the honest summary of the strategy: it loses on risk-adjusted return in
+most individual years, particularly strong advancing years such as 2009, 2017, 2021 and
+2023, and recovers the deficit in the minority of years when the benchmark suffers. The
+three years after the holdout boundary follow the same pattern: drawdown wins in all
+three, Sharpe wins in two. Two
+years merit comment. In 2021 the framework loses on both measures, the only such year,
+because the mixture model spent much of that year in the transitional state during what
+turned out to be a sustained advance. In 2018 the framework loses on Sharpe despite a
+smaller loss in absolute terms, an arithmetic consequence of a smaller negative return
+divided by a much smaller volatility.
+
+Figure~4 shows the rolling one-year Sharpe ratio of both series. The framework's rolling
+Sharpe is positive in 81.9 per cent of windows against 85.8 per cent for the benchmark,
+and exceeds the benchmark in 53.4 per cent of windows. Its advantage is therefore
+episodic rather than persistent, which is what Table~\ref{tab:years} leads one to expect.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_rollsharpe.png}
+\caption{Rolling 252-session Sharpe ratio}
+\label{fig:rollsharpe}
+\end{figure*}
+
+\subsection{Component Ablation}
+\label{sec:ablation}
+
+The framework has two active layers, signal fusion and the regime risk budget.
+Table~\ref{tab:ablation} removes each in turn. The comparison requires care, because scaling a portfolio
+toward cash changes its return and its volatility together; comparing a de-risked
+strategy against a fully invested variant therefore confounds the timing of risk with
+its level. The first ablation holds average invested exposure fixed at the framework's
+own 92.1 per cent and applies it constantly, so that only the timing differs.
+
+\begin{table}[!ht]
+\centering
+\caption{Component ablation. The matched-exposure control holds the same average
+invested exposure as the full framework but applies it without regard to the regime.}
+\label{tab:ablation}
+\small
+\begin{tabular}{p{4.8cm}rrrrr}
+\hline
+\textbf{Configuration} & \textbf{CAGR} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Exposure} & \textbf{$p$} \\
+\hline
+Full framework & 5.65\% & 0.878 & $-18.98$\% & 92.1\% & --- \\
+No regime timing, same average exposure & 5.43\% & 0.795 & $-22.26$\% & 92.1\% & 0.695 \\
+No regime timing, full exposure & 6.91\% & 0.923 & $-22.53$\% & 100.0\% & 0.016 \\
+No signal layer & 5.75\% & 0.908 & $-18.87$\% & 92.1\% & 0.650 \\
+Equal-weight benchmark & 8.45\% & 0.628 & $-36.08$\% & 100.0\% & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+The first comparison is the one the framework is built on, and it succeeds. Holding
+average exposure fixed, allocating that exposure according to the regime rather than
+uniformly raises the Sharpe ratio from 0.795 to 0.878 and improves maximum drawdown
+from $-22.26$ to $-18.98$ per cent. The difference in mean return is not significant
+($p = 0.695$), which is the expected signature of a pure risk-timing effect: the same
+average risk is carried, but it is carried at better moments. This is the only
+comparison in the study in which the framework improves both measures at once, and it
+is the claim the paper rests on.
+
+The second comparison bounds the cost of that timing. Against a fully invested variant,
+the framework gives up approximately 1.3 percentage points of annual return, and the
+difference is statistically significant ($p = 0.016$). De-risking is not free, and its
+Sharpe ratio under this comparison is lower, 0.878 against 0.923. What the framework
+buys with that return is 3.55 percentage points of maximum drawdown. Whether that
+exchange is worthwhile is a preference, not a fact, and the paper reports both sides of
+it.
+
+The third comparison is a null, and it concerns the layer the original framework was
+named for. Removing the signal fusion layer entirely---setting expected returns to
+zero so that the optimiser becomes a constrained minimum-variance problem---changes the
+Sharpe ratio from 0.878 to 0.908 and the maximum drawdown from $-18.98$ to $-18.87$ per
+cent. Both movements favour removal, and neither is statistically significant
+($p = 0.650$). The signal fusion layer contributes nothing detectable to portfolio
+outcomes in this universe, and its point estimate is mildly adverse.
+Section~\ref{sec:ic} establishes why.
+
+\subsection{Form of the Regime Risk Budget}
+
+Table~\ref{tab:budget} varies the risk budget itself, including the absolute-target formulation used
+in the framework as originally specified.
+
+\begin{table}[!ht]
+\centering
+\caption{Risk budget specifications. Relative budgets are stated as the fraction of the
+sleeve's own volatility retained in the calm, transitional and stress states.}
+\label{tab:budget}
+\small
+\begin{tabular}{p{4.6cm}rrrr}
+\hline
+\textbf{Budget} & \textbf{CAGR} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Exposure} \\
+\hline
+Relative 1.00 / 0.75 / 0.50 (primary) & 5.65\% & 0.878 & $-18.98$\% & 92.1\% \\
+Relative 1.00 / 0.80 / 0.60 & 5.77\% & 0.871 & $-19.95$\% & 93.7\% \\
+Relative 1.00 / 0.60 / 0.30 & 5.31\% & 0.881 & $-16.62$\% & 87.6\% \\
+Relative 1.00 / 0.50 / 0.25 & 5.21\% & 0.891 & $-15.71$\% & 84.9\% \\
+Absolute targets, 20 / 15 / 10\% annualised & 6.93\% & 0.923 & $-22.86$\% & 100.0\% \\
+\hline
+\end{tabular}
+\end{table}
+
+Two findings follow. First, the Sharpe ratio varies little across the four relative
+budgets, from 0.871 to 0.891, while maximum drawdown improves monotonically as the
+budget tightens, from $-19.95$ to $-15.71$ per cent. The result is therefore not an
+artefact of the particular multipliers chosen; the mildest of the four is reported as
+primary precisely because it is the least aggressive, and the tighter budgets would
+have produced a marginally better headline on both measures.
+
+Second, the absolute-target formulation is inert. Its mean invested exposure is 99.99
+per cent, and the constraint binds in one rebalance out of 224. Targets of 10 to 20 per
+cent annualised volatility are never reached by a sleeve whose own realised volatility
+is 6.4 per cent, so under that formulation the regime layer is present in the
+specification but has no effect on the portfolio. Its apparently superior Sharpe ratio
+of 0.923 is simply the fully invested portfolio of Table~\ref{tab:ablation}, reached by a
+different route. This is the practical reason the relative formulation is adopted: an
+absolute volatility target is not scale-free, and a target calibrated for one universe
+silently disables the mechanism in another.
+
+\subsection{Predictive Content of the Signals}
+\label{sec:ic}
+
+Table~\ref{tab:ic} measures the predictive content of the two composites directly, as the
+cross-sectional Spearman information coefficient between the score on session $t$ and
+the return on session $t+1$, with Newey--West $t$-statistics.
+
+\begin{table}[!ht]
+\centering
+\caption{Information coefficients against next-session cross-sectional returns.
+Newey--West $t$-statistics with ten lags in parentheses.}
+\label{tab:ic}
+\small
+\begin{tabular}{p{3.8cm}rrr}
+\hline
+& \textbf{Technical} & \textbf{Market state} & \textbf{Fused} \\
+\hline
+All sessions ($n=4{,}669$) & $-0.030$ ($-2.14$) & $-0.026$ ($-2.26$) & $-0.033$ ($-2.42$) \\
+Calm regime ($n=3{,}339$) & $-0.042$ ($-2.48$) & $-0.040$ ($-3.02$) & --- \\
+Transitional regime ($n=1{,}183$) & $-0.012$ ($-0.48$) & $+0.007$ ($+0.31$) & --- \\
+Stress regime ($n=147$) & $+0.087$ ($+1.30$) & $+0.040$ ($+0.66$) & --- \\
+\hline
+2008--2023 ($n=4{,}025$) & $-0.035$ ($-2.31$) & $-0.032$ ($-2.67$) & $-0.039$ ($-2.73$) \\
+2024--2026 holdout ($n=644$) & $+0.001$ ($+0.03$) & $+0.013$ ($+0.37$) & $+0.009$ ($+0.23$) \\
+\hline
+\end{tabular}
+\end{table}
+
+Over the full sample the information coefficients are negative and statistically
+significant for both composites and for their fusion. A composite whose cross-sectional
+score is negatively related to next-session returns cannot improve an allocation that
+uses it in the stated direction, and the ablation in Table~\ref{tab:ablation} is the
+portfolio-level consequence of the numbers in Table~\ref{tab:ic}.
+
+The regime breakdown does not support the fusion hypothesis. Section~3.5 assigns greater
+weight to the market-state composite in the stress regime on the hypothesis that it
+becomes relatively more informative there. The point estimates run the other way: in the
+stress regime the technical composite reads higher than the market-state composite, and
+in the calm regime the two are indistinguishable. The contrast between calm and stress is
+not statistically significant ($t = -1.46$, $p = 0.145$), so the correct conclusion is
+that the data provide no evidence for state-dependent relative informativeness in the
+direction the schedule assumes, rather than evidence for the reverse. Either way the
+weighting schedule has no measured basis.
+
+The last two rows of Table~\ref{tab:ic} bear on how the negative coefficients should be
+read. Splitting at the holdout boundary, the fused coefficient is $-0.039$ ($t = -2.73$)
+over 2008--2023 and $+0.009$ ($t = 0.23$) over 2024--2026. The negative sign does not
+persist. This matters because a stable negative information coefficient would be an
+exploitable signal in inverted form, and the framework could be salvaged by reversing it.
+The holdout rules that out: the in-sample negativity is a property of that era, not a
+durable cross-sectional reversal effect, and inverting the composites would have bought
+nothing after 2023. The honest reading is that these composites carry no reliable
+directional information in either direction.
+
+Two qualifications are owed. The stress regime contains only 147 sessions, so its
+coefficients are imprecisely estimated and the positive technical reading should not be
+over-interpreted. And the full-sample negative coefficients are consistent with
+short-horizon cross-sectional reversal in a universe of broad index funds, which is a
+known effect and not evidence of an error in construction, though the holdout shows it is
+not stable enough to trade. The conclusion is bounded accordingly: these composites, as
+specified, do not carry usable directional information in this universe at this
+horizon.
+
+\subsection{Allocation Behaviour, Turnover and Costs}
+\label{sec:alloc}
+\label{sec:cost}
+
+Table~\ref{tab:turnover} summarises the portfolios the framework actually holds, and Figures~5 and~6
+display them.
+
+\begin{table}[!ht]
+\centering
+\caption{Allocation characteristics and sensitivity to the assumed transaction cost.
+Effective number of assets is the reciprocal of the Herfindahl index of sleeve weights.
+Annual turnover is one-way, as a multiple of portfolio value.}
+\label{tab:turnover}
+\small
+\begin{tabular}{p{4.8cm}rrrr}
+\hline
+\multicolumn{5}{l}{\textit{Allocation characteristics, primary specification}} \\
+\hline
+Mean largest weight & \multicolumn{4}{r}{0.250} \\
+Mean effective number of assets & \multicolumn{4}{r}{5.40} \\
+Minimum effective number of assets & \multicolumn{4}{r}{4.60} \\
+Mean invested exposure & \multicolumn{4}{r}{92.1\%} \\
+Minimum invested exposure & \multicolumn{4}{r}{50.0\%} \\
+Annual one-way turnover & \multicolumn{4}{r}{0.96$\times$} \\
+\hline
+\multicolumn{5}{l}{\textit{Sensitivity to assumed cost}} \\
+\hline
+\textbf{Assumed cost} & \textbf{CAGR} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Turnover} \\
+\hline
+0 basis points & 4.90\% & 0.773 & $-19.83$\% & 4.04$\times$ \\
+5 basis points & 5.66\% & 0.893 & $-19.54$\% & 1.14$\times$ \\
+10 basis points (primary) & 5.65\% & 0.878 & $-18.98$\% & 0.96$\times$ \\
+25 basis points & 5.47\% & 0.846 & $-19.30$\% & 0.93$\times$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_alloc.png}
+\caption{Portfolio weights over time, including the cash residual}
+\label{fig:alloc}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_exposure.png}
+\caption{Invested exposure over time, with transitional and stress regimes shaded}
+\label{fig:exposure}
+\end{figure*}
+
+The allocation is diversified and stable. The largest position sits at the 25 per cent
+cap on average, the effective number of assets averages 5.40 and never falls below
+4.60, and annual one-way turnover is 0.96 times portfolio value, equivalent to
+approximately 8.0 per cent of the portfolio traded at each monthly rebalance. Invested
+exposure follows the regime, falling to a minimum of 50 per cent during the stress
+state, which is the mechanism Figure~6 displays directly.
+
+The cost sensitivity contains a result worth stating explicitly. Performance is not
+monotone in the assumed cost: at zero assumed cost the Sharpe ratio is 0.773, below the
+0.878 obtained at 10 basis points, even though no costs are deducted. The reason is
+that the assumed cost enters the objective as a turnover penalty as well as entering
+the return as a deduction. With the penalty removed, annual turnover rises from
+0.96 to 4.04 times portfolio value as the optimiser chases small differences in the
+estimated covariance matrix, and the resulting weight instability costs more than the
+saved commissions are worth. The turnover penalty is therefore functioning as a
+regulariser on the weight vector, and the framework is robust across the plausible cost
+range of 5 to 25 basis points, over which the Sharpe ratio varies only between 0.846
+and 0.893.
+
+This section also resolves a defect in the framework as originally specified. In that
+version the fused score entered the objective without the information-ratio scaling of
+Equation~(\ref{eq:alpha}), so the linear term was expressed in the raw units of the
+underlying indicators. On-balance volume takes values of order $10^{8}$ to $10^{9}$,
+while annualised variances are of order $10^{-2}$. The linear term consequently
+dominated the quadratic risk term by roughly ten orders of magnitude, the risk model
+became irrelevant to the solution, and the optimiser returned a corner solution holding
+a single asset on every rebalance date---an effective number of assets of exactly 1.00,
+with one holding persisting for 1{,}364 of 1{,}421 sessions. The scaling in
+Equation~(\ref{eq:alpha}) removes the defect by placing the linear term on a return
+scale, and Table~\ref{tab:turnover} reports the corrected behaviour. The failure was one of units, not
+of the optimiser or of the risk model.
+
+\subsection{Regime Model Diagnostics}
+\label{sec:regimefit}
+
+Table~\ref{tab:regimefit} reports the mixture model's order selection statistics and the properties of
+the three-state solution.
+
+\begin{table}[!ht]
+\centering
+\caption{Regime model diagnostics. Order selection is computed on the full feature
+history; state characteristics and the transition matrix come from the three-component
+solution. Out-of-sample shares are the states actually assigned by the expanding-window
+refits used in the backtest.}
+\label{tab:regimefit}
+\small
+\begin{tabular}{p{3.2cm}rrrrr}
+\hline
+\multicolumn{6}{l}{\textit{Order selection}} \\
+\hline
+\textbf{Components} & 2 & 3 & 4 & 5 & 6 \\
+AIC & 21944 & 20785 & 20571 & 20478 & 20372 \\
+BIC & 22016 & 20896 & 20720 & 20667 & 20599 \\
+\hline
+\multicolumn{6}{l}{\textit{Three-state solution}} \\
+\hline
+& \textbf{Calm} & \textbf{Transitional} & \textbf{Stress} & & \\
+Annualised volatility & 12.22\% & 20.04\% & 47.07\% & & \\
+Annualised momentum & $+16.04$\% & $-1.25$\% & $-15.97$\% & & \\
+Share of sessions, in sample & 63.6\% & 31.2\% & 5.2\% & & \\
+Share of sessions, out of sample & 71.4\% & 25.5\% & 3.1\% & & \\
+Mean run length (sessions) & 25.3 & 11.1 & 17.1 & & \\
+Self-transition probability & 0.961 & 0.910 & 0.941 & & \\
+\hline
+\multicolumn{6}{l}{\textit{Realised performance within each out-of-sample state}} \\
+\hline
+& \textbf{Calm} & \textbf{Transitional} & \textbf{Stress} & & \\
+Sessions & 3346 & 1196 & 147 & & \\
+Strategy Sharpe & 1.144 & 0.196 & 1.039 & & \\
+Equal-weight Sharpe & 0.916 & 0.561 & 0.356 & & \\
+\hline
+\end{tabular}
+\end{table}
+
+The order selection statistics are reported rather than used. Both AIC and BIC continue
+to fall over the range examined, from 21944 and 22016 at two components to 20372 and
+20599 at six, so neither criterion selects an interior optimum and neither supports the
+choice of three components. This behaviour is expected: a mixture fitted to persistent,
+heavy-tailed financial features will absorb tail observations into additional
+components indefinitely, and the criteria reward it for doing so. The choice of three
+is made instead on persistence and interpretability, and Table~\ref{tab:regimefit} supplies the grounds.
+The three states are economically distinct---annualised volatility of 12.2, 20.0 and
+47.1 per cent, with annualised momentum of $+16.0$, $-1.3$ and $-16.0$ per cent---and
+they persist, with self-transition probabilities between 0.910 and 0.961 and mean run
+lengths of 11 to 25 sessions. States of that duration can be acted upon at a monthly
+rebalancing frequency. Finer partitions produce shorter-lived states that the
+rebalancing schedule cannot exploit, and the transition matrix is close to
+tridiagonal---the estimated probability of moving directly between the calm and the
+stress state, in either direction, is zero---which indicates that the ordering recovered by
+sorting components on volatility is economically meaningful rather than arbitrary.
+
+The final panel shows where the framework's advantage arises. In the stress state the
+framework attains a Sharpe ratio of 1.039 against 0.356 for the benchmark, and in the
+calm state 1.144 against 0.916. It underperforms materially only in the transitional
+state, 0.196 against 0.561, which is consistent with the 2021 result in Table~\ref{tab:years}: a
+state that is genuinely ambiguous causes the risk budget to reduce exposure in
+advances that turn out to continue. Figure~7 shows the identified states over time and
+Figure~8 the behaviour of the two composites.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_regimes.png}
+\caption{Identified market states, with the underlying volatility and momentum features}
+\label{fig:regimes}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{images/fig_signal.png}
+\caption{Mean absolute cross-sectional score of each composite, 21-session moving average}
+\label{fig:signal}
+\end{figure*}
+
+\subsection{Statistical Significance}
+
+Table~\ref{tab:inference} reports inference on the daily excess return series and on the Sharpe
+difference.
+
+\begin{table}[!ht]
+\centering
+\caption{Inference against the equal-weighted benchmark. Bootstrap intervals are from a
+stationary block bootstrap with 21-session blocks and 2{,}000 replications.}
+\label{tab:inference}
+\small
+\begin{tabular}{p{6.4cm}r}
+\hline
+Mean excess return over benchmark, annualised & $-3.31$\% \\
+Paired $t$-statistic & $-1.369$ \\
+$p$-value & 0.171 \\
+Newey--West $t$-statistic, ten lags & $-1.699$ \\
+\hline
+Strategy Sharpe ratio, 95\% bootstrap interval & $[0.394, \; 1.368]$ \\
+Benchmark Sharpe ratio, 95\% bootstrap interval & $[0.180, \; 1.165]$ \\
+Sharpe difference, median & $+0.242$ \\
+Sharpe difference, 95\% bootstrap interval & $[-0.102, \; 0.574]$ \\
+Bootstrap probability that the difference is not positive & 0.088 \\
+\hline
+\end{tabular}
+\end{table}
+
+The results must be stated carefully. The framework's mean return is below the
+benchmark's, and that shortfall is not statistically significant ($p = 0.171$). The
+Sharpe difference of $+0.250$ has a bootstrap median of $+0.242$ and a 95 per cent
+interval of $[-0.102, 0.574]$ that includes zero; the bootstrap probability that the
+difference is not positive is 0.088. On an eighteen-year sample, therefore, the Sharpe
+improvement is not significant at conventional levels, and the paper does not claim
+that it is. Extending the sample by the 665 sessions of the holdout narrowed that
+interval---its lower bound moves from $-0.194$ on the pre-2024 data to $-0.102$---without
+crossing zero, which is the expected behaviour of a real but modest effect measured on
+a sample that remains too short.
+
+What is robust is not the point estimate but its consistency. The Sharpe advantage
+appears in 18 of 18 specifications, the drawdown advantage in 18 of 18 and in 18 of 19
+calendar years, and the outperformance in all four stress episodes. Eighteen years of
+daily data contain few independent observations of the events that matter for a
+drawdown claim---four, on the evidence of Table~\ref{tab:episodes}---and no amount of daily
+sampling converts that into statistical power. The appropriate conclusion is that the
+drawdown reduction is consistent and mechanically explicable, and that the Sharpe
+improvement, while positive under every specification examined, is not established at
+conventional significance.
+
+\subsection{Secondary Universe: Mega-Capitalisation Equities}
+\label{sec:megacap}
+
+The framework was also run without modification on the ten mega-capitalisation US
+equities of the original study, over the same 2018--2026 download window, giving 1{,}920
+evaluated sessions from January 2019. Table~\ref{tab:megacap} reports the outcome, which
+is unfavourable on risk-adjusted return.
+
+\begin{table}[!ht]
+\centering
+\caption{Secondary universe: ten mega-capitalisation US equities, 2019--2026}
+\label{tab:megacap}
+\small
+\begin{tabular}{p{4.8cm}rrrr}
+\hline
+& \textbf{CAGR} & \textbf{Volatility} & \textbf{Sharpe} & \textbf{Max DD} \\
+\hline
+Regime-conditional strategy & 17.02\% & 14.87\% & 1.145 & $-20.45$\% \\
+Equal-weight benchmark & 33.52\% & 24.45\% & 1.371 & $-33.63$\% \\
+Equal-weight at strategy volatility & 20.08\% & 14.87\% & 1.350 & $-21.41$\% \\
+No regime timing, same average exposure & 18.82\% & 16.82\% & 1.119 & $-30.36$\% \\
+\hline
+\end{tabular}
+\end{table}
+
+The framework loses on risk-adjusted return, 1.145 against 1.371, and gives up 15.09
+percentage points of annual return, a shortfall that is statistically significant
+($t = -2.791$, $p = 0.005$). Its defensive behaviour nevertheless survives intact:
+maximum drawdown improves from $-33.63$ to $-20.45$ per cent, it wins on drawdown in
+8 of 8 calendar years while winning on Sharpe ratio in only 3, and it outperforms in
+both stress episodes this window contains, by 12.50 percentage points during the 2020
+crash and 12.60 percentage points during the 2022 bear market.
+
+The regime layer itself continues to behave as the primary results describe. Against the
+matched-exposure control it improves the Sharpe ratio slightly, 1.145 against 1.119, and
+improves maximum drawdown substantially, from $-30.36$ to $-20.45$ per cent. The
+risk-timing effect identified in Section~\ref{sec:ablation} therefore reproduces in a
+universe on which the framework loses overall, which is the relevant test of whether that
+effect is specific to the primary sample. What fails here is not the regime layer but the
+decision to hold the resulting portfolio in place of the benchmark.
+
+The reason is a property of the universe rather than of the framework. Ten
+mega-capitalisation US equities are close to a single factor bet: correlations are high,
+there is no low-volatility asset to rotate into, and the risky sleeve therefore carries
+roughly 15 per cent annualised volatility against 6 per cent in the multi-asset case.
+De-risking in such a universe can only move capital to cash, so the framework
+systematically forgoes return during an exceptional advance and recovers only part of it
+in drawdowns. This bounds the applicability of the framework directly: it requires a
+universe with genuine dispersion in asset volatility, and it should not be expected to
+add value in a concentrated, single-sector one. The originally submitted version of this
+study used exactly such a universe, which is why its results are superseded here.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the Results Establish}
+
+The framework's contribution is narrower than the one claimed for it at the outset, and
+better supported. Three findings survive the evaluation of Section~4.
+
+The first concerns the separation of the allocation decision. Splitting the problem into
+relative composition and total risk, rather than allowing a single constraint set to
+determine both, makes each part independently testable. It is this separation that
+allows the ablation in Table~\ref{tab:ablation} to be constructed at all: without it, removing the regime
+layer would change both what is held and how much of it is held, and the resulting
+comparison would confound the two.
+
+The second is that regime conditioning earns its place through timing, not through
+level. At identical average exposure, allocating risk according to the identified state
+rather than uniformly improves the Sharpe ratio from 0.795 to 0.878 and maximum
+drawdown from $-22.26$ to $-18.98$ per cent, with no significant difference in mean
+return ($p = 0.695$). This is the cleanest evidence in the paper, and it is available only
+because the control was constructed at matched risk. The corresponding cost is also
+measured: against a fully invested variant the framework forgoes approximately 1.3
+percentage points of annual return, significantly so, in exchange for 3.6 percentage
+points of maximum drawdown.
+
+The third is that the form of the risk budget matters more than its calibration. The
+four relative budgets in Table~\ref{tab:budget} produce Sharpe ratios within 0.020 of one another,
+while the absolute-target formulation---identical in intent---is inert, binding in one
+rebalance out of 224. An absolute volatility target is not scale-free, and a
+specification transferred between universes without re-calibration can silently disable
+the mechanism it was written to implement. This is a practical warning that generalises
+beyond the present framework.
+
+\subsection{What the Results Do Not Establish}
+
+Two claims that the framework was designed to support are not supported.
+
+The signal fusion layer does not contribute. Its removal improves the Sharpe ratio from
+0.878 to 0.908 and leaves maximum drawdown unchanged, and neither movement is
+significant. The information coefficients in Table~\ref{tab:ic} explain why: both composites are
+significantly negatively related to next-session cross-sectional returns over the full
+sample. The regime-conditional weighting schedule has no measured basis either. It was
+specified on the hypothesis that market-state information becomes relatively more
+informative under stress; the point estimates run the other way and the calm-to-stress
+contrast is not significant ($t = -1.46$, $p = 0.145$), so the schedule is weighting on a
+difference the data do not establish. Splitting the sample at the holdout boundary
+sharpens the reading: the fused coefficient is $-0.039$ before 2024 and $+0.009$ after,
+so even the negative relationship is era-specific and could not have been exploited by
+inverting the composites.
+
+The improvement in risk-adjusted return is not statistically significant. The Sharpe
+difference of $+0.250$ carries a bootstrap interval of $[-0.102, 0.574]$. Eighteen years
+of daily returns contain only a handful of independent stress events, and a claim about
+behaviour during market stress cannot be established at conventional significance from
+four episodes. Adding the 665 sessions of the holdout narrowed the interval without
+moving it clear of zero. The consistency of the result across 18 of 18 specifications,
+18 of 19 calendar years and 4 of 4 episodes is the stronger evidence, and it is evidence of
+robustness rather than of significance. The two should not be conflated, and this paper
+does not conflate them.
+
+\subsection{Implications for Practice}
+
+For a practitioner the results suggest a specific and limited use. A regime-conditional
+risk budget is a reasonable component of a multi-asset allocation process where the
+objective includes drawdown control and where some return may be sacrificed for it. It
+should be implemented in relative rather than absolute form, evaluated against a
+volatility-matched benchmark rather than an unlevered one, and not expected to help in
+a universe without genuine dispersion in asset volatility.
+
+The results also caution against a common design pattern. The framework as originally
+specified contained two layers whose contribution had never been isolated, one of which
+was inert by construction and the other of which was pointed in the wrong direction.
+Neither defect was visible in aggregate performance, and both were found only by
+ablation at matched risk. Architectures assembled from plausible components should be
+disassembled before they are trusted.
+
+Finally, the turnover result in Table~\ref{tab:turnover} has a practical reading. The assumed
+transaction cost enters the objective as a penalty as well as the return as a
+deduction, so setting it to zero does not produce the best achievable result---it
+produces a noisier weight vector and a lower Sharpe ratio. A modest cost assumption acts
+as a regulariser, and there is no reason to model a frictionless world even when
+evaluating one.
+
+\subsection{Limitations}
+
+Several limitations bound what can be concluded.
+
+The universe is small. Ten exchange-traded funds are enough to demonstrate the
+mechanism but not to establish that it generalises to larger or differently composed
+universes, and the position cap of 25 per cent binds on average, which means the
+optimiser's freedom is partly determined by the constraint rather than by the risk
+model.
+
+The evaluation is a single historical path. Eighteen years is a long sample by the
+standards of this literature and a short one for inference about tail events, and the
+four stress episodes are not independent draws from a stationary process.
+
+The signals are market-derived proxies rather than textual sentiment. No news, filings
+or social media text is used at any point, as stated in Section~3.3. The null reported
+in Section~4.7 is therefore a null about these proxies, and it is not evidence that
+textual sentiment would fail in the same role. Establishing that would require a
+time-stamped news corpus with coverage of the traded instruments, which for broad
+exchange-traded funds does not exist at the instrument level.
+
+The regime model is deliberately simple. A three-component Gaussian mixture on two
+features is interpretable and stable, but it imposes conditional normality within
+states, treats observations as conditionally independent given the state, and---as
+Table~\ref{tab:regimefit} shows---is not the specification either information criterion would select.
+
+The risk-free rate is taken as zero throughout, and cash is assumed to earn nothing.
+Over a sample containing both the near-zero rates of 2009--2015 and the higher rates of
+2023, this understates the return on the framework's cash holding and therefore
+understates its performance relative to the fully invested benchmark. The direction of
+this bias is against the framework, which is the conservative choice, but it is a
+simplification.
+
+\subsection{Future Work}
+\label{sec:future}
+
+Four extensions follow directly. The first is textual sentiment, applied to a universe
+where an instrument-level news corpus exists, which would convert the proxy null of
+Section~4.7 into a genuine test of the fusion hypothesis. The second is a larger and
+more heterogeneous universe, including commodities, currencies and non-US fixed income,
+which would test whether the volatility-dispersion condition identified in
+Section~4.11 is the binding requirement it appears to be. The third is learning the
+risk-budget multipliers rather than fixing them, for which reinforcement learning is a
+natural candidate given the sequential structure of the problem, subject to the
+overfitting concerns documented by \citet{harvey15} and \citet{valls26}. The fourth is
+replacing the mixture model with a formulation that represents state persistence
+explicitly, such as a hidden Markov or jump model \citep{li25}, which would remove the
+conditional-independence assumption noted above.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper set out to close the step between a predictive signal and an executable
+portfolio, and to determine which parts of a regime-conditional framework are
+responsible for its behaviour. Both objectives are met, though not in the direction
+originally anticipated.
+
+The framework, evaluated on ten liquid multi-asset instruments over eighteen years under
+a walk-forward protocol with transaction costs, attains a Sharpe ratio of 0.878 against
+0.628 for an equal-weighted benchmark and reduces maximum drawdown from $-36.1$ to
+$-19.0$ per cent, while earning a lower compound return. It outperforms in all four
+major stress episodes in the sample, improves on drawdown in 18 of 19 calendar years,
+and beats the benchmark on both measures in all 18 specifications examined. The final
+665 sessions, from January 2024 to August 2026, postdate every specification decision
+and were held out; on them the framework records a higher Sharpe ratio and a smaller
+maximum drawdown than all three benchmarks. The Sharpe improvement is nevertheless
+consistent rather than statistically significant: its bootstrap interval includes
+zero.
+
+Ablation locates the source of that behaviour precisely. At identical average exposure,
+timing risk by the identified market state improves both the Sharpe ratio and the
+maximum drawdown with no difference in mean return, which is the signature of a genuine
+risk-timing effect. The form of the risk budget proves more consequential than its
+calibration: expressed as a fraction of the portfolio's own volatility the layer is
+active and effective, while the absolute volatility targets of the original
+specification bind in one rebalance out of 224 and leave it inert.
+
+The signal fusion layer, which gave the framework its name, does not contribute.
+Removing it improves the Sharpe ratio, and the information coefficients of both
+composites are significantly negative over the full sample. The regime-conditional
+weighting schedule has no measured basis: it was specified on the hypothesis that
+market-state information gains importance under stress, and the calm-to-stress contrast
+is not significant ($p = 0.145$) with point estimates pointing the other way. Nor is the
+negative relationship stable enough to invert, since it disappears in the holdout. This
+null is reported in full,
+with the coefficients that produce it, because a component-level negative result is more
+useful than an aggregate number that conceals which parts of an architecture are doing
+the work.
+
+The study's contribution is therefore a specification and a method of testing it: a
+two-step separation of composition from total risk that makes each layer independently
+falsifiable, an ablation design that isolates risk timing from risk level by matching
+average exposure, and a documented account of two failure modes---an inert absolute risk
+budget, and a signal-to-allocation conversion in which mismatched units rather than
+information determine the solution. The framework is useful within stated bounds: it
+requires a universe with genuine dispersion in asset volatility, it trades return for
+drawdown at a measured rate, and it should be evaluated against a volatility-matched
+benchmark rather than an unlevered one. Outside those bounds, as the mega-capitalisation
+results show, it does not add value.
+
+
+\section*{Acknowledgements}
+\label{sec:declarations}
+The authors would like to thank the Fr.~C.~Rodrigues Institute of Technology, Vashi and
+Fr.~C.~Rodrigues College of Engineering, Bandra for their support.
+
+\section*{Author contributions}
+\textbf{Anandkumar Pardeshi:} Conceptualization, Methodology, Software, Data curation,
+Formal analysis, Writing -- original draft.\\
+\textbf{Sujata Deshmukh:} Supervision, Validation, Writing -- review \& editing,
+Research coordination.
+
+\section*{Conflict of interest}
+The authors declare no conflict of interest.
+
+\section*{Data and code availability}
+All market data used in this study are publicly available daily price and volume series
+obtained from Yahoo Finance for the instruments listed in Section~3.1. The analysis code
+implementing the framework, the specification sweep and the ablations is available from
+the corresponding author on reasonable request.
+
+\section*{AI tool usage declaration}
+During the preparation of this work, the authors used [AUTHORS: NAME THE TOOL(S)
+ACTUALLY USED] in order to improve the readability and language of the manuscript. After
+using this tool, the authors reviewed and edited the content as needed and take full
+responsibility for the content of the publication. No part of the analysis, the
+generation of results, or the interpretation of findings was delegated to such tools.
+
+\label{sec:refs}
+\begin{thebibliography}{46}
+
+\bibitem[\protect\citeauthoryear{Agal et al.}{2025}]{agal25}
+Agal, S., Raulji, K. and Odedra, N.D. (2025) 'A machine learning approach to risk based asset allocation in portfolio optimization', {\it Scientific Reports}, Vol. 15, No. 1, doi: 10.1038/s41598-025-26337-x.
+
+\bibitem[\protect\citeauthoryear{Anbaee Farimani et al.}{2024}]{farimani24}
+Anbaee Farimani, S., Jahan, M.V. and Milani Fard, A. (2024) 'An Adaptive Multimodal Learning Model for Financial Market Price Prediction', {\it IEEE Access}, Vol. 12, pp. 121846--121863, doi: 10.1109/ACCESS.2024.3441029.
+
+\bibitem[\protect\citeauthoryear{Ang and Bekaert}{2002}]{angbekaert02}
+Ang, A. and Bekaert, G. (2002) 'International Asset Allocation With Regime Shifts', {\it Review of Financial Studies}, Vol. 15, No. 4, pp. 1137--1187, doi: 10.1093/rfs/15.4.1137.
+
+\bibitem[\protect\citeauthoryear{Ashrafzadeh et al.}{2025}]{ashrafzadeh25}
+Ashrafzadeh, M., Sadrani, M. and Zolfani, S.H. (2025) 'Deep learning and machine learning models for portfolio optimization: Enhancing return prediction with stock clustering', {\it Results in Engineering}, Vol. 27, pp. 106263, doi: 10.1016/j.rineng.2025.106263.
+
+\bibitem[\protect\citeauthoryear{Asimit et al.}{2025}]{asimit25}
+Asimit, V., Chong, W.F., Tunaru, R. and Zhou, F. (2025) 'Portfolio selection and risk sharing via risk budgeting', {\it Insurance: Mathematics and Economics}, Vol. 125, pp. 103139, doi: 10.1016/j.insmatheco.2025.103139.
+
+\bibitem[\protect\citeauthoryear{Barroso and Santa-Clara}{2015}]{barroso15}
+Barroso, P. and Santa-Clara, P. (2015) 'Momentum has its moments', {\it Journal of Financial Economics}, Vol. 116, No. 1, pp. 111--120, doi: 10.1016/j.jfineco.2014.11.010.
+
+\bibitem[\protect\citeauthoryear{Bukhari et al.}{2026}]{bukhari26}
+Bukhari, F., Sarwar, A., Sattar, A., Rehman, Z.U., Park, S. and Rho, S. (2026) 'Regime-aware static and dynamic graph structure learning for stock price forecasting', {\it Humanities and Social Sciences Communications}, Vol. 13, No. 1, doi: 10.1057/s41599-026-07653-7.
+
+\bibitem[\protect\citeauthoryear{Chou and Nguyen}{2018}]{chou18}
+Chou, J.S. and Nguyen, T.K. (2018) 'Forward Forecast of Stock Price Using Sliding-Window Metaheuristic-Optimized Machine-Learning Regression', {\it IEEE Transactions on Industrial Informatics}, Vol. 14, No. 7, pp. 3132--3142, doi: 10.1109/TII.2018.2794389.
+
+\bibitem[\protect\citeauthoryear{Chuang et al.}{2025}]{chuang25}
+Chuang, H.M., He, H.C. and Hu, M.C. (2025) 'Chinese Financial News Analysis for Sentiment and Stock Prediction: A Comparative Framework with Language Models', {\it Big Data and Cognitive Computing}, Vol. 9, No. 10, pp. 263, doi: 10.3390/bdcc9100263.
+
+\bibitem[\protect\citeauthoryear{DeMiguel et al.}{2009}]{demiguel09}
+DeMiguel, V., Garlappi, L. and Uppal, R. (2009) 'Optimal Versus Naive Diversification: How Inefficient is the $1/N$ Portfolio Strategy?', {\it Review of Financial Studies}, Vol. 22, No. 5, pp. 1915--1953, doi: 10.1093/rfs/hhm075.
+
+\bibitem[\protect\citeauthoryear{George and Murugesan}{2025}]{george25}
+George, M. and Murugesan, R. (2025) 'Sentiment analysis on stocks: a hybrid feature extraction technique on 14 classifiers', {\it International Journal of Applied Decision Sciences}, Vol. 18, No. 1, pp. 84--112, doi: 10.1504/IJADS.2025.143083.
+
+\bibitem[\protect\citeauthoryear{Grinold and Kahn}{2000}]{grinold00}
+Grinold, R.C. and Kahn, R.N. (2000) {\it Active Portfolio Management: A Quantitative Approach for Producing Superior Returns and Controlling Risk}, 2nd ed., McGraw-Hill, New York, NY.
+
+\bibitem[\protect\citeauthoryear{Gu et al.}{2020}]{gu20}
+Gu, S., Kelly, B. and Xiu, D. (2020) 'Empirical Asset Pricing via Machine Learning', {\it The Review of Financial Studies}, Vol. 33, No. 5, pp. 2223--2273, doi: 10.1093/rfs/hhaa009.
+
+\bibitem[\protect\citeauthoryear{Ha et al.}{2026}]{ha26}
+Ha, Y.S., Kang, J., Kim, J. and Chun, D. (2026) 'Machine learning-based portfolio optimization: comparative analysis with the all-weather portfolio strategy', {\it Financial Innovation}, Vol. 12, No. 1, doi: 10.1186/s40854-026-00927-8.
+
+\bibitem[\protect\citeauthoryear{Hamilton}{1989}]{hamilton89}
+Hamilton, J.D. (1989) 'A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle', {\it Econometrica}, Vol. 57, No. 2, pp. 357--384, doi: 10.2307/1912559.
+
+\bibitem[\protect\citeauthoryear{Harvey and Liu}{2015}]{harvey15}
+Harvey, C.R. and Liu, Y. (2015) 'Backtesting', {\it The Journal of Portfolio Management}, Vol. 42, No. 1, pp. 13--28, doi: 10.3905/jpm.2015.42.1.013.
+
+\bibitem[\protect\citeauthoryear{Hood and Raughtigan}{2025}]{hood25}
+Hood, B.T. and Raughtigan, C. (2025) 'Volatility Targeting Is Trendy: How Trend Following Explains Alpha in Volatility-Managed Strategies', {\it The Journal of Portfolio Management}, Vol. 52, No. 1, pp. 100--121, doi: 10.3905/jpm.2025.1.764.
+
+\bibitem[\protect\citeauthoryear{Huang et al.}{2020}]{huang20}
+Huang, Q., Yang, J., Feng, X., Liew, A.W.C. and Li, X. (2020) 'Automated Trading Point Forecasting Based on Bicluster Mining and Fuzzy Inference', {\it IEEE Transactions on Fuzzy Systems}, Vol. 28, No. 2, pp. 259--272, doi: 10.1109/TFUZZ.2019.2904920.
+
+\bibitem[\protect\citeauthoryear{Jiang et al.}{2025}]{jiang25}
+Jiang, Y., Olmo, J. and Atwi, M. (2025) 'High-dimensional multi-period portfolio allocation using deep reinforcement learning', {\it International Review of Economics \& Finance}, Vol. 98, pp. 103996, doi: 10.1016/j.iref.2025.103996.
+
+\bibitem[\protect\citeauthoryear{Kehinde et al.}{2025}]{kehinde25}
+Kehinde, T.O., Chung, S.H. and Olanrewaju, O.A. (2025) 'Inverse DEA for Portfolio Volatility Targeting: Industry Evidence from Taiwan Stock Exchange', {\it International Journal of Financial Studies}, Vol. 13, No. 4, pp. 192, doi: 10.3390/ijfs13040192.
+
+\bibitem[\protect\citeauthoryear{Khodamoradi et al.}{2023}]{khodamoradi23}
+Khodamoradi, T., Salahi, M. and Najafi, A.R. (2023) 'Multi-intervals robust mean-conditional value-at-risk portfolio optimisation with conditional scenario reduction technique', {\it International Journal of Applied Decision Sciences}, Vol. 16, No. 2, pp. 237, doi: 10.1504/ijads.2023.129475.
+
+\bibitem[\protect\citeauthoryear{Kehinde et al.}{2026}]{kehinde26}
+Kehinde, T.O., Khan, W.A., Chung, S.-H., Wang, Y. and Piya, S. (2026) 'A real-time dynamic cluster-driven financial forecasting with attention-based deep learning and DEA', {\it Expert Systems with Applications}, Vol. 331, pp. 133353, doi: 10.1016/j.eswa.2026.133353.
+
+\bibitem[\protect\citeauthoryear{Kritzman et al.}{2012}]{kritzman12}
+Kritzman, M., Page, S. and Turkington, D. (2012) 'Regime Shifts: Implications for Dynamic Strategies', {\it Financial Analysts Journal}, Vol. 68, No. 3, pp. 22--39, doi: 10.2469/faj.v68.n3.3.
+
+\bibitem[\protect\citeauthoryear{Ledoit and Wolf}{2004}]{ledoit04}
+Ledoit, O. and Wolf, M. (2004) 'A well-conditioned estimator for large-dimensional covariance matrices', {\it Journal of Multivariate Analysis}, Vol. 88, No. 2, pp. 365--411, doi: 10.1016/s0047-259x(03)00096-4.
+
+\bibitem[\protect\citeauthoryear{Ledoit and Wolf}{2008}]{ledoit08}
+Ledoit, O. and Wolf, M. (2008) 'Robust performance hypothesis testing with the Sharpe ratio', {\it Journal of Empirical Finance}, Vol. 15, No. 5, pp. 850--859, doi: 10.1016/j.jempfin.2008.03.002.
+
+\bibitem[\protect\citeauthoryear{Lee et al.}{2007}]{lee07}
+Lee, J.W., Park, J., O, J., Lee, J. and Hong, E. (2007) 'A Multiagent Approach to $Q$-Learning for Daily Stock Trading', {\it IEEE Transactions on Systems, Man, and Cybernetics - Part A: Systems and Humans}, Vol. 37, No. 6, pp. 864--877, doi: 10.1109/TSMCA.2007.904825.
+
+\bibitem[\protect\citeauthoryear{Li et al.}{2025}]{li25}
+Li, X., Chen, J., Tao, X. and Ji, Y. (2025) 'Regime-Switching Asset Allocation Using a Framework Combing a Jump Model and Model Predictive Control', {\it Mathematics}, Vol. 13, No. 17, pp. 2837, doi: 10.3390/math13172837.
+
+\bibitem[\protect\citeauthoryear{Loughran and Mcdonald}{2011}]{loughran11}
+Loughran, T. and Mcdonald, B. (2011) 'When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10‐Ks', {\it The Journal of Finance}, Vol. 66, No. 1, pp. 35--65, doi: 10.1111/j.1540-6261.2010.01625.x.
+
+\bibitem[\protect\citeauthoryear{Lu and Tian}{2025}]{lu25}
+Lu, W. and Tian, Z. (2025) 'Nonlinear Shrinkage Estimation of Higher-Order Moments for Portfolio Optimization Under Uncertainty in Complex Financial Systems', {\it Entropy}, Vol. 27, No. 10, pp. 1083, doi: 10.3390/e27101083.
+
+\bibitem[\protect\citeauthoryear{Luo and Mulvey}{2026}]{luo26}
+Luo, Y. and Mulvey, J.M. (2026) 'Regime-Aware Asset Allocation with Dual-Regime Signals and Regime-Dependent Asset Selection', {\it The Journal of Financial Data Science}, Vol. 8, No. 3, pp. 104--134, doi: 10.3905/jfds.2026.013.
+
+\bibitem[\protect\citeauthoryear{López de Prado}{2016}]{prado16}
+López de Prado, M. (2016) 'Building Diversified Portfolios that Outperform Out of Sample', {\it The Journal of Portfolio Management}, Vol. 42, No. 4, pp. 59--69, doi: 10.3905/jpm.2016.42.4.059.
+
+\bibitem[\protect\citeauthoryear{Markowitz}{1952}]{markowitz52}
+Markowitz, H. (1952) 'Portfolio Selection', {\it The Journal of Finance}, Vol. 7, No. 1, pp. 77--91, doi: 10.2307/2975974.
+
+\bibitem[\protect\citeauthoryear{Moreira and Muir}{2017}]{moreira17}
+Moreira, A. and Muir, T. (2017) 'Volatility‐Managed Portfolios', {\it The Journal of Finance}, Vol. 72, No. 4, pp. 1611--1644, doi: 10.1111/jofi.12513.
+
+\bibitem[\protect\citeauthoryear{Muhammad et al.}{2026}]{muhammad26}
+Muhammad, I., Rospocher, M., Knez, T. and Žitnik, S. (2026) 'Benchmarking large language models for target-based financial sentiment and stock return', {\it International Journal of Data Science and Analytics}, Vol. 22, No. 1, doi: 10.1007/s41060-026-01201-x.
+
+\bibitem[\protect\citeauthoryear{Mun and Kim}{2025}]{mun25}
+Mun, Y. and Kim, N. (2025) 'Leveraging Large Language Models for Sentiment Analysis and Investment Strategy Development in Financial Markets', {\it Journal of Theoretical and Applied Electronic Commerce Research}, Vol. 20, No. 2, pp. 77, doi: 10.3390/jtaer20020077.
+
+\bibitem[\protect\citeauthoryear{Naidoo et al.}{2025}]{naidoo25}
+Naidoo, T., Moores-Pitt, P., Muzindutsi, P.-F. and Isah, K.O. (2025) 'Analysing investor sentiment and stock market volatility of the JSE size-based indices: a GARCH-MIDAS approach', {\it Risk Management}, Vol. 27, No. 3, doi: 10.1057/s41283-025-00165-9.
+
+\bibitem[\protect\citeauthoryear{Newey and West}{1987}]{newey87}
+Newey, W.K. and West, K.D. (1987) 'A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix', {\it Econometrica}, Vol. 55, No. 3, pp. 703--708, doi: 10.2307/1913610.
+
+\bibitem[\protect\citeauthoryear{Officioso et al.}{2026}]{officioso26}
+Officioso, G., Sperlì, G. and Vignali, A. (2026) 'Financial news sentiment meets market data: A large language model-based approach to stock price prediction', {\it Information Sciences}, Vol. 754, pp. 123711, doi: 10.1016/j.ins.2026.123711.
+
+\bibitem[\protect\citeauthoryear{Politis and Romano}{1994}]{politis94}
+Politis, D.N. and Romano, J.P. (1994) 'The Stationary Bootstrap', {\it Journal of the American Statistical Association}, Vol. 89, No. 428, pp. 1303--1313, doi: 10.1080/01621459.1994.10476870.
+
+\bibitem[\protect\citeauthoryear{Raimundo and Bravo}{2026}]{raimundo26}
+Raimundo, B. and Bravo, J.M. (2026) 'Forecasting meets Portfolio Theory: A Bibliometric Approach to Decision-Making under Uncertainty', {\it Humanities and Social Sciences Communications}, Vol. 13, No. 1, doi: 10.1057/s41599-026-07252-6.
+
+\bibitem[\protect\citeauthoryear{Saijai and Pankwaen}{2026}]{saijai26}
+Saijai, W. and Pankwaen, K. (2026) 'Deep reinforcement learning for portfolio allocation: a comparative study on five Vietnamese equities', {\it Asian Journal of Economics and Banking}, Vol. 10, No. 2, pp. 174--191, doi: 10.1108/ajeb-10-2025-0168.
+
+\bibitem[\protect\citeauthoryear{Sami et al.}{2025}]{sami25}
+Sami, H.M., Shah Jalal, M., Faisal Kabir, M. and Nurul Huda, M. (2025) 'IntPort: An Intelligent Portfolio Construction Technique Based on Financial Forecasting by Statistical Average Method', {\it IEEE Access}, Vol. 13, pp. 35355--35375, doi: 10.1109/ACCESS.2025.3543741.
+
+\bibitem[\protect\citeauthoryear{Sheppert}{2026}]{sheppert26}
+Sheppert, A.P. (2026) 'The GT-Score: A Robust Objective Function for Reducing Overfitting in Data-Driven Trading Strategies', {\it Journal of Risk and Financial Management}, Vol. 19, No. 1, pp. 60, doi: 10.3390/jrfm19010060.
+
+\bibitem[\protect\citeauthoryear{Singsiri and Yokrattanasak}{2026}]{singsiri26}
+Singsiri, P. and Yokrattanasak, J. (2026) 'Machine Learning-Driven Portfolio Optimization Using Money Flow Index-Based Sentiment Signals', {\it International Journal of Financial Studies}, Vol. 14, No. 5, pp. 112, doi: 10.3390/ijfs14050112.
+
+\bibitem[\protect\citeauthoryear{Valls and Steurer}{2026}]{valls26}
+Valls, F.B. and Steurer, E. (2026) 'When Strategies Work Too Well: Volatility-Based Investing, Overfitting and the Limits of Empirical Finance', {\it Journal of Financial Risk Management}, Vol. 15, No. 03, pp. 189--211, doi: 10.4236/jfrm.2026.153012.
+
+\bibitem[\protect\citeauthoryear{Wang et al.}{2026}]{wang26}
+Wang, H., Xie, D., Duan, Y., Xiong, W. and Chen, D. (2026) 'Optimizing stock market prediction and stock trading strategies with deep learning models enhanced by nonlinear feature identification and robust prediction evaluation', {\it Financial Innovation}, Vol. 12, No. 1, doi: 10.1186/s40854-026-00929-6.
+
+\bibitem[\protect\citeauthoryear{Zhang et al.}{2022}]{zhang22}
+Zhang, C., Sjarif, N.N.A. and Ibrahim, R.B. (2022) 'Decision Fusion for Stock Market Prediction: A Systematic Review', {\it IEEE Access}, Vol. 10, pp. 81364--81379, doi: 10.1109/ACCESS.2022.3195942.
+
+\bibitem[\protect\citeauthoryear{Zhang et al.}{2025}]{zhangz25}
+Zhang, Z., Choo, W.C. and Arasan, J. (2025) 'Does the optimal model always perform the best A combined approach for interval forecasting', {\it International Journal of Applied Decision Sciences}, Vol. 18, No. 1, pp. 64--83, doi: 10.1504/ijads.2025.143079.
+
+\bibitem[\protect\citeauthoryear{Zong et al.}{2025}]{zong25}
+Zong, C., Wan, J., Cascone, L. and Zhou, H. (2025) 'Stock movement prediction with multimodal stable fusion via gated cross-attention mechanism', {\it Complex \& Intelligent Systems}, Vol. 11, No. 9, doi: 10.1007/s40747-025-02023-3.
+
+\end{thebibliography}
+\end{document}

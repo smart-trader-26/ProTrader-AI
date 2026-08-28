@@ -1,0 +1,768 @@
+{
+  "MULTI-ASSET 2007-2024": {
+    "main": {
+      "regime strategy": {
+        "CAGR": 0.058104,
+        "Vol": 0.073906,
+        "Sharpe": 0.786182,
+        "MaxDD": -0.228627,
+        "Calmar": 0.254143
+      },
+      "equal-weight": {
+        "CAGR": 0.07334,
+        "Vol": 0.137955,
+        "Sharpe": 0.53162,
+        "MaxDD": -0.360772,
+        "Calmar": 0.203286
+      },
+      "equal-weight @ strat vol": {
+        "CAGR": 0.041109,
+        "Vol": 0.073906,
+        "Sharpe": 0.556229,
+        "MaxDD": -0.207424,
+        "Calmar": 0.198188
+      },
+      "no-regime ablation": {
+        "CAGR": 0.057897,
+        "Vol": 0.073736,
+        "Sharpe": 0.785186,
+        "MaxDD": -0.225297,
+        "Calmar": 0.25698
+      }
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.060850641498986335,
+        "equal_weight": -0.2978460343230549,
+        "excess": 0.23699539282406856
+      },
+      "Euro crisis 2011": {
+        "strategy": 0.0698991989856852,
+        "equal_weight": -0.07244589157443804,
+        "excess": 0.14234509056012323
+      },
+      "COVID 2020": {
+        "strategy": -0.07699873662227996,
+        "equal_weight": -0.21282010652709582,
+        "excess": 0.13582136990481586
+      },
+      "2022 bear": {
+        "strategy": -0.21024532862767253,
+        "equal_weight": -0.24486256686699304,
+        "excess": 0.0346172382393205
+      }
+    },
+    "years": [
+      {
+        "year": 2008,
+        "strat": 0.02149,
+        "ew": -0.163182,
+        "s_sh": 0.25454,
+        "e_sh": -0.468853,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2009,
+        "strat": 0.031101,
+        "ew": 0.249099,
+        "s_sh": 0.386906,
+        "e_sh": 1.176737,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2010,
+        "strat": 0.13995,
+        "ew": 0.183056,
+        "s_sh": 2.080694,
+        "e_sh": 1.399754,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2011,
+        "strat": 0.143319,
+        "ew": 0.057493,
+        "s_sh": 2.139484,
+        "e_sh": 0.453406,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2012,
+        "strat": 0.088372,
+        "ew": 0.134867,
+        "s_sh": 1.876373,
+        "e_sh": 1.578679,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2013,
+        "strat": -0.008517,
+        "ew": 0.061713,
+        "s_sh": -0.099575,
+        "e_sh": 0.719929,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2014,
+        "strat": 0.130094,
+        "ew": 0.099748,
+        "s_sh": 2.893247,
+        "e_sh": 1.488042,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2015,
+        "strat": 0.003756,
+        "ew": -0.015617,
+        "s_sh": 0.091778,
+        "e_sh": -0.126256,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2016,
+        "strat": 0.056174,
+        "ew": 0.08487,
+        "s_sh": 1.050365,
+        "e_sh": 0.971528,
+        "win": true,
+        "dd_win": false
+      },
+      {
+        "year": 2017,
+        "strat": 0.113057,
+        "ew": 0.16586,
+        "s_sh": 2.680696,
+        "e_sh": 3.153466,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2018,
+        "strat": -0.019227,
+        "ew": -0.052571,
+        "s_sh": -0.333729,
+        "e_sh": -0.523185,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2019,
+        "strat": 0.178729,
+        "ew": 0.225504,
+        "s_sh": 3.316317,
+        "e_sh": 3.024768,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2020,
+        "strat": 0.156469,
+        "ew": 0.193158,
+        "s_sh": 1.388987,
+        "e_sh": 0.962722,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2021,
+        "strat": 0.010724,
+        "ew": 0.101535,
+        "s_sh": 0.191606,
+        "e_sh": 1.125073,
+        "win": false,
+        "dd_win": false
+      },
+      {
+        "year": 2022,
+        "strat": -0.16412,
+        "ew": -0.192954,
+        "s_sh": -1.463334,
+        "e_sh": -1.231311,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2023,
+        "strat": 0.104424,
+        "ew": 0.165251,
+        "s_sh": 1.179073,
+        "e_sh": 1.51891,
+        "win": false,
+        "dd_win": true
+      }
+    ],
+    "sig": {
+      "excess_ann": -0.02108622258097939,
+      "t": -0.7885517645579603,
+      "p": 0.4304204961763093,
+      "nw_t": -1.005575634802698,
+      "strat_sharpe": 0.8012316589767918,
+      "ew_sharpe": 0.5820905007311742,
+      "ewm_sharpe": 0.5820905007311742,
+      "noreg_sharpe": 0.8002546089161279,
+      "strat_dd": -0.22862687919346925,
+      "ew_dd": -0.36077162310894884,
+      "ewm_dd": -0.20742407620504444
+    },
+    "period": [
+      "2008-01-07",
+      "2023-12-29"
+    ]
+  },
+  "MULTI-ASSET 2018-2024 (paper window)": {
+    "main": {
+      "regime strategy": {
+        "CAGR": 0.046037,
+        "Vol": 0.089979,
+        "Sharpe": 0.51164,
+        "MaxDD": -0.226454,
+        "Calmar": 0.203294
+      },
+      "equal-weight": {
+        "CAGR": 0.084916,
+        "Vol": 0.136138,
+        "Sharpe": 0.62375,
+        "MaxDD": -0.255194,
+        "Calmar": 0.33275
+      },
+      "equal-weight @ strat vol": {
+        "CAGR": 0.057559,
+        "Vol": 0.089979,
+        "Sharpe": 0.639691,
+        "MaxDD": -0.174976,
+        "Calmar": 0.328954
+      },
+      "no-regime ablation": {
+        "CAGR": 0.049295,
+        "Vol": 0.090088,
+        "Sharpe": 0.547183,
+        "MaxDD": -0.223333,
+        "Calmar": 0.220723
+      }
+    },
+    "episodes": {
+      "COVID 2020": {
+        "strategy": -0.07208614480620357,
+        "equal_weight": -0.2128201674447806,
+        "excess": 0.14073402263857704
+      },
+      "2022 bear": {
+        "strategy": -0.20880787931976041,
+        "equal_weight": -0.2448626228403571,
+        "excess": 0.03605474352059668
+      }
+    },
+    "years": [
+      {
+        "year": 2019,
+        "strat": 0.160802,
+        "ew": 0.214126,
+        "s_sh": 2.742784,
+        "e_sh": 2.997052,
+        "win": false,
+        "dd_win": false
+      },
+      {
+        "year": 2020,
+        "strat": 0.148893,
+        "ew": 0.193158,
+        "s_sh": 1.372012,
+        "e_sh": 0.962723,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2021,
+        "strat": 0.012658,
+        "ew": 0.101535,
+        "s_sh": 0.222203,
+        "e_sh": 1.125073,
+        "win": false,
+        "dd_win": false
+      },
+      {
+        "year": 2022,
+        "strat": -0.165323,
+        "ew": -0.192954,
+        "s_sh": -1.477333,
+        "e_sh": -1.231312,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2023,
+        "strat": 0.110014,
+        "ew": 0.165251,
+        "s_sh": 1.233742,
+        "e_sh": 1.518911,
+        "win": false,
+        "dd_win": true
+      }
+    ],
+    "sig": {
+      "excess_ann": -0.04175986446056917,
+      "t": -0.9969747061859177,
+      "p": 0.3189691237385664,
+      "nw_t": -1.1813726183965565,
+      "strat_sharpe": 0.5452421929010607,
+      "ew_sharpe": 0.6671212920005464,
+      "ewm_sharpe": 0.6671212920005462,
+      "noreg_sharpe": 0.5792129854956758,
+      "strat_dd": -0.22645439765187947,
+      "ew_dd": -0.25519415160249015,
+      "ewm_dd": -0.1749755349124259
+    },
+    "period": [
+      "2019-01-07",
+      "2023-12-29"
+    ]
+  },
+  "SECTORS 2007-2024": {
+    "main": {
+      "regime strategy": {
+        "CAGR": 0.08464,
+        "Vol": 0.135057,
+        "Sharpe": 0.626696,
+        "MaxDD": -0.338226,
+        "Calmar": 0.250247
+      },
+      "equal-weight": {
+        "CAGR": 0.098107,
+        "Vol": 0.198119,
+        "Sharpe": 0.495191,
+        "MaxDD": -0.509186,
+        "Calmar": 0.192674
+      },
+      "equal-weight @ strat vol": {
+        "CAGR": 0.070454,
+        "Vol": 0.135057,
+        "Sharpe": 0.52166,
+        "MaxDD": -0.373785,
+        "Calmar": 0.188489
+      },
+      "no-regime ablation": {
+        "CAGR": 0.081961,
+        "Vol": 0.146913,
+        "Sharpe": 0.557887,
+        "MaxDD": -0.338232,
+        "Calmar": 0.242321
+      }
+    },
+    "episodes": {
+      "GFC 2008": {
+        "strategy": -0.3006298920276985,
+        "equal_weight": -0.46194769698402405,
+        "excess": 0.16131780495632553
+      },
+      "Euro crisis 2011": {
+        "strategy": -0.06769768273559329,
+        "equal_weight": -0.16605792501071637,
+        "excess": 0.09836024227512308
+      },
+      "COVID 2020": {
+        "strategy": -0.27684889628943155,
+        "equal_weight": -0.36681373257095984,
+        "excess": 0.0899648362815283
+      },
+      "2022 bear": {
+        "strategy": -0.12986372759979603,
+        "equal_weight": -0.14036977561982722,
+        "excess": 0.010506048020031189
+      }
+    },
+    "years": [
+      {
+        "year": 2008,
+        "strat": -0.199006,
+        "ew": -0.320944,
+        "s_sh": -1.077173,
+        "e_sh": -0.823572,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2009,
+        "strat": 0.083929,
+        "ew": 0.292777,
+        "s_sh": 0.752898,
+        "e_sh": 1.078466,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2010,
+        "strat": 0.093918,
+        "ew": 0.160902,
+        "s_sh": 0.724718,
+        "e_sh": 0.916488,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2011,
+        "strat": 0.12202,
+        "ew": 0.031075,
+        "s_sh": 0.781233,
+        "e_sh": 0.248047,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2012,
+        "strat": 0.107703,
+        "ew": 0.146588,
+        "s_sh": 1.149389,
+        "e_sh": 1.189632,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2013,
+        "strat": 0.265649,
+        "ew": 0.30858,
+        "s_sh": 2.412353,
+        "e_sh": 2.494679,
+        "win": false,
+        "dd_win": false
+      },
+      {
+        "year": 2014,
+        "strat": 0.220562,
+        "ew": 0.133296,
+        "s_sh": 2.024958,
+        "e_sh": 1.195095,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2015,
+        "strat": 0.03702,
+        "ew": -0.013415,
+        "s_sh": 0.325578,
+        "e_sh": -0.014143,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2016,
+        "strat": 0.085754,
+        "ew": 0.143673,
+        "s_sh": 0.788407,
+        "e_sh": 1.112251,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2017,
+        "strat": 0.209728,
+        "ew": 0.192221,
+        "s_sh": 3.311473,
+        "e_sh": 2.841963,
+        "win": true,
+        "dd_win": false
+      },
+      {
+        "year": 2018,
+        "strat": -0.002485,
+        "ew": -0.061666,
+        "s_sh": 0.051106,
+        "e_sh": -0.339503,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2019,
+        "strat": 0.252368,
+        "ew": 0.278895,
+        "s_sh": 2.378393,
+        "e_sh": 2.183985,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2020,
+        "strat": -0.007221,
+        "ew": 0.103708,
+        "s_sh": 0.081994,
+        "e_sh": 0.455065,
+        "win": false,
+        "dd_win": true
+      },
+      {
+        "year": 2021,
+        "strat": 0.203884,
+        "ew": 0.296008,
+        "s_sh": 2.11778,
+        "e_sh": 2.129307,
+        "win": false,
+        "dd_win": false
+      },
+      {
+        "year": 2022,
+        "strat": -0.024117,
+        "ew": -0.051529,
+        "s_sh": -0.049878,
+        "e_sh": -0.146949,
+        "win": true,
+        "dd_win": true
+      },
+      {
+        "year": 2023,
+        "strat": 0.011218,
+        "ew": 0.138898,
+        "s_sh": 0.158078,
+        "e_sh": 1.13267,
+        "win": false,
+        "dd_win": false
+      }
+    ],
+    "sig": {
+      "excess_ann": -0.022885653982813423,
+      "t": -0.9429712771873296,
+      "p": 0.34575221775796094,
+      "nw_t": -1.0708357946850946,
+      "strat_sharpe": 0.6693489445863378,
+      "ew_sharpe": 0.5718080584791326,
+      "ewm_sharpe": 0.5718080584791327,
+      "noreg_sharpe": 0.6098397129809842,
+      "strat_dd": -0.338225940860175,
+      "ew_dd": -0.5091857433680751,
+      "ewm_dd": -0.3737847624117676
+    },
+    "period": [
+      "2008-01-07",
+      "2023-12-29"
+    ]
+  },
+  "sweep": {
+    "runs": [
+      {
+        "seed": 0,
+        "cov_lb": 126,
+        "rebal": 10,
+        "strat_sharpe": 0.6803,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2384,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 0,
+        "cov_lb": 126,
+        "rebal": 21,
+        "strat_sharpe": 0.775,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.224,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 0,
+        "cov_lb": 126,
+        "rebal": 42,
+        "strat_sharpe": 0.788,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2368,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 0,
+        "cov_lb": 252,
+        "rebal": 10,
+        "strat_sharpe": 0.7351,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2366,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 0,
+        "cov_lb": 252,
+        "rebal": 21,
+        "strat_sharpe": 0.7974,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2279,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 0,
+        "cov_lb": 252,
+        "rebal": 42,
+        "strat_sharpe": 0.7966,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2422,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 126,
+        "rebal": 10,
+        "strat_sharpe": 0.6706,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2376,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 126,
+        "rebal": 21,
+        "strat_sharpe": 0.7635,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2253,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 126,
+        "rebal": 42,
+        "strat_sharpe": 0.7728,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.234,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 252,
+        "rebal": 10,
+        "strat_sharpe": 0.7233,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2343,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 252,
+        "rebal": 21,
+        "strat_sharpe": 0.799,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2285,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 7,
+        "cov_lb": 252,
+        "rebal": 42,
+        "strat_sharpe": 0.795,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.241,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 126,
+        "rebal": 10,
+        "strat_sharpe": 0.6515,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.239,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 126,
+        "rebal": 21,
+        "strat_sharpe": 0.7634,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2243,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 126,
+        "rebal": 42,
+        "strat_sharpe": 0.776,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2368,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 252,
+        "rebal": 10,
+        "strat_sharpe": 0.7211,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2325,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 252,
+        "rebal": 21,
+        "strat_sharpe": 0.8012,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2286,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      },
+      {
+        "seed": 42,
+        "cov_lb": 252,
+        "rebal": 42,
+        "strat_sharpe": 0.7981,
+        "ew_sharpe": 0.5821,
+        "strat_dd": -0.2422,
+        "ew_dd": -0.3608,
+        "sharpe_win": true,
+        "dd_win": true,
+        "dd_win_matched": false
+      }
+    ],
+    "n": 18,
+    "sharpe_wins": 18,
+    "dd_wins": 18,
+    "dd_wins_matched": 0
+  }
+}

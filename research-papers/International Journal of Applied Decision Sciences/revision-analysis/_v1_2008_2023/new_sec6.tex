@@ -1,0 +1,45 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper set out to close the step between a predictive signal and an executable
+portfolio, and to determine which parts of a regime-conditional framework are
+responsible for its behaviour. Both objectives are met, though not in the direction
+originally anticipated.
+
+The framework, evaluated on ten liquid multi-asset instruments over sixteen years under
+a walk-forward protocol with transaction costs, attains a Sharpe ratio of 0.738 against
+0.532 for an equal-weighted benchmark and reduces maximum drawdown from $-36.1$ to
+$-19.0$ per cent, while earning a lower compound return. It outperforms in all four
+major stress episodes in the sample, improves on drawdown in 15 of 16 calendar years,
+and beats the benchmark on both measures in all 18 specifications examined. The Sharpe
+improvement is consistent but not statistically significant: its bootstrap interval
+includes zero.
+
+Ablation locates the source of that behaviour precisely. At identical average exposure,
+timing risk by the identified market state improves both the Sharpe ratio and the
+maximum drawdown with no difference in mean return, which is the signature of a genuine
+risk-timing effect. The form of the risk budget proves more consequential than its
+calibration: expressed as a fraction of the portfolio's own volatility the layer is
+active and effective, while the absolute volatility targets of the original
+specification bind in one rebalance out of 192 and leave it inert.
+
+The signal fusion layer, which gave the framework its name, does not contribute.
+Removing it improves the Sharpe ratio, and the information coefficients of both
+composites are significantly negative over the full sample. The regime-conditional
+weighting schedule is worse than neutral: it was specified on the hypothesis that
+market-state information gains importance under stress, and the data reject that
+hypothesis in the opposite direction at $p = 0.008$. This null is reported in full,
+with the coefficients that produce it, because a component-level negative result is more
+useful than an aggregate number that conceals which parts of an architecture are doing
+the work.
+
+The study's contribution is therefore a specification and a method of testing it: a
+two-step separation of composition from total risk that makes each layer independently
+falsifiable, an ablation design that isolates risk timing from risk level by matching
+average exposure, and a documented account of two failure modes---an inert absolute risk
+budget, and a signal-to-allocation conversion in which mismatched units rather than
+information determine the solution. The framework is useful within stated bounds: it
+requires a universe with genuine dispersion in asset volatility, it trades return for
+drawdown at a measured rate, and it should be evaluated against a volatility-matched
+benchmark rather than an unlevered one. Outside those bounds, as the mega-capitalisation
+results show, it does not add value.

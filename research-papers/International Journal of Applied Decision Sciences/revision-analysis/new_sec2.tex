@@ -1,0 +1,166 @@
+\section{Literature Review}
+\label{sec:lit}
+
+\subsection{From Mean--Variance Optimisation to Risk-Based Allocation}
+
+Modern portfolio construction begins with \citet{markowitz52}, who formalised
+allocation as a trade-off between expected return and variance. The framework is
+theoretically complete and practically fragile: its solutions are highly sensitive to
+the expected-return vector, and sample covariance matrices estimated from short windows
+on many assets are poorly conditioned in exactly the directions the optimiser exploits.
+\citet{demiguel09} quantified the consequence, finding that a naive equal-weighted
+portfolio outperformed a range of optimised alternatives out of sample once estimation
+error was taken into account.
+
+Two responses dominate. The first improves the inputs. \citet{ledoit04} introduced a
+shrinkage estimator that trades a small bias for a large variance reduction and yields
+a well-conditioned covariance matrix; the approach remains standard, and recent work
+extends shrinkage to higher moments \citep{lu25}. The second abandons expected returns
+altogether in favour of risk-based construction. Inverse-volatility weighting, risk
+parity and hierarchical risk parity \citep{prado16} allocate on the basis of the risk
+model alone, and \citet{asimit25} develop the risk-budgeting formulation further by
+linking portfolio selection to risk sharing; \citet{khodamoradi23} pursue a related
+robustness objective through multi-interval mean-conditional-value-at-risk
+optimisation, and \citet{kehinde25} evaluate volatility targeting through an inverse
+data-envelopment formulation. Volatility management is a related idea
+applied at the portfolio level rather than the asset level: \citet{moreira17} showed
+that scaling exposure inversely to recent volatility improves risk-adjusted returns
+across a range of factors, and \citet{hood25} examine how much of that improvement is
+attributable to trend following rather than to volatility management itself.
+
+Table~\ref{tab:paradigms} positions the present study against these paradigms.
+This study sits between the two responses. It retains an expected-return term, but
+scales it explicitly so that its magnitude is commensurate with the risk term, and it
+separates the composition decision from the total-risk decision so that the two can be
+evaluated independently.
+
+\begin{table}[!ht]
+\centering
+\caption{Portfolio construction paradigms and the position of this study}
+\label{tab:paradigms}
+\small
+\begin{tabular}{p{2.4cm}p{2.4cm}p{2.6cm}p{2.6cm}}
+\hline
+\textbf{Paradigm} & \textbf{Representative work} & \textbf{Basis of allocation} & \textbf{Principal limitation} \\
+\hline
+Mean--variance optimisation & \citet{markowitz52} & Expected returns and covariance & Extreme sensitivity to estimated inputs \\
+\hline
+Naive diversification & \citet{demiguel09} & None; equal weights & Ignores risk structure entirely \\
+\hline
+Shrinkage-based optimisation & \citet{ledoit04, lu25} & Regularised covariance & Still requires expected returns \\
+\hline
+Risk-based construction & \citet{prado16, asimit25} & Risk model only & Forgoes signal information by design \\
+\hline
+Volatility management & \citet{moreira17, hood25} & Total risk scaled by recent volatility & Does not address composition \\
+\hline
+Regime-switching allocation & \citet{angbekaert02, kritzman12, luo26} & State-dependent parameters & Component contributions rarely isolated \\
+\hline
+Learning-based allocation & \citet{jiang25, ashrafzadeh25, agal25} & Learned policy or predicted returns & Interpretability; frequently single-asset \\
+\hline
+\textbf{This study} & --- & Regime-conditional signal, plus a relative regime risk budget & Signal layer tested and found not to contribute \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Regime Dependence and Regime-Aware Allocation}
+
+The premise that financial series alternate between statistically distinct states dates
+to \citet{hamilton89}, whose Markov-switching formulation remains the reference point.
+\citet{angbekaert02} applied regime switching to international allocation and found that
+correlations rise in bear states, weakening diversification precisely when it is most
+needed---an observation that motivates state-dependent covariance and state-dependent
+risk budgets alike. \citet{kritzman12} argued that regime awareness should change the
+strategy rather than only the commentary, and \citet{barroso15} demonstrated a
+closely related mechanism at the factor level, showing that managing the volatility of
+a momentum strategy removes most of its crash risk.
+
+Contemporary work continues along three lines. The first identifies regimes with
+increasingly flexible statistical machinery: \citet{li25} combine a jump model with
+allocation rules, \citet{luo26} construct dual-regime signals with regime-dependent
+parameters, and \citet{bukhari26} make the state explicit inside a forecasting network by
+learning separate static and dynamic dependency graphs for each regime. The second
+replaces discrete states with data-driven grouping or with directly modelled
+time-varying volatility: \citet{kehinde26} cluster assets dynamically and forecast within
+the resulting clusters, while \citet{naidoo25} estimate volatility as a mixed-frequency
+process driven by investor sentiment. The third embeds state-dependence inside a
+learning system, where the regime is implicit in the learned policy \citep{jiang25}.
+Across all three lines, the common gap is evidential rather than methodological. Regime-aware systems are usually
+evaluated against regime-unaware benchmarks in aggregate, so the reader learns that the
+system as a whole performs well but not which of its state-dependent components is
+responsible. The ablation design in Section~4 is intended to close that gap for the
+framework proposed here.
+
+\subsection{Machine Learning and Multimodal Signals}
+
+Machine learning entered this field early and has since become routine. Agent-based
+and reinforcement formulations were applied to daily equity trading by \citet{lee07},
+metaheuristic-optimised regression to price forecasting by \citet{chou18}, and pattern
+mining with fuzzy inference to trading-point detection by \citet{huang20}; each
+improved predictive accuracy without addressing what the resulting forecasts imply for a
+portfolio. \citet{gu20} provide the benchmark comparative study in asset pricing,
+finding consistent gains from flexible models while noting that measured predictability
+is small. Applications to allocation
+are more recent: \citet{ashrafzadeh25} combine deep learning with stock clustering for
+portfolio construction, \citet{agal25} apply learned risk estimates to asset
+allocation, \citet{ha26} compare machine-learning portfolios against a fixed
+all-weather allocation, and \citet{singsiri26} build portfolios directly on money-flow
+indicators of the kind used in this study. Reinforcement learning has been extended from single assets to
+multi-period, high-dimensional allocation \citep{jiang25, saijai26}, and
+\citet{wang26} couple prediction with an explicit trading strategy.
+
+Fusion of heterogeneous signals is a parallel development. \citet{zhang22} review
+decision fusion for equity prediction across a large body of primary studies and find
+that fused architectures usually outperform unimodal ones, while also documenting wide
+variation in fusion protocol and evaluation. \citet{farimani24} propose an adaptive
+multimodal model that weights sources dynamically, and \citet{zong25} use gated
+cross-attention to stabilise multimodal fusion for movement prediction. What these
+studies establish is that fusion can help prediction. Whether a particular fusion rule
+helps a particular allocation decision is a separate question, and one that requires a
+component-level test rather than an aggregate comparison.
+
+\subsection{Textual Sentiment and Market-Derived Proxies}
+
+Textual sentiment entered finance through dictionary methods, and
+\citet{loughran11} demonstrated that general-purpose sentiment lexicons misclassify
+financial language badly enough to require domain-specific alternatives. Transformer
+models and large language models have since displaced lexicons: \citet{officioso26}
+combine language-model sentiment with market data, \citet{muhammad26} benchmark large
+language models for target-based financial sentiment, \citet{mun25} derive investment
+signals from language-model sentiment, and \citet{chuang25} compare language models on
+financial news for sentiment and price prediction. Collectively these studies indicate
+that genuine textual sentiment carries information beyond price history.
+\citet{george25}, in this journal, illustrate what extracting it actually involves: a
+corpus of more than twenty thousand stock-related messages, five feature-extraction
+schemes and fourteen classifiers, evaluated as a classification problem in its own
+right before any allocation question is reached.
+
+They also indicate what such a study requires: a time-stamped corpus with coverage of
+the traded instruments. That requirement is binding. For broad exchange-traded funds
+there is no instrument-level news corpus of comparable coverage, which is why studies
+of this kind are almost always conducted on individual equities. The present study
+therefore uses market-derived proxies for attention and stress rather than textual
+sentiment, states this explicitly in Section~3.3, and---rather than assuming the proxies
+are adequate---measures their predictive content directly and reports that they are
+not.
+
+\subsection{Evaluation Practice}
+
+A final strand concerns whether reported results should be believed.
+\citet{harvey15} show that conventional significance thresholds are inadequate once the
+number of strategies examined is taken into account, and \citet{valls26} document the
+same problem specifically for volatility-based strategies, while \citet{sheppert26}
+proposes an objective function designed to resist it. \citet{zhangz25} make the related
+point that the model selected as optimal in sample is frequently not the one that
+performs best out of it. \citet{ledoit08} provide
+robust inference for Sharpe ratio comparisons under non-normal, autocorrelated returns,
+and \citet{politis94} supply the stationary block bootstrap used here to construct
+interval estimates that respect serial dependence. \citet{newey87} remains the standard
+correction for autocorrelated and heteroskedastic test statistics.
+\citet{raimundo26} survey the broader intersection of forecasting and portfolio theory
+and reach a similar conclusion about the weight placed on point estimates.
+
+This study adopts these practices as design constraints rather than as afterthoughts:
+every specification examined is reported, inference is corrected for serial dependence,
+interval estimates accompany point estimates, and the comparison against a costless
+daily-rebalanced equal-weighted benchmark is deliberately unfavourable to the proposed
+framework.

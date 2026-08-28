@@ -1,0 +1,124 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the Results Establish}
+
+The framework's contribution is narrower than the one claimed for it at the outset, and
+better supported. Three findings survive the evaluation of Section~4.
+
+The first concerns the separation of the allocation decision. Splitting the problem into
+relative composition and total risk, rather than allowing a single constraint set to
+determine both, makes each part independently testable. It is this separation that
+allows the ablation in Table~\ref{tab:ablation} to be constructed at all: without it, removing the regime
+layer would change both what is held and how much of it is held, and the resulting
+comparison would confound the two.
+
+The second is that regime conditioning earns its place through timing, not through
+level. At identical average exposure, allocating risk according to the identified state
+rather than uniformly improves the Sharpe ratio from 0.675 to 0.738 and maximum
+drawdown from $-22.25$ to $-18.99$ per cent, with no difference in mean return
+($p = 0.960$). This is the cleanest evidence in the paper, and it is available only
+because the control was constructed at matched risk. The corresponding cost is also
+measured: against a fully invested variant the framework forgoes approximately 1.2
+percentage points of annual return, significantly so, in exchange for 3.5 percentage
+points of maximum drawdown.
+
+The third is that the form of the risk budget matters more than its calibration. The
+four relative budgets in Table~\ref{tab:budget} produce Sharpe ratios within 0.002 of one another,
+while the absolute-target formulation---identical in intent---is inert, binding in one
+rebalance out of 192. An absolute volatility target is not scale-free, and a
+specification transferred between universes without re-calibration can silently disable
+the mechanism it was written to implement. This is a practical warning that generalises
+beyond the present framework.
+
+\subsection{What the Results Do Not Establish}
+
+Two claims that the framework was designed to support are not supported.
+
+The signal fusion layer does not contribute. Its removal improves the Sharpe ratio from
+0.738 to 0.784 and leaves maximum drawdown unchanged, and neither movement is
+significant. The information coefficients in Table~\ref{tab:ic} explain why: both composites are
+significantly negatively related to next-session cross-sectional returns over the full
+sample. The regime-conditional weighting schedule fares worse still. It was specified on
+the hypothesis that market-state information becomes relatively more informative under
+stress; in the data the opposite holds, significantly so ($t = -2.69$, $p = 0.008$).
+
+The improvement in risk-adjusted return is not statistically significant. The Sharpe
+difference of $+0.207$ carries a bootstrap interval of $[-0.194, 0.558]$. Sixteen years
+of daily returns contain only a handful of independent stress events, and a claim about
+behaviour during market stress cannot be established at conventional significance from
+four episodes. The consistency of the result across 18 of 18 specifications, 15 of 16
+calendar years and 4 of 4 episodes is the stronger evidence, and it is evidence of
+robustness rather than of significance. The two should not be conflated, and this paper
+does not conflate them.
+
+\subsection{Implications for Practice}
+
+For a practitioner the results suggest a specific and limited use. A regime-conditional
+risk budget is a reasonable component of a multi-asset allocation process where the
+objective includes drawdown control and where some return may be sacrificed for it. It
+should be implemented in relative rather than absolute form, evaluated against a
+volatility-matched benchmark rather than an unlevered one, and not expected to help in
+a universe without genuine dispersion in asset volatility.
+
+The results also caution against a common design pattern. The framework as originally
+specified contained two layers whose contribution had never been isolated, one of which
+was inert by construction and the other of which was pointed in the wrong direction.
+Neither defect was visible in aggregate performance, and both were found only by
+ablation at matched risk. Architectures assembled from plausible components should be
+disassembled before they are trusted.
+
+Finally, the turnover result in Table~\ref{tab:turnover} has a practical reading. The assumed
+transaction cost enters the objective as a penalty as well as the return as a
+deduction, so setting it to zero does not produce the best achievable result---it
+produces a noisier weight vector and a lower Sharpe ratio. A modest cost assumption acts
+as a regulariser, and there is no reason to model a frictionless world even when
+evaluating one.
+
+\subsection{Limitations}
+
+Several limitations bound what can be concluded.
+
+The universe is small. Ten exchange-traded funds are enough to demonstrate the
+mechanism but not to establish that it generalises to larger or differently composed
+universes, and the position cap of 25 per cent binds on average, which means the
+optimiser's freedom is partly determined by the constraint rather than by the risk
+model.
+
+The evaluation is a single historical path. Sixteen years is a long sample by the
+standards of this literature and a short one for inference about tail events, and the
+four stress episodes are not independent draws from a stationary process.
+
+The signals are market-derived proxies rather than textual sentiment. No news, filings
+or social media text is used at any point, as stated in Section~3.3. The null reported
+in Section~4.7 is therefore a null about these proxies, and it is not evidence that
+textual sentiment would fail in the same role. Establishing that would require a
+time-stamped news corpus with coverage of the traded instruments, which for broad
+exchange-traded funds does not exist at the instrument level.
+
+The regime model is deliberately simple. A three-component Gaussian mixture on two
+features is interpretable and stable, but it imposes conditional normality within
+states, treats observations as conditionally independent given the state, and---as
+Table~\ref{tab:regimefit} shows---is not the specification either information criterion would select.
+
+The risk-free rate is taken as zero throughout, and cash is assumed to earn nothing.
+Over a sample containing both the near-zero rates of 2009--2015 and the higher rates of
+2023, this understates the return on the framework's cash holding and therefore
+understates its performance relative to the fully invested benchmark. The direction of
+this bias is against the framework, which is the conservative choice, but it is a
+simplification.
+
+\subsection{Future Work}
+
+Four extensions follow directly. The first is textual sentiment, applied to a universe
+where an instrument-level news corpus exists, which would convert the proxy null of
+Section~4.7 into a genuine test of the fusion hypothesis. The second is a larger and
+more heterogeneous universe, including commodities, currencies and non-US fixed income,
+which would test whether the volatility-dispersion condition identified in
+Section~4.11 is the binding requirement it appears to be. The third is learning the
+risk-budget multipliers rather than fixing them, for which reinforcement learning is a
+natural candidate given the sequential structure of the problem, subject to the
+overfitting concerns documented by \citet{harvey15} and \citet{valls26}. The fourth is
+replacing the mixture model with a formulation that represents state persistence
+explicitly, such as a hidden Markov or jump model \citep{li25}, which would remove the
+conditional-independence assumption noted above.

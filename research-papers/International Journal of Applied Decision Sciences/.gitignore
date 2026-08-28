@@ -1,0 +1,12 @@
+# LaTeX build artifacts
+*.aux
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# analysis caches (regenerate with run_all_ext.sh)
+_final_cache*.pkl
+_artifacts_cache.pkl
+_ext_run.log

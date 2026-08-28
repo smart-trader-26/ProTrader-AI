@@ -1,0 +1,1905 @@
+{
+ "wanted": [
+  {
+   "title": "Portfolio Selection",
+   "authors": [
+    "Markowitz, H."
+   ],
+   "container": "The Journal of Finance",
+   "volume": "7",
+   "issue": "1",
+   "page": "77",
+   "year": 1952,
+   "doi": "10.2307/2975974",
+   "type": "journal-article"
+  },
+  {
+   "title": "A well-conditioned estimator for large-dimensional covariance matrices",
+   "authors": [
+    "Ledoit, O.",
+    "Wolf, M."
+   ],
+   "container": "Journal of Multivariate Analysis",
+   "volume": "88",
+   "issue": "2",
+   "page": "365-411",
+   "year": 2004,
+   "doi": "10.1016/s0047-259x(03)00096-4",
+   "type": "journal-article"
+  },
+  {
+   "title": "A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix",
+   "authors": [
+    "Newey, W.K.",
+    "West, K.D."
+   ],
+   "container": "Econometrica",
+   "volume": "55",
+   "issue": "3",
+   "page": "703",
+   "year": 1987,
+   "doi": "10.2307/1913610",
+   "type": "journal-article"
+  },
+  {
+   "title": "The Stationary Bootstrap",
+   "authors": [
+    "Politis, D.N.",
+    "Romano, J.P."
+   ],
+   "container": "Journal of the American Statistical Association",
+   "volume": "89",
+   "issue": "428",
+   "page": "1303-1313",
+   "year": 1994,
+   "doi": "10.1080/01621459.1994.10476870",
+   "type": "journal-article"
+  },
+  {
+   "title": "A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle",
+   "authors": [
+    "Hamilton, J.D."
+   ],
+   "container": "Econometrica",
+   "volume": "57",
+   "issue": "2",
+   "page": "357",
+   "year": 1989,
+   "doi": "10.2307/1912559",
+   "type": "journal-article"
+  },
+  {
+   "title": "International Asset Allocation With Regime Shifts",
+   "authors": [
+    "Ang, A.",
+    "Bekaert, G."
+   ],
+   "container": "Review of Financial Studies",
+   "volume": "15",
+   "issue": "4",
+   "page": "1137-1187",
+   "year": 2002,
+   "doi": "10.1093/rfs/15.4.1137",
+   "type": "journal-article"
+  },
+  {
+   "title": "Optimal Versus Naive Diversification: How Inefficient is the 1/\n                    <i>N</i>\n                    Portfolio Strategy?",
+   "authors": [
+    "DeMiguel, V.",
+    "Garlappi, L.",
+    "Uppal, R."
+   ],
+   "container": "Review of Financial Studies",
+   "volume": "22",
+   "issue": "5",
+   "page": "1915-1953",
+   "year": 2009,
+   "doi": "10.1093/rfs/hhm075",
+   "type": "journal-article"
+  },
+  {
+   "title": "Volatility\u2010Managed Portfolios",
+   "authors": [
+    "MOREIRA, A.",
+    "MUIR, T."
+   ],
+   "container": "The Journal of Finance",
+   "volume": "72",
+   "issue": "4",
+   "page": "1611-1644",
+   "year": 2017,
+   "doi": "10.1111/jofi.12513",
+   "type": "journal-article"
+  },
+  {
+   "title": "Building Diversified Portfolios that Outperform Out of Sample",
+   "authors": [
+    "L\u00f3pez de Prado, M."
+   ],
+   "container": "The Journal of Portfolio Management",
+   "volume": "42",
+   "issue": "4",
+   "page": "59-69",
+   "year": 2016,
+   "doi": "10.3905/jpm.2016.42.4.059",
+   "type": "journal-article"
+  },
+  {
+   "title": "When Is a Liability Not a Liability? Textual Analysis, Dictionaries, and 10\u2010Ks",
+   "authors": [
+    "LOUGHRAN, T.",
+    "MCDONALD, B."
+   ],
+   "container": "The Journal of Finance",
+   "volume": "66",
+   "issue": "1",
+   "page": "35-65",
+   "year": 2011,
+   "doi": "10.1111/j.1540-6261.2010.01625.x",
+   "type": "journal-article"
+  },
+  {
+   "title": "The Deflated Sharpe Ratio:\n                    <i>Correcting for Selection Bias, Backtest</i>\n                    <i>Overfitting, and Non-Normality</i>",
+   "authors": [
+    "Bailey, D.H.",
+    "L\u00f3pez de Prado, M."
+   ],
+   "container": "The Journal of Portfolio Management",
+   "volume": "40",
+   "issue": "5",
+   "page": "94-107",
+   "year": 2014,
+   "doi": "10.3905/jpm.2014.40.5.094",
+   "type": "journal-article"
+  },
+  {
+   "title": "Backtesting",
+   "authors": [
+    "Harvey, C.R.",
+    "Liu, Y."
+   ],
+   "container": "The Journal of Portfolio Management",
+   "volume": "42",
+   "issue": "1",
+   "page": "13-28",
+   "year": 2015,
+   "doi": "10.3905/jpm.2015.42.1.013",
+   "type": "journal-article"
+  },
+  {
+   "title": "Robust performance hypothesis testing with the Sharpe ratio",
+   "authors": [
+    "Ledoit, O.",
+    "Wolf, M."
+   ],
+   "container": "Journal of Empirical Finance",
+   "volume": "15",
+   "issue": "5",
+   "page": "850-859",
+   "year": 2008,
+   "doi": "10.1016/j.jempfin.2008.03.002",
+   "type": "journal-article"
+  },
+  {
+   "title": "Regime Shifts: Implications for Dynamic Strategies (corrected)",
+   "authors": [
+    "Kritzman, M.",
+    "Page, S.",
+    "Turkington, D."
+   ],
+   "container": "Financial Analysts Journal",
+   "volume": "68",
+   "issue": "3",
+   "page": "22-39",
+   "year": 2012,
+   "doi": "10.2469/faj.v68.n3.3",
+   "type": "journal-article"
+  },
+  {
+   "title": "Risk Everywhere: Modeling and Managing Volatility",
+   "authors": [
+    "Bollerslev, T.",
+    "Hood, B.",
+    "Huss, J.",
+    "Pedersen, L.H."
+   ],
+   "container": "The Review of Financial Studies",
+   "volume": "31",
+   "issue": "7",
+   "page": "2729-2773",
+   "year": 2018,
+   "doi": "10.1093/rfs/hhy041",
+   "type": "journal-article"
+  },
+  {
+   "title": "Momentum has its moments",
+   "authors": [
+    "Barroso, P.",
+    "Santa-Clara, P."
+   ],
+   "container": "Journal of Financial Economics",
+   "volume": "116",
+   "issue": "1",
+   "page": "111-120",
+   "year": 2015,
+   "doi": "10.1016/j.jfineco.2014.11.010",
+   "type": "journal-article"
+  },
+  {
+   "title": "Empirical Asset Pricing via Machine Learning",
+   "authors": [
+    "Gu, S.",
+    "Kelly, B.",
+    "Xiu, D."
+   ],
+   "container": "The Review of Financial Studies",
+   "volume": "33",
+   "issue": "5",
+   "page": "2223-2273",
+   "year": 2020,
+   "doi": "10.1093/rfs/hhaa009",
+   "type": "journal-article"
+  },
+  {
+   "title": "Giving Content to Investor Sentiment: The Role of Media in the Stock Market",
+   "authors": [
+    "TETLOCK, P.C."
+   ],
+   "container": "The Journal of Finance",
+   "volume": "62",
+   "issue": "3",
+   "page": "1139-1168",
+   "year": 2007,
+   "doi": "10.1111/j.1540-6261.2007.01232.x",
+   "type": "journal-article"
+  }
+ ],
+ "recent": {
+  "regime switching asset allocation portfolio": [
+   {
+    "title": "Regime-Switching Asset Allocation Using a Framework Combing a Jump Model and Model Predictive Control",
+    "authors": [
+     "Li, X.",
+     "Chen, J.",
+     "Tao, X.",
+     "Ji, Y."
+    ],
+    "container": "Mathematics",
+    "volume": "13",
+    "issue": "17",
+    "page": "2837",
+    "year": 2025,
+    "doi": "10.3390/math13172837",
+    "type": "journal-article"
+   },
+   {
+    "title": "Regime-Aware Asset Allocation with Dual-Regime Signals and Regime-Dependent Asset Selection",
+    "authors": [
+     "Luo, Y.",
+     "Mulvey, J.M."
+    ],
+    "container": "The Journal of Financial Data Science",
+    "volume": "8",
+    "issue": "3",
+    "page": "104-134",
+    "year": 2026,
+    "doi": "10.3905/jfds.2026.013",
+    "type": "journal-article"
+   },
+   {
+    "title": "The Impact of Incorporating Bitcoin on Portfolio Performance : A Dynamic Asset Allocation Approach Using a Regime-Switching Model",
+    "authors": [
+     "Professor, Ewha Womans University; President, Korea Capital Market Institute",
+     "Kim, S.W.",
+     "Seo, M.",
+     "Yang, S.",
+     "Yoon, H."
+    ],
+    "container": "Asian Review of Financial Research",
+    "volume": "39",
+    "issue": "2",
+    "page": "67-96",
+    "year": 2026,
+    "doi": "10.37197/arfr.2026.39.2.3",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimal mean-variance portfolio selection with uncertain time horizon in a regime-switching market when asset returns are market path-dependent",
+    "authors": [
+     "Keykhaei, R."
+    ],
+    "container": "International Journal of Mathematics in Operational Research",
+    "volume": "30",
+    "issue": "3",
+    "page": "392-414",
+    "year": 2025,
+    "doi": "10.1504/ijmor.2025.145756",
+    "type": "journal-article"
+   },
+   {
+    "title": "Markowitz Portfolio Theory for Household Asset Allocation",
+    "authors": [
+     "Yin, Y."
+    ],
+    "container": "Finance &amp; Economics",
+    "volume": "3",
+    "issue": "16",
+    "page": "",
+    "year": 2026,
+    "doi": "10.61173/x93eh252",
+    "type": "journal-article"
+   },
+   {
+    "title": "An Asset Allocation Strategy Recommendation System using Markov Regime Switching and LightGBM",
+    "authors": [
+     "Shin, S.J."
+    ],
+    "container": "Journal of the Korea Academia-Industrial cooperation Society",
+    "volume": "27",
+    "issue": "4",
+    "page": "211-219",
+    "year": 2026,
+    "doi": "10.5762/kais.2026.27.4.211",
+    "type": "journal-article"
+   },
+   {
+    "title": "Snapshots of Regime-Aware Asset Allocation with Dual-Regime Signals and Regime-Dependent Asset Selection",
+    "authors": [
+     "Derived from original PMR research written by Yirui Luo and John M. Mulvey using AI and an editor"
+    ],
+    "container": "Practical Applications",
+    "volume": "",
+    "issue": "",
+    "page": "snp.2026.jfds.011",
+    "year": 2026,
+    "doi": "10.3905/snp.2026.jfds.011",
+    "type": "journal-article"
+   },
+   {
+    "title": "False Precision in Portfolio Construction: Misconceptions That Undermine Asset Allocation",
+    "authors": [
+     "Fabozzi, F.J.",
+     "Yelnik, I."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "52",
+    "issue": "5",
+    "page": "162-177",
+    "year": 2026,
+    "doi": "10.3905/jpm.2026.1.812",
+    "type": "journal-article"
+   },
+   {
+    "title": "REITs in a Multi-Asset Portfolio: An Asset Allocation Framework for Inflationary Regimes",
+    "authors": [
+     "de Longis, A.",
+     "Li, D."
+    ],
+    "container": "The Journal of Beta Investment Strategies",
+    "volume": "",
+    "issue": "",
+    "page": "jbis.2026.009",
+    "year": 2026,
+    "doi": "10.3905/jbis.2026.009",
+    "type": "journal-article"
+   },
+   {
+    "title": "Editor\u2019s Introduction for the 2025 Special Issue on Multi-Asset Strategies and Asset Allocation",
+    "authors": [
+     "Fabozzi, F.J."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "51",
+    "issue": "5",
+    "page": "1-5",
+    "year": 2025,
+    "doi": "10.3905/jpm.2025.1.693",
+    "type": "journal-article"
+   },
+   {
+    "title": "Editor\u2019s Introduction for the 2026 Special Issue on Multi-Asset Strategies and Asset Allocation",
+    "authors": [
+     "Fabozzi, F.J."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "52",
+    "issue": "5",
+    "page": "1-5",
+    "year": 2026,
+    "doi": "10.3905/jpm.2026.1.831",
+    "type": "journal-article"
+   }
+  ],
+  "machine learning portfolio construction optimization": [
+   {
+    "title": "Black-Litterman Portfolio Optimization using Machine-Learning, Deep Learning and Reinforcement Learning Algorithms",
+    "authors": [
+     "Vasilevich, S.I.",
+     "Byers, J.W."
+    ],
+    "container": "Journal of Investment, Banking and Finance",
+    "volume": "04",
+    "issue": "01",
+    "page": "01-11",
+    "year": 2026,
+    "doi": "10.33140/jibf.04.01.04",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio Optimization Using Modern Portfolio Theory and Machine Learning",
+    "authors": [
+     "D, P.",
+     "C, C.",
+     "Sharfunisa.N, S."
+    ],
+    "container": "INTERNATIONAL JOURNAL OF ENGINEERING DEVELOPMENT AND RESEARCH",
+    "volume": "14",
+    "issue": "3",
+    "page": "",
+    "year": 2026,
+    "doi": "10.56975/ijedr.v14i3.308921",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio Construction Under Behavioral Distortions and Narrow Framing: A Machine Learning Approach",
+    "authors": [
+     "Tsomidis, G."
+    ],
+    "container": "Mathematics",
+    "volume": "14",
+    "issue": "4",
+    "page": "607",
+    "year": 2026,
+    "doi": "10.3390/math14040607",
+    "type": "journal-article"
+   },
+   {
+    "title": "Machine learning-based portfolio optimization: comparative analysis with the all-weather portfolio strategy",
+    "authors": [
+     "Ha, Y.S.",
+     "Kang, J.",
+     "Kim, J.",
+     "Chun, D."
+    ],
+    "container": "Financial Innovation",
+    "volume": "12",
+    "issue": "1",
+    "page": "",
+    "year": 2026,
+    "doi": "10.1186/s40854-026-00927-8",
+    "type": "journal-article"
+   },
+   {
+    "title": "How Machine Learning Is Reshaping Portfolio Optimization",
+    "authors": [
+     "Aarav Parakh, "
+    ],
+    "container": "Journal of Advanced Management Studies",
+    "volume": "2",
+    "issue": "3",
+    "page": "93-119",
+    "year": 2025,
+    "doi": "10.36676/jams.v2.i3.80",
+    "type": "journal-article"
+   },
+   {
+    "title": "Smart-Beta Portfolio Optimization Using Machine Learning Techniques",
+    "authors": [
+     "Salehirad, F.",
+     "Tondnevis, F."
+    ],
+    "container": "Iranian Journal of Finance",
+    "volume": "9",
+    "issue": "4",
+    "page": "91-116",
+    "year": 2025,
+    "doi": "10.66224/ijf.2025.524928.1518",
+    "type": "journal-article"
+   },
+   {
+    "title": "Retraction: An analysis of machine learning risk factors and risk parity portfolio optimization",
+    "authors": [
+     "The PLOS One Editors"
+    ],
+    "container": "PLOS One",
+    "volume": "20",
+    "issue": "5",
+    "page": "e0323221",
+    "year": 2025,
+    "doi": "10.1371/journal.pone.0323221",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimization and performance evaluation of machine learning classifiers for predicting construction quality and schedule",
+    "authors": [
+     "Fan, C.L."
+    ],
+    "container": "Automation in Construction",
+    "volume": "179",
+    "issue": "",
+    "page": "106470",
+    "year": 2025,
+    "doi": "10.1016/j.autcon.2025.106470",
+    "type": "journal-article"
+   },
+   {
+    "title": "A machine learning approach to risk based asset allocation in portfolio optimization",
+    "authors": [
+     "Agal, S.",
+     "Raulji, K.",
+     "Odedra, N.D."
+    ],
+    "container": "Scientific Reports",
+    "volume": "15",
+    "issue": "1",
+    "page": "",
+    "year": 2025,
+    "doi": "10.1038/s41598-025-26337-x",
+    "type": "journal-article"
+   },
+   {
+    "title": "A Hybrid Genetic Algorithm with Learning-to-Rank-to-Optimization for US Equity Portfolio Construction",
+    "authors": [
+     "Kottas, F."
+    ],
+    "container": "International Journal of Financial Studies",
+    "volume": "14",
+    "issue": "4",
+    "page": "95",
+    "year": 2026,
+    "doi": "10.3390/ijfs14040095",
+    "type": "journal-article"
+   },
+   {
+    "title": "Machine Learning-Driven Portfolio Optimization Using Money Flow Index-Based Sentiment Signals",
+    "authors": [
+     "Singsiri, P.",
+     "Yokrattanasak, J."
+    ],
+    "container": "International Journal of Financial Studies",
+    "volume": "14",
+    "issue": "5",
+    "page": "112",
+    "year": 2026,
+    "doi": "10.3390/ijfs14050112",
+    "type": "journal-article"
+   },
+   {
+    "title": "Deep learning and machine learning models for portfolio optimization: Enhancing return prediction with stock clustering",
+    "authors": [
+     "Ashrafzadeh, M.",
+     "Sadrani, M.",
+     "Zolfani, S.H."
+    ],
+    "container": "Results in Engineering",
+    "volume": "27",
+    "issue": "",
+    "page": "106263",
+    "year": 2025,
+    "doi": "10.1016/j.rineng.2025.106263",
+    "type": "journal-article"
+   }
+  ],
+  "deep reinforcement learning portfolio allocation": [
+   {
+    "title": "Black-Litterman Portfolio Optimization using Machine-Learning, Deep Learning and Reinforcement Learning Algorithms",
+    "authors": [
+     "Vasilevich, S.I.",
+     "Byers, J.W."
+    ],
+    "container": "Journal of Investment, Banking and Finance",
+    "volume": "04",
+    "issue": "01",
+    "page": "01-11",
+    "year": 2026,
+    "doi": "10.33140/jibf.04.01.04",
+    "type": "journal-article"
+   },
+   {
+    "title": "Deep reinforcement learning for portfolio allocation: a comparative study on five Vietnamese equities",
+    "authors": [
+     "Saijai, W.",
+     "Pankwaen, K."
+    ],
+    "container": "Asian Journal of Economics and Banking",
+    "volume": "10",
+    "issue": "2",
+    "page": "174-191",
+    "year": 2026,
+    "doi": "10.1108/ajeb-10-2025-0168",
+    "type": "journal-article"
+   },
+   {
+    "title": "High-dimensional multi-period portfolio allocation using deep reinforcement learning",
+    "authors": [
+     "Jiang, Y.",
+     "Olmo, J.",
+     "Atwi, M."
+    ],
+    "container": "International Review of Economics &amp; Finance",
+    "volume": "98",
+    "issue": "",
+    "page": "103996",
+    "year": 2025,
+    "doi": "10.1016/j.iref.2025.103996",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio Optimization through a Multi-modal Deep Reinforcement Learning Framework",
+    "authors": [
+     "National University of Singapore, Singapore",
+     "JiaJie, W.",
+     "LiLi, L.",
+     "National University of Singapore, Singapore"
+    ],
+    "container": "Engineering: Open Access",
+    "volume": "3",
+    "issue": "4",
+    "page": "01-08",
+    "year": 2025,
+    "doi": "10.33140/eoa.03.04.a03",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio Optimization through a Multi-modal Deep Reinforcement Learning Framework",
+    "authors": [
+     "National University of Singapore, Singapore",
+     "JiaJie, W.",
+     "LiLi, L.",
+     "National University of Singapore, Singapore"
+    ],
+    "container": "Engineering: Open Access",
+    "volume": "3",
+    "issue": "4",
+    "page": "01-08",
+    "year": 2025,
+    "doi": "10.33140/eoa.03.04.03",
+    "type": "journal-article"
+   },
+   {
+    "title": "Deep Reinforcement Learning for Energy-Efficient Resource Allocation in 6G Networks",
+    "authors": [
+     "Marjanibenisi, A.",
+     "Tajik, M."
+    ],
+    "container": "International Journal of Research Publication and Reviews",
+    "volume": "6",
+    "issue": "11",
+    "page": "8380-8392",
+    "year": 2025,
+    "doi": "10.55248/gengpi.06.1125.39114",
+    "type": "journal-article"
+   },
+   {
+    "title": "Hybrid Deep Learning-Reinforcement Learning for Adaptive Human-Robot Task Allocation in Industry 5.0",
+    "authors": [
+     "Urrea, C."
+    ],
+    "container": "Systems",
+    "volume": "13",
+    "issue": "8",
+    "page": "631",
+    "year": 2025,
+    "doi": "10.3390/systems13080631",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimizing Resource Allocation in Cloud-Based Deep Learning Systems Using Multi-Agent Reinforcement Learning",
+    "authors": [
+     "Jaman, M.N.",
+     "Sarangerel, A.",
+     "Boorchi, T.",
+     "Erdene-Ochir, O.",
+     "Usukhjargal, D.",
+     "Laovang, V."
+    ],
+    "container": "International Journal of Research Publication and Reviews",
+    "volume": "6",
+    "issue": "5",
+    "page": "6504-6511",
+    "year": 2025,
+    "doi": "10.55248/gengpi.6.0525.1787",
+    "type": "journal-article"
+   },
+   {
+    "title": "Simul-RL Portfolio Framework: Black-Scholes-Merton and Reinforcement Learning for Asset Allocation",
+    "authors": [
+     "Ahn, J.",
+     "Kang, H.G."
+    ],
+    "container": "IEEE Access",
+    "volume": "13",
+    "issue": "",
+    "page": "52697-52710",
+    "year": 2025,
+    "doi": "10.1109/access.2025.3552713",
+    "type": "journal-article"
+   },
+   {
+    "title": "Quantum-Inspired Portfolio Optimization Using Reinforcement Learning for Dynamic Stock Allocation",
+    "authors": [
+     "Sambangi, K.K."
+    ],
+    "container": "International Journal of Computational Science and Engineering Research",
+    "volume": "3",
+    "issue": "3",
+    "page": "50",
+    "year": 2026,
+    "doi": "10.63328/ijcser-v3ri3p7",
+    "type": "journal-article"
+   },
+   {
+    "title": "Graph attention-based heterogeneous multi-agent deep reinforcement learning for adaptive portfolio optimization",
+    "authors": [
+     "Zhang, B."
+    ],
+    "container": "Scientific Reports",
+    "volume": "16",
+    "issue": "1",
+    "page": "",
+    "year": 2025,
+    "doi": "10.1038/s41598-025-32408-w",
+    "type": "journal-article"
+   }
+  ],
+  "market regime detection clustering financial markets": [
+   {
+    "title": "Exchange rate regime changes and market efficiency: An event study",
+    "authors": [
+     "Corzo, T.",
+     "Martin-Bujack, K.",
+     "Portela, J.",
+     "Rodr\u00edguez-Gallego, A."
+    ],
+    "container": "Journal of International Financial Markets, Institutions and Money",
+    "volume": "100",
+    "issue": "",
+    "page": "102132",
+    "year": 2025,
+    "doi": "10.1016/j.intfin.2025.102132",
+    "type": "journal-article"
+   },
+   {
+    "title": "Market Regime Detection in Bitcoin Time Series Using K-Means Clustering and Hidden Markov Models",
+    "authors": [
+     "Haryani, C.A."
+    ],
+    "container": "Journal of Digital Market and Digital Currency",
+    "volume": "3",
+    "issue": "1",
+    "page": "75-95",
+    "year": 2026,
+    "doi": "10.47738/jdmdc.v3i1.57",
+    "type": "journal-article"
+   },
+   {
+    "title": "Microstructure and market dynamics in crypto markets",
+    "authors": [
+     "Easley, D.",
+     "O'Hara, M.",
+     "Yang, S.",
+     "Zhang, Z."
+    ],
+    "container": "Journal of Financial Markets",
+    "volume": "",
+    "issue": "",
+    "page": "101071",
+    "year": 2026,
+    "doi": "10.1016/j.finmar.2026.101071",
+    "type": "journal-article"
+   },
+   {
+    "title": "The effect of stock market indexing on option market conditions",
+    "authors": [
+     "Chang, E.C.",
+     "Ge, L.",
+     "Lin, T.C.",
+     "Ma, X."
+    ],
+    "container": "Journal of Financial Markets",
+    "volume": "78",
+    "issue": "",
+    "page": "101026",
+    "year": 2026,
+    "doi": "10.1016/j.finmar.2025.101026",
+    "type": "journal-article"
+   },
+   {
+    "title": "Valuing Dissent: Reassessing Minimum Payouts under India\u2019s Insolvency Regime",
+    "authors": [
+     "Singh, A."
+    ],
+    "container": "Law and Financial Markets Review",
+    "volume": "19",
+    "issue": "2",
+    "page": "129-140",
+    "year": 2026,
+    "doi": "10.1080/17521440.2026.2673820",
+    "type": "journal-article"
+   },
+   {
+    "title": "Volatility Clustering and Market Sentiment: A Quantitative Assessment of Bitcoin and Ethereum's Reaction to Macroeconomic Announcements.",
+    "authors": [
+     "Senior Financial Markets Dealer, Nassau, The Bahamas",
+     "Yakymashko, V."
+    ],
+    "container": "The American Journal of Management and Economics Innovations",
+    "volume": "07",
+    "issue": "07",
+    "page": "59-66",
+    "year": 2025,
+    "doi": "10.37547/tajmei/volume07issue07-07",
+    "type": "journal-article"
+   },
+   {
+    "title": "High-frequency traders\u2019 single-dealer platforms and market quality",
+    "authors": [
+     "Aramian, L.",
+     "Nord\u00e9n, L.L."
+    ],
+    "container": "Journal of Financial Markets",
+    "volume": "",
+    "issue": "",
+    "page": "101074",
+    "year": 2026,
+    "doi": "10.1016/j.finmar.2026.101074",
+    "type": "journal-article"
+   }
+  ],
+  "financial sentiment analysis large language models stock": [
+   {
+    "title": "Financial Sentiment Analysis with Large Language Models",
+    "authors": [
+     "Cheng, X."
+    ],
+    "container": "Finance &amp; Economics",
+    "volume": "1",
+    "issue": "6",
+    "page": "",
+    "year": 2025,
+    "doi": "10.61173/gvntfv56",
+    "type": "journal-article"
+   },
+   {
+    "title": "Operationalising Large Language Models for Financial Sentiment Analysis: The PipeFinePT Modular Pipeline",
+    "authors": [
+     "Carnaz, G.",
+     "Carvalho, J.M.",
+     "Marques, R.P."
+    ],
+    "container": "Acta Informatica Pragensia",
+    "volume": "",
+    "issue": "",
+    "page": "",
+    "year": 2026,
+    "doi": "10.18267/j.aip.328",
+    "type": "journal-article"
+   },
+   {
+    "title": "Augmenting large language models for financial sentiment analysis: a heuristic sparse mixture-of-experts framework",
+    "authors": [
+     "Li, D.",
+     "Li, Y.",
+     "Chen, X.",
+     "Zhang, W."
+    ],
+    "container": "PeerJ Computer Science",
+    "volume": "12",
+    "issue": "",
+    "page": "e3607",
+    "year": 2026,
+    "doi": "10.7717/peerj-cs.3607",
+    "type": "journal-article"
+   },
+   {
+    "title": "Sentiment Analysis of Stock Market Live Streaming Content Based on Large Language Models",
+    "authors": [
+     "Pang, R.",
+     "Zhang, H."
+    ],
+    "container": "Advances in Economics, Management and Political Sciences",
+    "volume": "253",
+    "issue": "1",
+    "page": "1-5",
+    "year": 2026,
+    "doi": "10.54254/2754-1169/2026.33665",
+    "type": "journal-article"
+   },
+   {
+    "title": "Benchmarking large language models for target-based financial sentiment and stock return",
+    "authors": [
+     "Muhammad, I.",
+     "Rospocher, M.",
+     "Knez, T.",
+     "\u017ditnik, S."
+    ],
+    "container": "International Journal of Data Science and Analytics",
+    "volume": "22",
+    "issue": "1",
+    "page": "",
+    "year": 2026,
+    "doi": "10.1007/s41060-026-01201-x",
+    "type": "journal-article"
+   },
+   {
+    "title": "Chinese Financial News Analysis for Sentiment and Stock Prediction: A Comparative Framework with Language Models",
+    "authors": [
+     "Chuang, H.M.",
+     "He, H.C.",
+     "Hu, M.C."
+    ],
+    "container": "Big Data and Cognitive Computing",
+    "volume": "9",
+    "issue": "10",
+    "page": "263",
+    "year": 2025,
+    "doi": "10.3390/bdcc9100263",
+    "type": "journal-article"
+   },
+   {
+    "title": "Leveraging Large Language Models for Sentiment Analysis and Investment Strategy Development in Financial Markets",
+    "authors": [
+     "Mun, Y.",
+     "Kim, N."
+    ],
+    "container": "Journal of Theoretical and Applied Electronic Commerce Research",
+    "volume": "20",
+    "issue": "2",
+    "page": "77",
+    "year": 2025,
+    "doi": "10.3390/jtaer20020077",
+    "type": "journal-article"
+   },
+   {
+    "title": "Forecasting of Marketing News in Financial Sector for Sentiment Analysis Using LLMs (Large Language Models)",
+    "authors": [
+     "Sandeep Gupta, "
+    ],
+    "container": "International Journal of Advanced Research in Science, Communication and Technology",
+    "volume": "",
+    "issue": "",
+    "page": "462-475",
+    "year": 2025,
+    "doi": "10.48175/ijarsct-28347",
+    "type": "journal-article"
+   },
+   {
+    "title": "Event-Based Sentiment Analysis of Financial News Using Large Language Models: A Comprehensive Framework Integrating RAG, GNNs, and Multi-Agent Systems",
+    "authors": [
+     "Kulkarni, A.",
+     "Dogra, V."
+    ],
+    "container": "Information",
+    "volume": "17",
+    "issue": "6",
+    "page": "558",
+    "year": 2026,
+    "doi": "10.3390/info17060558",
+    "type": "journal-article"
+   },
+   {
+    "title": "A Survey of Zero-Shot and Few-Shot Learning with Large Language Models for Financial Sentiment Analysis",
+    "authors": [
+     "Gao, L."
+    ],
+    "container": "Applied and Computational Engineering",
+    "volume": "254",
+    "issue": "1",
+    "page": "89-95",
+    "year": 2026,
+    "doi": "10.54254/2755-2721/2026.ld35648",
+    "type": "journal-article"
+   },
+   {
+    "title": "Correlation Analysis Between Investor Sentiment and Stock Price Fluctuations Based on Large Language Models",
+    "authors": [
+     "Ren, G.",
+     "Luo, Z.",
+     "Zhang, N.",
+     "Yang, Y."
+    ],
+    "container": "Journal of Electronic Research and Application",
+    "volume": "9",
+    "issue": "5",
+    "page": "30-37",
+    "year": 2025,
+    "doi": "10.26689/jera.v9i5.12198",
+    "type": "journal-article"
+   },
+   {
+    "title": "Financial news sentiment meets market data: A large language model-based approach to stock price prediction",
+    "authors": [
+     "Officioso, G.",
+     "Sperl\u00ec, G.",
+     "Vignali, A."
+    ],
+    "container": "Information Sciences",
+    "volume": "754",
+    "issue": "",
+    "page": "123711",
+    "year": 2026,
+    "doi": "10.1016/j.ins.2026.123711",
+    "type": "journal-article"
+   }
+  ],
+  "volatility targeting risk budgeting portfolio": [
+   {
+    "title": "Volatility Targeting Is Trendy: How Trend Following Explains Alpha in Volatility-Managed Strategies",
+    "authors": [
+     "Hood, B.T.",
+     "Raughtigan, C."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "52",
+    "issue": "1",
+    "page": "100-121",
+    "year": 2025,
+    "doi": "10.3905/jpm.2025.1.764",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio selection and risk sharing via risk budgeting",
+    "authors": [
+     "Asimit, V.",
+     "Chong, W.F.",
+     "Tunaru, R.",
+     "Zhou, F."
+    ],
+    "container": "Insurance: Mathematics and Economics",
+    "volume": "125",
+    "issue": "",
+    "page": "103139",
+    "year": 2025,
+    "doi": "10.1016/j.insmatheco.2025.103139",
+    "type": "journal-article"
+   },
+   {
+    "title": "Dynamic Multi-Asset Portfolio Optimization: Evaluating Risk-Return Tradeoffs Under Time-Varying Volatility",
+    "authors": [
+     "Das, A."
+    ],
+    "container": "American Journal of Student Research",
+    "volume": "",
+    "issue": "",
+    "page": "52-61",
+    "year": 2026,
+    "doi": "10.70251/hyjr2348.435261",
+    "type": "journal-article"
+   },
+   {
+    "title": "Inverse DEA for Portfolio Volatility Targeting: Industry Evidence from Taiwan Stock Exchange",
+    "authors": [
+     "Kehinde, T.O.",
+     "Chung, S.H.",
+     "Olanrewaju, O.A."
+    ],
+    "container": "International Journal of Financial Studies",
+    "volume": "13",
+    "issue": "4",
+    "page": "192",
+    "year": 2025,
+    "doi": "10.3390/ijfs13040192",
+    "type": "journal-article"
+   },
+   {
+    "title": "The Impact of Liquidity and Volatility Weighting on Risk-Adjusted Portfolio Performance",
+    "authors": [
+     "Liu, M."
+    ],
+    "container": "Highlights in Business, Economics and Management",
+    "volume": "54",
+    "issue": "",
+    "page": "182-188",
+    "year": 2025,
+    "doi": "10.54097/ra1xqk40",
+    "type": "journal-article"
+   },
+   {
+    "title": "Implied Volatility Style Analysis: Risk Aversion versus Uncertainty",
+    "authors": [
+     "Fassas, A.P.",
+     "Papadamou, S."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "51",
+    "issue": "6",
+    "page": "122-132",
+    "year": 2025,
+    "doi": "10.3905/jpm.2025.1.684",
+    "type": "journal-article"
+   },
+   {
+    "title": "Price of Risk: Are Volatility-Controlled Indices Priceless?",
+    "authors": [
+     "Engle, R.F.",
+     "Karagozoglu, A.K."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "52",
+    "issue": "9",
+    "page": "54-84",
+    "year": 2026,
+    "doi": "10.3905/jpm.2026.037",
+    "type": "journal-article"
+   },
+   {
+    "title": "Crypto\u2013Traditional Portfolio Contagion: Modeling Volatility Clustering and Tail-Risk Spillovers",
+    "authors": [
+     "Pasupuleti, M.K."
+    ],
+    "container": "International Journal of Academic and Industrial Research Innovations(IJAIRI)",
+    "volume": "06",
+    "issue": "02",
+    "page": "166-185",
+    "year": 2026,
+    "doi": "10.62311/nesx/rp-f92026",
+    "type": "journal-article"
+   },
+   {
+    "title": "Using Large Language Models to Estimate Novel Risk: Impact on Volatility",
+    "authors": [
+     "Gupta, S.",
+     "Yan, H."
+    ],
+    "container": "The Journal of Portfolio Management",
+    "volume": "51",
+    "issue": "7",
+    "page": "230-247",
+    "year": 2025,
+    "doi": "10.3905/jpm.2025.1.710",
+    "type": "journal-article"
+   },
+   {
+    "title": "Machine Learning\u2013Enhanced Risk-Adjusted Portfolio Optimization under Volatility Clustering",
+    "authors": [
+     "Muratore, A.",
+     "Aiello, G.",
+     "Quaranta, S.",
+     "Carollo, F."
+    ],
+    "container": "WSEAS TRANSACTIONS ON BUSINESS AND ECONOMICS",
+    "volume": "",
+    "issue": "",
+    "page": "2877",
+    "year": 2025,
+    "doi": "10.37394/23207.2025.22.226",
+    "type": "journal-article"
+   },
+   {
+    "title": "Investor attention and its impact on portfolio volatility and sectoral risk spillovers in Borsa Istanbul",
+    "authors": [
+     "\u00d6zdemir, M.",
+     "Ta\u015f, O."
+    ],
+    "container": "Borsa Istanbul Review",
+    "volume": "25",
+    "issue": "1",
+    "page": "107-126",
+    "year": 2025,
+    "doi": "10.1016/j.bir.2024.12.014",
+    "type": "journal-article"
+   },
+   {
+    "title": "Advanced Budgeting and Dynamic Allocation Strategies for Maximizing Financial Resilience Amid Economic Volatility and Market Shifts",
+    "authors": [
+     "Edo-Osagie, E."
+    ],
+    "container": "International Journal of Research Publication and Reviews",
+    "volume": "6",
+    "issue": "3",
+    "page": "1060-1077",
+    "year": 2025,
+    "doi": "10.55248/gengpi.6.0325.1130",
+    "type": "journal-article"
+   }
+  ],
+  "covariance shrinkage estimation portfolio optimization": [
+   {
+    "title": "Covariance Matrix Estimation for Portfolio Selection: Linear and Non-Linear Shrinkage Methods on the Frontier Market",
+    "authors": [
+     "Minh Nhat, N."
+    ],
+    "container": "Montenegrin Journal of Economics",
+    "volume": "21",
+    "issue": "4",
+    "page": "",
+    "year": 2025,
+    "doi": "10.14254/1800-5845/2025.21-4.17",
+    "type": "journal-article"
+   },
+   {
+    "title": "Nonlinear Shrinkage Estimation of Higher-Order Moments for Portfolio Optimization Under Uncertainty in Complex Financial Systems",
+    "authors": [
+     "Lu, W.",
+     "Tian, Z."
+    ],
+    "container": "Entropy",
+    "volume": "27",
+    "issue": "10",
+    "page": "1083",
+    "year": 2025,
+    "doi": "10.3390/e27101083",
+    "type": "journal-article"
+   },
+   {
+    "title": "Noise-Adjusted Shrinkage Covariance Estimation in High Dimensions",
+    "authors": [
+     "Pamuk\u00e7u, E."
+    ],
+    "container": "Axioms",
+    "volume": "15",
+    "issue": "6",
+    "page": "468",
+    "year": 2026,
+    "doi": "10.3390/axioms15060468",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio selection based on the spectral decomposition of the sample covariance matrix: A shrinkage-motivated basis-optimization strategy",
+    "authors": [
+     "Sun, R.",
+     "Wang, K.",
+     "Ma, T.",
+     "Liu, S."
+    ],
+    "container": "Results in Applied Mathematics",
+    "volume": "30",
+    "issue": "",
+    "page": "100720",
+    "year": 2026,
+    "doi": "10.1016/j.rinam.2026.100720",
+    "type": "journal-article"
+   },
+   {
+    "title": "Improving minimum-variance portfolio through shrinkage of large covariance matrices",
+    "authors": [
+     "Shi, F.",
+     "Shu, L.",
+     "He, F.",
+     "Huang, W."
+    ],
+    "container": "Economic Modelling",
+    "volume": "144",
+    "issue": "",
+    "page": "106981",
+    "year": 2025,
+    "doi": "10.1016/j.econmod.2024.106981",
+    "type": "journal-article"
+   },
+   {
+    "title": "Portfolio optimization with MOPSO-Shrinkage hybrid model",
+    "authors": [
+     "Tran, M.",
+     "Nguyen, N.M."
+    ],
+    "container": "Results in Control and Optimization",
+    "volume": "19",
+    "issue": "",
+    "page": "100553",
+    "year": 2025,
+    "doi": "10.1016/j.rico.2025.100553",
+    "type": "journal-article"
+   },
+   {
+    "title": "Blockwise Exponential Covariance Modeling for High-Dimensional Portfolio Optimization",
+    "authors": [
+     "Fan, C.",
+     "Tham, J."
+    ],
+    "container": "Symmetry",
+    "volume": "18",
+    "issue": "1",
+    "page": "171",
+    "year": 2026,
+    "doi": "10.3390/sym18010171",
+    "type": "journal-article"
+   },
+   {
+    "title": "Spectral Shrinkage in High-Dimensional Statistics: From Random Matrix Theory to Optimal Covariance Estimation",
+    "authors": [
+     "Nsabimana, I."
+    ],
+    "container": "International Journal For Multidisciplinary Research",
+    "volume": "8",
+    "issue": "4",
+    "page": "",
+    "year": 2026,
+    "doi": "10.36948/ijfmr.2026.v08i04.85840",
+    "type": "journal-article"
+   },
+   {
+    "title": "Mean-Variance Portfolio Optimization Based on Ledoit-Wolf Shrinkage With K-Medoids Clustering Approach for The Idxbumn20 Index",
+    "authors": [
+     "Saranga, K.A.P.C.",
+     "Rusgiyono, A.",
+     "Hoyyi, A."
+    ],
+    "container": "International Journal of Mathematics And Computer Research",
+    "volume": "14",
+    "issue": "06",
+    "page": "",
+    "year": 2026,
+    "doi": "10.47191/ijmcr/v14i6.08",
+    "type": "journal-article"
+   },
+   {
+    "title": "Adaptive Beta Shrinkage estimation of covariance matrices",
+    "authors": [
+     "Staal, H.",
+     "Flint, E."
+    ],
+    "container": "Investment Analysts Journal",
+    "volume": "54",
+    "issue": "3",
+    "page": "387-407",
+    "year": 2025,
+    "doi": "10.1080/10293523.2025.2553255",
+    "type": "journal-article"
+   },
+   {
+    "title": "Application of regularized covariance matrices in logistic regression and portfolio optimization",
+    "authors": [
+     "Sun, F.",
+     "Huang, X."
+    ],
+    "container": "Scientific Reports",
+    "volume": "15",
+    "issue": "1",
+    "page": "",
+    "year": 2025,
+    "doi": "10.1038/s41598-025-08712-w",
+    "type": "journal-article"
+   },
+   {
+    "title": "Unveiling outliers with robust covariance matrix estimation: a shrinkage approach",
+    "authors": [
+     "Vijayalakshmi, S.",
+     "Sebastian, N.",
+     "Sajesh, T.A."
+    ],
+    "container": "Statistical Papers",
+    "volume": "66",
+    "issue": "4",
+    "page": "",
+    "year": 2025,
+    "doi": "10.1007/s00362-025-01694-x",
+    "type": "journal-article"
+   }
+  ],
+  "backtest overfitting evaluation trading strategies": [
+   {
+    "title": "The GT-Score: A Robust Objective Function for Reducing Overfitting in Data-Driven Trading Strategies",
+    "authors": [
+     "Sheppert, A.P."
+    ],
+    "container": "Journal of Risk and Financial Management",
+    "volume": "19",
+    "issue": "1",
+    "page": "60",
+    "year": 2026,
+    "doi": "10.3390/jrfm19010060",
+    "type": "journal-article"
+   },
+   {
+    "title": "Physics-Informed Neural Networks for Portfolio Optimisation and Algorithmic Trading: A Reproducible Pipeline with an Indian-Market Backtest",
+    "authors": [
+     "S. Satyanarayana, "
+    ],
+    "container": "International Journal of Computational Mathematical Ideas",
+    "volume": "18",
+    "issue": "01",
+    "page": "202600180088-202600180095",
+    "year": 2026,
+    "doi": "10.70153/ijcmi/2026.18109",
+    "type": "journal-article"
+   },
+   {
+    "title": "A Kelly Quantitative Trading Investment Strategy Improved by Overfitting Rate",
+    "authors": [
+     "Zhang, Z.",
+     "Chen, X.",
+     "Li, X."
+    ],
+    "container": "Journal of Applied Economics and Policy Studies",
+    "volume": "17",
+    "issue": "1",
+    "page": "50-55",
+    "year": 2025,
+    "doi": "10.54254/2977-5701/2025.21121",
+    "type": "journal-article"
+   },
+   {
+    "title": "Robustness Optimization Strategies for Mitigating Overfitting in Machine Learning Models",
+    "authors": [
+     "Sun, J.",
+     "Xu, Y.",
+     "Li, Y."
+    ],
+    "container": "Advances in Computer and Communication",
+    "volume": "6",
+    "issue": "3",
+    "page": "139-143",
+    "year": 2025,
+    "doi": "10.26855/acc.2025.07.006",
+    "type": "journal-article"
+   },
+   {
+    "title": "Comparative Analysis of Various Strategies Used in Algorithmic Trading",
+    "authors": [
+     "Modwel, G.",
+     "Tandon, C."
+    ],
+    "container": "Revista Gest\u00e3o &amp; Tecnologia",
+    "volume": "25",
+    "issue": "2",
+    "page": "46-73",
+    "year": 2025,
+    "doi": "10.20397/2177-6652/2025.v25i2.3154",
+    "type": "journal-article"
+   },
+   {
+    "title": "Design and Evaluation of an AI-based Intelligent Trading Bot: An Analytical Approach to Maximizing Returns and Enhancing the Efficiency of Automated Trading Strategies in the Foreign Exchange Market (2020-2025)",
+    "authors": [
+     "Obaid, M.K.",
+     "Abdulhameed, M.M.",
+     "Abdulhameed, M.M."
+    ],
+    "container": "KnE Social Sciences",
+    "volume": "10",
+    "issue": "19",
+    "page": "821-848",
+    "year": 2025,
+    "doi": "10.18502/kss.v10i19.19649",
+    "type": "journal-article"
+   },
+   {
+    "title": "A Study of Options Trading Strategies Using Greeks",
+    "authors": [
+     "Sharma, M.S.",
+     "Patel, D.S."
+    ],
+    "container": "International Journal of Research Publication and Reviews",
+    "volume": "7",
+    "issue": "5",
+    "page": "2589-2596",
+    "year": 2026,
+    "doi": "10.55248/gengpi.07.0526.c1146",
+    "type": "journal-article"
+   },
+   {
+    "title": "The Impact of Training Strategies on Overfitting in Vowel Classification Using PS-HFCC Parametrization for Automatic Speech Recognition",
+    "authors": [
+     "Gmyrek, S.",
+     "Libal, U.",
+     "Hossa, R."
+    ],
+    "container": "Archives of Acoustics",
+    "volume": "",
+    "issue": "",
+    "page": "371-382",
+    "year": 2025,
+    "doi": "10.24425/aoa.2025.154823",
+    "type": "journal-article"
+   },
+   {
+    "title": "Leveraging Microstate Diplomacy: Monaco's Strategies for Enhancing Trading Power and EU Integration",
+    "authors": [
+     "ILCUS, C."
+    ],
+    "container": "International Journal of Social Sciences, Language and Linguistics",
+    "volume": "06",
+    "issue": "03",
+    "page": "71-159",
+    "year": 2026,
+    "doi": "10.55640/ijssll-06-03-09",
+    "type": "journal-article"
+   },
+   {
+    "title": "When Strategies Work Too Well: Volatility-Based Investing, Overfitting and the Limits of Empirical Finance",
+    "authors": [
+     "Valls, F.B.",
+     "Steurer, E."
+    ],
+    "container": "Journal of Financial Risk Management",
+    "volume": "15",
+    "issue": "03",
+    "page": "189-211",
+    "year": 2026,
+    "doi": "10.4236/jfrm.2026.153012",
+    "type": "journal-article"
+   },
+   {
+    "title": "A review of bidding strategies and energy trading models in peer-to-peer energy trading",
+    "authors": [
+     "Telagi, K.",
+     "Pedapenki, K.K."
+    ],
+    "container": "Journal of Integrated Science and Technology",
+    "volume": "13",
+    "issue": "4",
+    "page": "",
+    "year": 2025,
+    "doi": "10.62110/sciencein.jist.2025.v13.1077",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimizing stock market prediction and stock trading strategies with deep learning models enhanced by nonlinear feature identification and robust prediction evaluation",
+    "authors": [
+     "Wang, H.",
+     "Xie, D.",
+     "Duan, Y.",
+     "Xiong, W.",
+     "Chen, D."
+    ],
+    "container": "Financial Innovation",
+    "volume": "12",
+    "issue": "1",
+    "page": "",
+    "year": 2026,
+    "doi": "10.1186/s40854-026-00929-6",
+    "type": "journal-article"
+   }
+  ],
+  "multimodal fusion stock prediction": [
+   {
+    "title": "Stock Price Prediction Using LSTM with Attention-Based Multimodal Fusion Model",
+    "authors": [
+     "Sun, J."
+    ],
+    "container": "Economics &amp; Management Information",
+    "volume": "",
+    "issue": "",
+    "page": "1-5",
+    "year": 2025,
+    "doi": "10.62836/emi.v4i4.506",
+    "type": "journal-article"
+   },
+   {
+    "title": "Stock movement prediction with multimodal stable fusion via gated cross-attention mechanism",
+    "authors": [
+     "Zong, C.",
+     "Wan, J.",
+     "Cascone, L.",
+     "Zhou, H."
+    ],
+    "container": "Complex &amp; Intelligent Systems",
+    "volume": "11",
+    "issue": "9",
+    "page": "",
+    "year": 2025,
+    "doi": "10.1007/s40747-025-02023-3",
+    "type": "journal-article"
+   },
+   {
+    "title": "A Multimodal Deep Fusion Method for Stock Movement Prediction Using Heterogeneous Data Source",
+    "authors": [
+     "Wen Wang, T.",
+     "Sook Lu, Y.",
+     "Soon Ku, C.",
+     "Mohammed, O.",
+     "Raj, B.",
+     "Yee Por, L."
+    ],
+    "container": "IEEE Access",
+    "volume": "14",
+    "issue": "",
+    "page": "9882-9896",
+    "year": 2026,
+    "doi": "10.1109/access.2026.3654950",
+    "type": "journal-article"
+   },
+   {
+    "title": "Fast Multimodal Trajectory Prediction for Vehicles Based on Multimodal Information Fusion",
+    "authors": [
+     "Ge, L.",
+     "Wang, S.",
+     "Wang, G."
+    ],
+    "container": "Actuators",
+    "volume": "14",
+    "issue": "3",
+    "page": "136",
+    "year": 2025,
+    "doi": "10.3390/act14030136",
+    "type": "journal-article"
+   },
+   {
+    "title": "Multimodal information compression, completion, and adaptive fusion for cancer survival prediction",
+    "authors": [
+     "Gao, G.",
+     "Gan, T.",
+     "Yang, J.",
+     "Rao, N."
+    ],
+    "container": "Information Fusion",
+    "volume": "136",
+    "issue": "",
+    "page": "104548",
+    "year": 2026,
+    "doi": "10.1016/j.inffus.2026.104548",
+    "type": "journal-article"
+   },
+   {
+    "title": "Lane-driven and goal-focused refinement transformer for multimodal trajectory prediction",
+    "authors": [
+     "Bharilya, V.",
+     "Kumar, N."
+    ],
+    "container": "Information Fusion",
+    "volume": "137",
+    "issue": "",
+    "page": "104640",
+    "year": 2027,
+    "doi": "10.1016/j.inffus.2026.104640",
+    "type": "journal-article"
+   },
+   {
+    "title": "A deep multimodal network for multi-task trajectory prediction",
+    "authors": [
+     "Lei, D.",
+     "Xu, M.",
+     "Wang, S."
+    ],
+    "container": "Information Fusion",
+    "volume": "113",
+    "issue": "",
+    "page": "102597",
+    "year": 2025,
+    "doi": "10.1016/j.inffus.2024.102597",
+    "type": "journal-article"
+   },
+   {
+    "title": "Physics-Informed Machine Learning for Agricultural Drought Prediction in Vidarbha, Maharashtra: A Multimodal Geospatial Fusion Framework for ESG",
+    "authors": [
+     "Khajuria, A."
+    ],
+    "container": "International Journal of Science and Research (IJSR)",
+    "volume": "",
+    "issue": "",
+    "page": "1581-1593",
+    "year": 2026,
+    "doi": "10.21275/sr26629131639",
+    "type": "journal-article"
+   },
+   {
+    "title": "QMF-MAP: A quantum multimodal fusion model for molecular activity prediction",
+    "authors": [
+     "Li, M.",
+     "Liu, W.",
+     "Shi, L.",
+     "Li, Y.",
+     "Chen, K.",
+     "Zhang, P."
+    ],
+    "container": "Information Fusion",
+    "volume": "137",
+    "issue": "",
+    "page": "104584",
+    "year": 2027,
+    "doi": "10.1016/j.inffus.2026.104584",
+    "type": "journal-article"
+   },
+   {
+    "title": "Multimodal fusion for large-scale traffic prediction with heterogeneous retentive networks",
+    "authors": [
+     "Yan, Y.",
+     "Cui, S.",
+     "Liu, J.",
+     "Zhao, Y.",
+     "Zhou, B.",
+     "Kuo, Y.H."
+    ],
+    "container": "Information Fusion",
+    "volume": "114",
+    "issue": "",
+    "page": "102695",
+    "year": 2025,
+    "doi": "10.1016/j.inffus.2024.102695",
+    "type": "journal-article"
+   },
+   {
+    "title": "AI driven dynamic Prediction System for Stock Market Trends using Multimodal Data and adaptive Machine Learning Models",
+    "authors": [
+     "Patil, M.",
+     "Mahandule, D.",
+     "Parab, M.",
+     "Gaykar, M."
+    ],
+    "container": "International Journal of Research Publication and Reviews",
+    "volume": "6",
+    "issue": "4",
+    "page": "6817-6821",
+    "year": 2025,
+    "doi": "10.55248/gengpi.6.0425.14156",
+    "type": "journal-article"
+   },
+   {
+    "title": "MoltiTox: a multimodal fusion model for molecular toxicity prediction",
+    "authors": [
+     "Park, J.",
+     "Lee, S."
+    ],
+    "container": "Frontiers in Toxicology",
+    "volume": "7",
+    "issue": "",
+    "page": "",
+    "year": 2025,
+    "doi": "10.3389/ftox.2025.1720651",
+    "type": "journal-article"
+   }
+  ],
+  "decision making under uncertainty investment portfolio": [
+   {
+    "title": "Forecasting meets Portfolio Theory: A Bibliometric Approach to Decision-Making under Uncertainty",
+    "authors": [
+     "Raimundo, B.",
+     "Bravo, J.M."
+    ],
+    "container": "Humanities and Social Sciences Communications",
+    "volume": "13",
+    "issue": "1",
+    "page": "",
+    "year": 2026,
+    "doi": "10.1057/s41599-026-07252-6",
+    "type": "journal-article"
+   },
+   {
+    "title": "Investment Decision-Making Under Uncertainty: The Role of Representative Bias in Market Downturns",
+    "authors": [
+     "Hariyanto, D."
+    ],
+    "container": "Jurnal Manajemen Motivasi",
+    "volume": "21",
+    "issue": "2",
+    "page": "705-722",
+    "year": 2025,
+    "doi": "10.29406/jmm.v21i2.8002",
+    "type": "journal-article"
+   },
+   {
+    "title": "Features of Decision Making Under Uncertainty",
+    "authors": [
+     "O\u2018g\u2018li, M.S.D.",
+     "Abdumuminovna, I.S."
+    ],
+    "container": "The American Journal of Management and Economics Innovations",
+    "volume": "8",
+    "issue": "4",
+    "page": "14-18",
+    "year": 2026,
+    "doi": "10.37547/tajmei/volume08issue04-03",
+    "type": "journal-article"
+   },
+   {
+    "title": "Behavioral aspects of investment decision-making under uncertainty: analysis through the lens of prospect theory",
+    "authors": [
+     "Pozhuiev, D."
+    ],
+    "container": "Herald of the Economic Sciences of Ukraine",
+    "volume": "",
+    "issue": "1(50)",
+    "page": "201",
+    "year": 2026,
+    "doi": "10.37405/3041-1629.2026.1(50).201-209",
+    "type": "journal-article"
+   },
+   {
+    "title": "Thinking in the Dark \"Neuropsychological Insights into Decision Making under Uncertainty\"",
+    "authors": [
+     "Singh, M."
+    ],
+    "container": "International Journal of Science and Research (IJSR)",
+    "volume": "",
+    "issue": "",
+    "page": "819-823",
+    "year": 2025,
+    "doi": "10.21275/sr25917171447",
+    "type": "journal-article"
+   },
+   {
+    "title": "PlanningEFEMix: Hybrid Active Inference for Sequential Decision-Making under Uncertainty",
+    "authors": [
+     "Chokhawala, B.",
+     "Mohammad, A.F."
+    ],
+    "container": "Advances in Machine Learning &amp; Artificial Intelligence",
+    "volume": "07",
+    "issue": "02",
+    "page": "01-17",
+    "year": 2026,
+    "doi": "10.33140/amlai.07.02.03",
+    "type": "journal-article"
+   },
+   {
+    "title": "Consumption and Investment Portfolio Problem Under Distributional Uncertainty Using Bayesian Methods",
+    "authors": [
+     "Yan, Z.",
+     "Zhao, P."
+    ],
+    "container": "Advances in Economics and Management Research",
+    "volume": "13",
+    "issue": "1",
+    "page": "123",
+    "year": 2025,
+    "doi": "10.56028/aemr.13.1.123.2025",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimal Investment Decision Making Under Two Factor Uncertainty Using L\u00b4evy Processes",
+    "authors": [
+     "Mokoka, P.O.",
+     "Chikodza, E.",
+     "Tshelametse, R."
+    ],
+    "container": "Statistics, Optimization &amp; Information Computing",
+    "volume": "15",
+    "issue": "5",
+    "page": "3897-3922",
+    "year": 2026,
+    "doi": "10.19139/soic-2310-5070-2727",
+    "type": "journal-article"
+   },
+   {
+    "title": "Data-Driven Decision-Making under Humanitarian Uncertainty",
+    "authors": [
+     "Yang, C.",
+     "Yang, L."
+    ],
+    "container": "Research journal",
+    "volume": "1",
+    "issue": "1",
+    "page": "",
+    "year": 2025,
+    "doi": "10.65281/702798",
+    "type": "journal-article"
+   },
+   {
+    "title": "Optimal energy portfolio investment strategies for data centers under deep market uncertainty",
+    "authors": [
+     "Abdelhady, M.",
+     "Iakovou, E.",
+     "Pistikopoulos, E.N."
+    ],
+    "container": "Applied Energy",
+    "volume": "410",
+    "issue": "",
+    "page": "127510",
+    "year": 2026,
+    "doi": "10.1016/j.apenergy.2026.127510",
+    "type": "journal-article"
+   },
+   {
+    "title": "Research on investment decision-making of renewable power producers under the new renewable portfolio standards",
+    "authors": [
+     "Song, X.",
+     "Zhang, L.",
+     "Han, J.",
+     "Li, Q.",
+     "Li, S.",
+     "Li, J.",
+     "Xu, S."
+    ],
+    "container": "Journal of Cleaner Production",
+    "volume": "518",
+    "issue": "",
+    "page": "145867",
+    "year": 2025,
+    "doi": "10.1016/j.jclepro.2025.145867",
+    "type": "journal-article"
+   },
+   {
+    "title": "Quantum Cognition Models for Decision-Making Under Uncertainty",
+    "authors": [
+     "\u00d6zt\u00fcrkmen, A."
+    ],
+    "container": "Human Computer Interaction",
+    "volume": "9",
+    "issue": "1",
+    "page": "",
+    "year": 2025,
+    "doi": "10.62802/drmqg024",
+    "type": "journal-article"
+   }
+  ]
+ }
+}
