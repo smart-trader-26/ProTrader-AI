@@ -118,7 +118,7 @@ studies establish is that fusion can help prediction. Whether a particular fusio
 helps a particular allocation decision is a separate question, and one that requires a
 component-level test rather than an aggregate comparison.
 
-\subsection{Textual Sentiment and Market-Derived Proxies}
+\subsection{Sentiment Analysis and Alternative Data Integration}
 
 Textual sentiment entered finance through dictionary methods, and
 \citet{loughran11} demonstrated that general-purpose sentiment lexicons misclassify
@@ -136,12 +136,20 @@ right before any allocation question is reached.
 
 They also indicate what such a study requires: a time-stamped corpus with coverage of
 the traded instruments. That requirement is binding. For broad exchange-traded funds
-there is no instrument-level news corpus of comparable coverage, which is why studies
-of this kind are almost always conducted on individual equities. The present study
-therefore uses market-derived proxies for attention and stress rather than textual
-sentiment, states this explicitly in Section~3.3, and---rather than assuming the proxies
-are adequate---measures their predictive content directly and reports that they are
-not.
+there is no instrument-level news corpus of comparable coverage, which is why work of
+this kind is almost always carried out on individual equities.
+
+A second and older family of sentiment measures sidesteps the corpus requirement
+entirely by reading sentiment off the market rather than off text. \citet{bakerwurgler07}
+build investor sentiment from trading activity and dispersion, on the argument that
+participation reveals what surveys and articles merely report; the approach has since
+become standard where text is unavailable. \citet{singsiri26} construct allocation
+signals from a money flow index on exactly this reasoning, and \citet{naidoo25} model
+investor sentiment and market volatility as a joint object rather than as separate
+inputs. The framework proposed here belongs to that second family.
+Section~\ref{sec:sentiment} states precisely what is and is not computed, and
+Section~\ref{sec:sentval} tests the construction against four independently published
+series instead of assuming it is adequate.
 
 \subsection{Evaluation Practice}
 

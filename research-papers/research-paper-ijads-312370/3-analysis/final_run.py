@@ -3,7 +3,7 @@
 Primary: MULTI universe, 2007-2026 download, seed 42, cov 252d, rebal 21d, 10 bps,
 relative regime risk budget {calm 1.00, transitional 0.75, stress 0.50}.
 
-Writes final_tables.json and 300 dpi figures into ../single column/images/.
+Writes final_tables.json and 300 dpi figures into ../2-revised-manuscript/images/.
 """
 import json, os, pickle
 import numpy as np
@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 import pipeline_core as P
 
 OUT = os.path.dirname(os.path.abspath(__file__))
-IMG = os.path.abspath(os.path.join(OUT, '..', 'single column', 'images'))
+IMG = os.path.abspath(os.path.join(OUT, '..', '2-revised-manuscript', 'images'))
 MULTI = ['SPY', 'QQQ', 'IWM', 'EFA', 'EEM', 'TLT', 'IEF', 'LQD', 'GLD', 'VNQ']
 MEGA = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'XOM']
 DOWNLOAD_END = '2026-08-27'   # all data available at the revision date; no window selection

@@ -8,7 +8,7 @@ so that the study can be reproduced independently from this description alone.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_architecture.png}
+\includegraphics[width=\textwidth]{images/fig_architecture.png}
 \caption{The proposed framework. Stage~1 constructs causal, cross-sectionally
 standardised features; stage~2 identifies the market state and fuses the two composites;
 stage~3 separates relative composition from total risk; stage~4 evaluates the result and
@@ -73,13 +73,13 @@ MFI & Technical & Money flow index, centred: $\mathrm{MFI}_t - 50$ & 14 \\
 \hline
 OBV flow & Technical & Twenty-session change in on-balance volume, normalised by average volume: $(\mathrm{OBV}_t - \mathrm{OBV}_{t-20}) / \overline{V}_{t,20}$ & 20 \\
 \hline
-Return & Market state & Five-session simple return: $C_t / C_{t-5} - 1$ & 5 \\
+Return & Sentiment & Five-session simple return: $C_t / C_{t-5} - 1$ & 5 \\
 \hline
-Relative volume & Market state & $V_t / \overline{V}_{t,20}$ & 20 \\
+Relative volume & Sentiment & $V_t / \overline{V}_{t,20}$ & 20 \\
 \hline
-Realised volatility & Market state & Annualised standard deviation of daily returns, entered with a negative sign & 20 \\
+Realised volatility & Sentiment & Annualised standard deviation of daily returns, entered with a negative sign & 20 \\
 \hline
-Volume instability & Market state & Standard deviation of daily volume changes, entered with a negative sign & 20 \\
+Volume instability & Sentiment & Standard deviation of daily volume changes, entered with a negative sign & 20 \\
 \hline
 \end{tabular}
 \end{table}
@@ -100,31 +100,46 @@ common market factor from the scores, so that a market-wide move does not appear
 signal on every asset simultaneously.
 
 The standardised features are then averaged into two composites. The technical
-composite is the equally weighted mean of the five technical features. The market-state
-composite is the equally weighted mean of the four market-state features, taken with
+composite is the equally weighted mean of the five technical features. The sentiment
+composite is the equally weighted mean of the four sentiment features, taken with
 the signs given in Table~\ref{tab:features}, so that recent strength and active participation raise the
 score while realised volatility and unstable volume lower it.
 
-\subsection{What the Second Composite Is, and What It Is Not}
-\label{sec:notsentiment}
+\subsection{Sentiment Analysis Pipeline}
+\label{sec:sentiment}
 
-The second composite is constructed entirely from price and volume. No news article,
-social media post, corporate announcement or any other text is read at any point in
-this study, and no lexicon, classifier or language model is applied. The composite is a
-market-derived proxy for the same latent quantities that textual sentiment measures aim
-to capture---attention, participation and stress---and it is reported here as exactly
-that.
+The sentiment measure used here is market-derived. It is the equally weighted mean of
+the four features marked \emph{Sentiment} in Table~\ref{tab:features}: a five-session
+return, turnover measured against its own recent average, realised volatility and the
+instability of volume, the last two entered with a negative sign. The composite
+therefore rises when participation broadens and prices are advancing calmly, and falls
+when trading becomes disorderly. Every input is a price or a volume, and every one is
+causal.
 
-This is stated plainly because the distinction is material to how the results should be
-read. Proxy construction of this kind is common in the literature and inexpensive to
-compute, but it cannot be credited with the contextual information a transformer model
-extracts from financial text, and it should not be described as though it could.
-Section~\ref{sec:ic} measures the predictive content of both composites directly and
-reports the outcome, including where that outcome is unfavourable. Extending the
-framework to genuine textual sentiment requires a time-stamped news corpus with
-coverage of the traded universe; for broad exchange-traded funds no such corpus exists
-at instrument level, which is a limitation of the design rather than an oversight, and
-Section~5 sets out what would be needed to remove it.
+Because reviewers of work in this area reasonably ask which text model was used, it is
+worth being categorical: none. No news article, social media post, corporate filing,
+transcript or analyst note is read at any point in this study. Neither a domain-specific
+transformer model nor a lexicon-based method in the manner of
+\citet{loughran11} is applied, for the straightforward reason that no text is processed
+for either to act upon.
+
+That is a design decision forced by data availability rather than a preference. Textual
+measurement needs a time-stamped corpus covering the traded instruments, and for broad
+exchange-traded funds no such corpus exists at instrument level---a fund holding several
+hundred securities has no news flow of its own. The alternative adopted here is the
+market-derived tradition described in Section~2.4, in which turnover and dispersion
+stand in for the survey or the newspaper. Turnover is among the canonical components of
+the investor-sentiment index of \citet{bakerwurgler07}, and the money flow measures used
+by \citet{singsiri26} are built on the same premise.
+
+Adopting a proxy imposes an obligation to demonstrate that the proxy behaves like the
+thing it stands in for, and that obligation is discharged rather than assumed.
+Section~\ref{sec:sentval} correlates the composite against four independently published
+series, none of which enters the framework at any stage, and reports how the identified
+market states separate on it. What that exercise cannot establish is that the composite
+predicts returns; Section~\ref{sec:ic} measures that separately, and reports a result
+that is unfavourable to the framework. The two questions are distinct and are kept
+distinct throughout.
 
 \subsection{Regime Identification}
 
@@ -164,7 +179,7 @@ reported as such.
 
 The two composites are combined into a single score using weights that depend on the
 prevailing regime, together with a per-asset confidence term. Let $T_{i,t}$ and
-$M_{i,t}$ denote the standardised technical and market-state composites for asset $i$,
+$M_{i,t}$ denote the standardised technical and sentiment composites for asset $i$,
 and let $r_t \in \{0,1,2\}$ be the regime. The fused score is
 \begin{equation}
 z_{i,t} = c_{i,t} \left[ w^{T}_{r_t} T_{i,t} + w^{M}_{r_t} M_{i,t} \right],

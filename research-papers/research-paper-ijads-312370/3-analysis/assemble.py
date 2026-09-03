@@ -1,14 +1,11 @@
 """Rebuild ai67.tex from the preserved preamble plus the revised sections."""
-import io, os, re, shutil
+import io, os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PAPER = os.path.abspath(os.path.join(HERE, '..', 'single column', 'ai67.tex'))
-BAK = os.path.join(HERE, 'ai67_submitted.tex.bak')
+PAPER = os.path.abspath(os.path.join(HERE, '..', '2-revised-manuscript', 'ai67.tex'))
+# the manuscript as submitted is archived under 1-original-submission/ai92.tex
 
 src = io.open(PAPER, encoding='utf-8').read()
-if not os.path.exists(BAK):
-    shutil.copy(PAPER, BAK)
-    print('backed up the submitted manuscript to', os.path.basename(BAK))
 
 preamble = src[:src.index('\\begin{abstract}')]
 
@@ -16,11 +13,14 @@ ABSTRACT = r"""\begin{abstract}
 Predictive modelling in finance has advanced faster than the machinery that converts a
 prediction into a position. This paper specifies and tests a decision-theoretic
 framework for that conversion. Latent market states are identified by a Gaussian
-mixture model fitted on an expanding window; technical and market-state composites are
+mixture model fitted on an expanding window; technical and sentiment composites are
 fused with state-dependent weights and scaled to a return metric; the fused signal
 enters a constrained quadratic program with covariance shrinkage and an explicit
 turnover penalty; and the resulting portfolio is scaled by a regime-dependent risk
-budget. Evaluated on ten liquid multi-asset instruments over eighteen years under a
+budget. The sentiment composite is market-derived rather than textual; it is
+validated against four independently published series, carries the expected sign
+against every one of them and in every sub-period examined, and separates the
+identified market states at $p < 10^{-7}$. Evaluated on ten liquid multi-asset instruments over eighteen years under a
 walk-forward protocol with transaction costs, the framework attains a Sharpe ratio of
 0.88 against 0.63 for an equal-weighted benchmark and reduces maximum drawdown from
 $-36.1$ to $-19.0$ per cent, at the cost of a lower compound return. It outperforms in
@@ -30,15 +30,17 @@ postdate every specification decision and are reported as a holdout; on them the
 framework records a higher Sharpe ratio and a smaller maximum drawdown than all three
 benchmarks considered. Ablation at matched average exposure isolates the source: timing
 risk by market state improves both the Sharpe ratio and the drawdown with no change in
-mean return, whereas the signal fusion layer contributes nothing and the
-state-dependent weighting hypothesis is unsupported. The paper also identifies two
+mean return, whereas the signal fusion layer contributes nothing to cross-sectional
+selection---despite the sentiment composite measuring what it claims to measure---and
+the state-dependent weighting hypothesis is unsupported. The paper also identifies two
 failure modes in frameworks of this kind: an absolute volatility target that never
 binds, and a signal-to-allocation conversion in which mismatched units rather than
 information determine the solution.
 \end{abstract}
 
-\KEYWORD{Portfolio Optimisation; Regime Detection; Risk Budgeting;
-Decision-Theoretic Framework; Signal Fusion; Ablation Analysis; Asset Allocation}
+\KEYWORD{Portfolio Optimisation; Regime Detection; Sentiment Analysis;
+Risk Budgeting; Decision-Theoretic Framework; Signal Fusion; Ablation Analysis;
+Asset Allocation}
 
 \REF{}
 
@@ -78,9 +80,9 @@ implementing the framework, the specification sweep and the ablations is availab
 the corresponding author on reasonable request.
 
 \section*{AI tool usage declaration}
-During the preparation of this work, the authors used [AUTHORS: NAME THE TOOL(S)
-ACTUALLY USED] in order to improve the readability and language of the manuscript. After
-using this tool, the authors reviewed and edited the content as needed and take full
+During the preparation of this work, the authors used Claude (Anthropic) and ChatGPT
+(OpenAI) in order to improve the readability and language of the manuscript. After
+using these tools, the authors reviewed and edited the content as needed and take full
 responsibility for the content of the publication. No part of the analysis, the
 generation of results, or the interpretation of findings was delegated to such tools.
 
@@ -91,8 +93,6 @@ parts.append(io.open(os.path.join(HERE, 'bibliography.tex'), encoding='utf-8').r
 parts.append('\\end{document}\n')
 
 out = ''.join(parts)
-# images live beside the .cls, so the document compiles from its own directory
-out = out.replace('{single column/images/', '{images/')
 
 io.open(PAPER, 'w', encoding='utf-8').write(out)
 print('wrote %s  (%d lines, %d chars)' % (PAPER, out.count('\n') + 1, len(out)))

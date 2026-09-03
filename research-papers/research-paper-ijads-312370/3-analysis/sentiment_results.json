@@ -1,0 +1,158 @@
+{
+ "sample": {
+  "n": 4689,
+  "start": "2008-01-07",
+  "end": "2026-08-26"
+ },
+ "benchmarks": [
+  {
+   "name": "Cboe volatility index (VIX)",
+   "kind": "market",
+   "freq": "D",
+   "expected_sign": -1,
+   "level": {
+    "n": 4689,
+    "r": -0.5408022282530813,
+    "t": -3.6187503053317065,
+    "p": 0.0002960290905392411
+   },
+   "change": {
+    "n": 4688,
+    "r": -0.1121988619730408,
+    "t": -3.0197388653516897,
+    "p": 0.002529927104460067
+   },
+   "r_expanding": -0.3405305572229483,
+   "sign_ok": true
+  },
+  {
+   "name": "Michigan consumer sentiment",
+   "kind": "survey",
+   "freq": "M",
+   "expected_sign": 1,
+   "level": {
+    "n": 222,
+    "r": 0.2619157983170861,
+    "t": 1.9085264788013392,
+    "p": 0.05632320418922448
+   },
+   "change": {
+    "n": 221,
+    "r": 0.23982946614395395,
+    "t": 3.5422253188540065,
+    "p": 0.00039676640662514567
+   },
+   "r_expanding": 0.18192556960639375,
+   "sign_ok": true
+  },
+  {
+   "name": "St. Louis Fed financial stress index",
+   "kind": "market",
+   "freq": "W",
+   "expected_sign": -1,
+   "level": {
+    "n": 972,
+    "r": -0.6059823314915211,
+    "t": -2.709985628690233,
+    "p": 0.006728612350429915
+   },
+   "change": {
+    "n": 971,
+    "r": -0.25403422878203963,
+    "t": -3.677424571333709,
+    "p": 0.00023560071223685885
+   },
+   "r_expanding": -0.4058529886225669,
+   "sign_ok": true
+  },
+  {
+   "name": "Chicago Fed national financial conditions index",
+   "kind": "market",
+   "freq": "W",
+   "expected_sign": -1,
+   "level": {
+    "n": 972,
+    "r": -0.5130324190188291,
+    "t": -2.4578783623284086,
+    "p": 0.013976050238654515
+   },
+   "change": {
+    "n": 971,
+    "r": -0.1233789439888792,
+    "t": -2.1827613492073876,
+    "p": 0.029053389383119483
+   },
+   "r_expanding": -0.31948798428822267,
+   "sign_ok": true
+  }
+ ],
+ "stability": [
+  {
+   "from": "2008-01-07",
+   "to": "2013-12-31",
+   "r": {
+    "Cboe volatility index (VIX)": -0.7364057913377201,
+    "Michigan consumer sentiment": 0.6334468800191376,
+    "St. Louis Fed financial stress index": -0.8234331082241133,
+    "Chicago Fed national financial conditions index": -0.724792552207291
+   }
+  },
+  {
+   "from": "2014-01-01",
+   "to": "2019-12-31",
+   "r": {
+    "Cboe volatility index (VIX)": -0.19779564835948704,
+    "Michigan consumer sentiment": 0.10008367626555739,
+    "St. Louis Fed financial stress index": -0.19634966350297503,
+    "Chicago Fed national financial conditions index": -0.0896986709901149
+   }
+  },
+  {
+   "from": "2020-01-01",
+   "to": "2023-12-31",
+   "r": {
+    "Cboe volatility index (VIX)": -0.6009356532598576,
+    "Michigan consumer sentiment": 0.21111830127908468,
+    "St. Louis Fed financial stress index": -0.7108030346242129,
+    "Chicago Fed national financial conditions index": -0.5410667031684422
+   }
+  },
+  {
+   "from": "2024-01-01",
+   "to": "2026-08-26",
+   "r": {
+    "Cboe volatility index (VIX)": -0.25200957269191576,
+    "Michigan consumer sentiment": 0.15370212293356914,
+    "St. Louis Fed financial stress index": -0.18699180790698863,
+    "Chicago Fed national financial conditions index": -0.1985049686735277
+   }
+  }
+ ],
+ "regimes": {
+  "n": 223,
+  "F": 19.338698598040875,
+  "p_F": 1.832575272065823e-08,
+  "H": 29.538651462547023,
+  "p_H": 3.8526835046187394e-07,
+  "by_regime": [
+   {
+    "regime": 0,
+    "n": 160,
+    "mean": 0.07283404338599112,
+    "sd": 0.40694291148747735
+   },
+   {
+    "regime": 1,
+    "n": 56,
+    "mean": -0.14016553439738239,
+    "sd": 0.382489112503937
+   },
+   {
+    "regime": 2,
+    "n": 7,
+    "mean": -0.8308936050237883,
+    "sd": 0.7350621814134373
+   }
+  ]
+ }
+}

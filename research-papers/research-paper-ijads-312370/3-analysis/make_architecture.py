@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
 IMG = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   '..', 'single column', 'images'))
+                                   '..', '2-revised-manuscript', 'images'))
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'savefig.dpi': 300,
                      'figure.dpi': 300, 'savefig.bbox': 'tight',
                      'mathtext.fontset': 'dejavusans'})

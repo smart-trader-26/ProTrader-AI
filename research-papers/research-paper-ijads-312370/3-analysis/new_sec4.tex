@@ -60,14 +60,14 @@ profile of each series.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_cumret.png}
+\includegraphics[width=\textwidth]{images/fig_cumret.png}
 \caption{Cumulative growth of one unit of capital, logarithmic scale}
 \label{fig:cumret}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_drawdown.png}
+\includegraphics[width=\textwidth]{images/fig_drawdown.png}
 \caption{Drawdown from running peak}
 \label{fig:drawdown}
 \end{figure*}
@@ -290,7 +290,7 @@ episodic rather than persistent, which is what Table~\ref{tab:years} leads one t
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_rollsharpe.png}
+\includegraphics[width=\textwidth]{images/fig_rollsharpe.png}
 \caption{Rolling 252-session Sharpe ratio}
 \label{fig:rollsharpe}
 \end{figure*}
@@ -391,6 +391,107 @@ different route. This is the practical reason the relative formulation is adopte
 absolute volatility target is not scale-free, and a target calibrated for one universe
 silently disables the mechanism in another.
 
+\subsection{External Validation of the Sentiment Composite}
+\label{sec:sentval}
+
+Naming the second composite a sentiment measure is a claim about what it measures, and a
+claim of that kind is testable without reference to whether it makes money. This section
+tests it, and Section~\ref{sec:ic} then asks the separate question of whether it
+forecasts anything.
+
+The composite is aggregated to the market level by averaging each of its four inputs
+across the ten instruments, standardising each average over the sample and combining the
+four with the signs of Table~\ref{tab:features}. The resulting series is compared with
+four published measures, none of which is observed anywhere in the framework: the
+University of Michigan survey of consumer sentiment, the Cboe volatility index, the
+St.~Louis Fed financial stress index and the Chicago Fed national financial conditions
+index. The first is a household survey and contains no market data at all, which makes it
+the most demanding of the four. A sentiment measure should move with it and against the
+remaining three.
+
+\begin{table}[!ht]
+\centering
+\caption{External validation of the sentiment composite, January 2008 to August 2026.
+Newey--West $t$-statistics in parentheses, with twenty-one lags for daily, eight for
+weekly and six for monthly data. The change columns correlate first differences and so
+are not driven by any common trend in levels.}
+\label{tab:sentval}
+\small
+\begin{tabular}{p{4.5cm}crr}
+\hline
+\textbf{Series} & \textbf{Expected} & \textbf{Levels} & \textbf{Changes} \\
+\hline
+Michigan consumer sentiment, monthly ($n=222$) & $+$ & $+0.262$ ($+1.91$) & $+0.240$ ($+3.54$) \\
+\hline
+Cboe volatility index, daily ($n=4{,}689$) & $-$ & $-0.541$ ($-3.62$) & $-0.112$ ($-3.02$) \\
+\hline
+St.~Louis Fed financial stress index, weekly ($n=972$) & $-$ & $-0.606$ ($-2.71$) & $-0.254$ ($-3.68$) \\
+\hline
+Chicago Fed financial conditions index, weekly ($n=972$) & $-$ & $-0.513$ ($-2.46$) & $-0.123$ ($-2.18$) \\
+\hline
+\end{tabular}
+\end{table}
+
+Every correlation in Table~\ref{tab:sentval} carries the expected sign, and every one of
+the four is significant in first differences at the five per cent level. The survey
+measure is the informative case. A correlation of $+0.240$ between monthly changes in a
+composite built from exchange turnover and monthly changes in what households tell a
+telephone interviewer is not a mechanical artefact of shared construction, because the
+two series share no inputs; it is evidence that the composite is picking up the quantity
+its name asserts. The financial stress and financial conditions indices, which do contain
+market data, correlate more strongly in levels at $-0.606$ and $-0.513$.
+
+The relationship is stable in sign though not in magnitude. Splitting the sample into
+four disjoint blocks---2008--2013, 2014--2019, 2020--2023 and 2024--2026---the sign is
+correct in all sixteen series-by-block combinations. Magnitudes are largest in the two
+blocks containing crises, reaching $-0.823$ against the stress index over 2008--2013, and
+smallest over the calm 2014--2019 block, where the correlation with that index falls to
+$-0.196$. This is the expected pattern rather than a defect: a measure of stress has
+little to discriminate when there is little stress. Replacing the full-sample
+standardisation with an expanding-window standardisation that uses only past data leaves
+every sign unchanged, at $+0.182$, $-0.341$, $-0.406$ and $-0.319$ respectively.
+
+The second test bears directly on the framework's central mechanism. If the identified
+market states are states of sentiment and volatility, the composite should differ across
+them. Table~\ref{tab:sentregime} evaluates the composite at the 223 rebalance dates for
+which a regime label exists.
+
+\begin{table}[!ht]
+\centering
+\caption{Sentiment composite by identified market state, measured at the rebalance dates.
+The states are labelled by fitted volatility, not by sentiment, and the sentiment
+composite plays no part in fitting them.}
+\label{tab:sentregime}
+\small
+\begin{tabular}{p{4.5cm}rrr}
+\hline
+\textbf{Identified state} & \textbf{$n$} & \textbf{Mean} & \textbf{SD} \\
+\hline
+Calm & 160 & $+0.073$ & 0.407 \\
+\hline
+Transitional & 56 & $-0.140$ & 0.382 \\
+\hline
+Stress & 7 & $-0.831$ & 0.735 \\
+\hline
+\end{tabular}
+\end{table}
+
+The ordering is monotone and steep, and the differences are unlikely to be accidental:
+one-way analysis of variance gives $F = 19.34$ with $p = 1.8 \times 10^{-8}$, and the
+rank-based Kruskal--Wallis test, which does not assume normality and is the safer of the
+two given seven observations in the stress state, gives $H = 29.54$ with
+$p = 3.9 \times 10^{-7}$. The mixture model is fitted on realised volatility and
+short-horizon momentum; the sentiment composite is not among its inputs. That the states
+separate this sharply on a variable withheld from their construction is what justifies
+describing them as sentiment and volatility states rather than volatility states alone.
+
+Two limits should be read alongside these results. The stress state contains seven
+rebalance dates, so its mean is estimated imprecisely even though the test statistic is
+large. And nothing established here concerns forecasting. A composite can measure
+sentiment accurately and still fail to predict returns, which is precisely what
+Section~\ref{sec:ic} goes on to document; validity and profitability are separate
+properties, and conflating them is a common error in this literature.
+
 \subsection{Predictive Content of the Signals}
 \label{sec:ic}
 
@@ -406,7 +507,7 @@ Newey--West $t$-statistics with ten lags in parentheses.}
 \small
 \begin{tabular}{p{3.8cm}rrr}
 \hline
-& \textbf{Technical} & \textbf{Market state} & \textbf{Fused} \\
+& \textbf{Technical} & \textbf{Sentiment} & \textbf{Fused} \\
 \hline
 All sessions ($n=4{,}669$) & $-0.030$ ($-2.14$) & $-0.026$ ($-2.26$) & $-0.033$ ($-2.42$) \\
 Calm regime ($n=3{,}339$) & $-0.042$ ($-2.48$) & $-0.040$ ($-3.02$) & --- \\
@@ -426,9 +527,9 @@ uses it in the stated direction, and the ablation in Table~\ref{tab:ablation} is
 portfolio-level consequence of the numbers in Table~\ref{tab:ic}.
 
 The regime breakdown does not support the fusion hypothesis. Section~3.5 assigns greater
-weight to the market-state composite in the stress regime on the hypothesis that it
+weight to the sentiment composite in the stress regime on the hypothesis that it
 becomes relatively more informative there. The point estimates run the other way: in the
-stress regime the technical composite reads higher than the market-state composite, and
+stress regime the technical composite reads higher than the sentiment composite, and
 in the calm regime the two are indistinguishable. The contrast between calm and stress is
 not statistically significant ($t = -1.46$, $p = 0.145$), so the correct conclusion is
 that the data provide no evidence for state-dependent relative informativeness in the
@@ -493,14 +594,14 @@ Annual one-way turnover & \multicolumn{4}{r}{0.96$\times$} \\
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_alloc.png}
+\includegraphics[width=\textwidth]{images/fig_alloc.png}
 \caption{Portfolio weights over time, including the cash residual}
 \label{fig:alloc}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_exposure.png}
+\includegraphics[width=\textwidth]{images/fig_exposure.png}
 \caption{Invested exposure over time, with transitional and stress regimes shaded}
 \label{fig:exposure}
 \end{figure*}
@@ -606,14 +707,14 @@ Figure~8 the behaviour of the two composites.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_regimes.png}
+\includegraphics[width=\textwidth]{images/fig_regimes.png}
 \caption{Identified market states, with the underlying volatility and momentum features}
 \label{fig:regimes}
 \end{figure*}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{single column/images/fig_signal.png}
+\includegraphics[width=\textwidth]{images/fig_signal.png}
 \caption{Mean absolute cross-sectional score of each composite, 21-session moving average}
 \label{fig:signal}
 \end{figure*}

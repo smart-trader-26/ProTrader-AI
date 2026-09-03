@@ -1,7 +1,7 @@
 """Produces every remaining number and every figure the revised IJADS paper needs.
 
 Winning configuration: MULTI universe, 2007-2024 download, seed 42, cov 252d, rebal 21d.
-Writes paper_tables.json and 300 dpi figures into ../single column/images/.
+Writes paper_tables.json and 300 dpi figures into ../2-revised-manuscript/images/.
 """
 import json, os, pickle
 import numpy as np
@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler
 import pipeline_core as P
 
 OUT = os.path.dirname(os.path.abspath(__file__))
-IMG = os.path.abspath(os.path.join(OUT, '..', 'single column', 'images'))
+IMG = os.path.abspath(os.path.join(OUT, '..', '2-revised-manuscript', 'images'))
 os.makedirs(IMG, exist_ok=True)
 MULTI = ['SPY', 'QQQ', 'IWM', 'EFA', 'EEM', 'TLT', 'IEF', 'LQD', 'GLD', 'VNQ']
 P.START = '2007-01-01'

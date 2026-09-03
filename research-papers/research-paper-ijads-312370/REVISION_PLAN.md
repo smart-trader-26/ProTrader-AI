@@ -2,18 +2,18 @@
 
 **Submission:** "From Signal Fusion to Asset Allocation" (Pardeshi & Deshmukh)
 **Verdict:** Acceptable with major revisions · **Due:** 2026-09-20
-**Status:** **complete — ready for the author's read-through and upload** (2026-08-27)
+**Status:** **complete — ready for the author's read-through and upload** (2026-08-27; sentiment validation and title restored 2026-09-03)
 
 | Deliverable | File | State |
 |---|---|---|
-| Revised manuscript | `single column/ai67.tex` → `ai67.pdf` | 33 pp, compiles clean, no undefined refs |
-| Response to reviewers | `response-to-reviewers.tex` → `.pdf` | 7 pp, every comment answered with page numbers |
-| Submitted version, preserved | `revision-analysis/ai67_submitted.tex.bak` | untouched backup |
-| Previous (2008–2023) revision | `revision-analysis/_v1_2008_2023/` | full snapshot: tex, sections, JSON, cache |
-| Evidence | `revision-analysis/final_tables.json`, `mega_results.json`, `ic_results.json` | 190/190 numbers in the manuscript verified against these |
+| Revised manuscript | `2-revised-manuscript/ai67.tex` → `ai67.pdf` | 35 pp, compiles clean, no undefined refs |
+| Response to reviewers | `2-revised-manuscript/response-to-reviewers.tex` → `.pdf` | 7 pp, every comment answered with page numbers |
+| Submitted version, preserved | `1-original-submission/ai92.tex` + `2026_IJADS-312370.pdf` | as submitted |
+| Previous (2008–2023) revision | `4-archive/v1-2008-2023/` | full snapshot: tex, sections, JSON, cache |
+| Evidence | `3-analysis/final_tables.json`, `mega_results.json`, `ic_results.json`, `sentiment_results.json` | 223/223 numbers in the manuscript verified against these |
 
-Rebuild with `revision-analysis/assemble.py`, then `pdflatex ai67.tex` twice **from inside
-`single column/`**. Re-verify with `revision-analysis/verify_numbers.py`.
+Rebuild with `3-analysis/assemble.py`, then `pdflatex ai67.tex` twice **from inside
+`2-revised-manuscript/`**. Re-verify with `3-analysis/verify_numbers.py`.
 
 ---
 
@@ -103,7 +103,8 @@ framework gives up ~1.3pp of annual return (p = 0.016) for 3.6pp of drawdown.
 - [x] 3.2 Contributions recast around what the evidence supports
 - [x] 3.3 Table 1 — comparison against seven allocation paradigms
 - [x] 3.4 Future work: textual sentiment, larger universes, RL budget tuning, HMM/jump models
-- [x] 3.5 Title decided — "Sentiment" dropped (author's decision, 2026-08-26)
+- [x] 3.5 Title **unchanged from the submitted version** (author's decision, 2026-09-03).
+      "Sentiment" stays, and Sections 3.3 and 4.8 now carry it honestly — see task 8
 
 ### 4. Bibliography · R1.1
 - [x] 4.1 24 of 33 IEEE Access references replaced; 3 retained
@@ -124,33 +125,51 @@ framework gives up ~1.3pp of annual return (p = 0.016) for 3.6pp of drawdown.
 - [x] 6.1 Every acronym expanded at first use, in the abstract and in the body
 - [x] 6.2 "LLPs" typo fixed
 - [x] 6.3 Full language pass — the manuscript is rewritten end to end in one voice
-- [ ] 6.4 **AI declaration — needs the author.** The manuscript carries
-      `[AUTHORS: NAME THE TOOL(S) ACTUALLY USED]` on p. 29. Only you know which tools
-      were used; naming one would be a guess, so it is left for you to fill in.
+- [x] 6.4 AI declaration completed — names Claude (Anthropic) and ChatGPT (OpenAI)
+      for language editing only (p. 31), which closes R2.6's complaint about the
+      unfinished declaration text.
+
+### 8. Sentiment — title, §3.3 and §4.8 · R2.2, R2.o3
+- [x] 8.1 Title restored to the submitted wording; "Sentiment" is back in it
+- [x] 8.2 §3.3 renamed to the submitted heading, "Sentiment Analysis Pipeline", and
+      rewritten: market-derived, no transformer, no lexicon, no text, and why
+- [x] 8.3 §2.4 renamed back to "Sentiment Analysis and Alternative Data Integration",
+      with the market-derived family of sentiment measures added to the review
+- [x] 8.4 §4.8 added — external validation against four published series. All four carry
+      the expected sign, all four significant in first differences, 16/16 sub-period
+      signs correct, and the identified states separate at F = 19.34, p = 1.8e-08
+- [x] 8.5 Baker & Wurgler (2007) added as the reference for market-derived sentiment;
+      still ≤3 per journal and ≤2 per author (50 refs total)
+- [x] 8.6 "market-state composite" renamed to "sentiment composite" throughout, without
+      disturbing "market state" where it means the regime
+- [x] 8.7 `sentiment_validation.py` written; `verify_numbers.py` extended 190 → 223 checks
 
 ### 7. Response letter
 - [x] 7.1 Point-by-point response to all 10 mandatory and 5 optional comments
 - [x] 7.2 Every page, table, figure and equation number re-checked against `ai67.aux`
 - [x] 7.3 The changed experiment explained truthfully and up front
 - [x] 7.4 The sample extension and the holdout explained in the opening summary
+- [x] 7.5 R2.2 and R2.o3 rewritten around the sentiment validation; all 31 shifted
+      section, table, figure and page references corrected against the rebuilt PDF
 
 ---
 
 ## Before uploading
 
-1. **Fill the AI declaration** on p. 29 of the manuscript.
-2. **Read §4.6, §4.8 and §5.2.** They report that the signal fusion layer does not work
+1. **Read §4.6, §4.9 and §5.2.** They report that the signal fusion layer does not work
    and that the Sharpe gain is not statistically significant. This is deliberate and, in
    our judgement, the strongest available position — but you should be comfortable
    defending it before it goes to the reviewers.
-3. **Decide how to submit the response letter.** Inderscience asks for it at the front of
+2. **Decide how to submit the response letter.** Inderscience asks for it at the front of
    the revised article. It is currently a separate 7-page PDF; either prepend it or
    upload it alongside.
-4. **Highlight changed text**, as the Editor asked. Essentially everything from §1
+3. **Highlight changed text**, as the Editor asked. Essentially everything from §1
    onward is new, so a covering sentence saying so may serve better than highlighting.
 
 ## Notes for anyone rerunning the analysis
 
+- `sentiment_validation.py` is independent of the backtest and takes about a minute; it
+  pulls FRED and Yahoo directly and rewrites `sentiment_results.json`.
 - `pipeline_core.py` downloads through `P.END`; `final_run.py` sets it to `2026-08-27`
   and caches into `_final_cache_ext.pkl`. Delete that pickle to force a full rerun
   (~40 minutes: 32 backtests, each refitting the GMM at 224 rebalance dates).
@@ -158,4 +177,4 @@ framework gives up ~1.3pp of annual return (p = 0.016) for 3.6pp of drawdown.
   which is what `run_all_ext.sh` does. `fix_significance.py` must run last: it overwrites
   the inference blocks so that every Sharpe ratio in the paper uses the same
   compound-growth definition.
-- `verify_numbers.py` is the gate. 190 checks, all tied to the JSON artifacts.
+- `verify_numbers.py` is the gate. 223 checks, all tied to the JSON artifacts.

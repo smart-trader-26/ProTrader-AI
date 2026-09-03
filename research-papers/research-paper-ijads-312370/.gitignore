@@ -1,6 +1,9 @@
 # LaTeX build artifacts
 *.aux
 *.out
+*.log
+*.bbl
+*.blg
 *.toc
 *.synctex.gz
 *.fls

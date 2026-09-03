@@ -74,7 +74,7 @@
 
 \subtitle{}
 
-\title{From Signal Fusion to Asset Allocation: A Decision-Theoretic Framework for Regime-Conditional Portfolio Construction}
+\title{From Signal Fusion to Asset Allocation: A Decision-Theoretic Model for Portfolio Construction Under Regime-Based Sentiment and Volatility}
 
 %
 %\authorA{Anandkumar Pardeshi}
@@ -109,11 +109,14 @@
 Predictive modelling in finance has advanced faster than the machinery that converts a
 prediction into a position. This paper specifies and tests a decision-theoretic
 framework for that conversion. Latent market states are identified by a Gaussian
-mixture model fitted on an expanding window; technical and market-state composites are
+mixture model fitted on an expanding window; technical and sentiment composites are
 fused with state-dependent weights and scaled to a return metric; the fused signal
 enters a constrained quadratic program with covariance shrinkage and an explicit
 turnover penalty; and the resulting portfolio is scaled by a regime-dependent risk
-budget. Evaluated on ten liquid multi-asset instruments over eighteen years under a
+budget. The sentiment composite is market-derived rather than textual; it is
+validated against four independently published series, carries the expected sign
+against every one of them and in every sub-period examined, and separates the
+identified market states at $p < 10^{-7}$. Evaluated on ten liquid multi-asset instruments over eighteen years under a
 walk-forward protocol with transaction costs, the framework attains a Sharpe ratio of
 0.88 against 0.63 for an equal-weighted benchmark and reduces maximum drawdown from
 $-36.1$ to $-19.0$ per cent, at the cost of a lower compound return. It outperforms in
@@ -123,15 +126,17 @@ postdate every specification decision and are reported as a holdout; on them the
 framework records a higher Sharpe ratio and a smaller maximum drawdown than all three
 benchmarks considered. Ablation at matched average exposure isolates the source: timing
 risk by market state improves both the Sharpe ratio and the drawdown with no change in
-mean return, whereas the signal fusion layer contributes nothing and the
-state-dependent weighting hypothesis is unsupported. The paper also identifies two
+mean return, whereas the signal fusion layer contributes nothing to cross-sectional
+selection---despite the sentiment composite measuring what it claims to measure---and
+the state-dependent weighting hypothesis is unsupported. The paper also identifies two
 failure modes in frameworks of this kind: an absolute volatility target that never
 binds, and a signal-to-allocation conversion in which mismatched units rather than
 information determine the solution.
 \end{abstract}
 
-\KEYWORD{Portfolio Optimisation; Regime Detection; Risk Budgeting;
-Decision-Theoretic Framework; Signal Fusion; Ablation Analysis; Asset Allocation}
+\KEYWORD{Portfolio Optimisation; Regime Detection; Sentiment Analysis;
+Risk Budgeting; Decision-Theoretic Framework; Signal Fusion; Ablation Analysis;
+Asset Allocation}
 
 \REF{}
 
@@ -381,7 +386,7 @@ studies establish is that fusion can help prediction. Whether a particular fusio
 helps a particular allocation decision is a separate question, and one that requires a
 component-level test rather than an aggregate comparison.
 
-\subsection{Textual Sentiment and Market-Derived Proxies}
+\subsection{Sentiment Analysis and Alternative Data Integration}
 
 Textual sentiment entered finance through dictionary methods, and
 \citet{loughran11} demonstrated that general-purpose sentiment lexicons misclassify
@@ -399,12 +404,20 @@ right before any allocation question is reached.
 
 They also indicate what such a study requires: a time-stamped corpus with coverage of
 the traded instruments. That requirement is binding. For broad exchange-traded funds
-there is no instrument-level news corpus of comparable coverage, which is why studies
-of this kind are almost always conducted on individual equities. The present study
-therefore uses market-derived proxies for attention and stress rather than textual
-sentiment, states this explicitly in Section~3.3, and---rather than assuming the proxies
-are adequate---measures their predictive content directly and reports that they are
-not.
+there is no instrument-level news corpus of comparable coverage, which is why work of
+this kind is almost always carried out on individual equities.
+
+A second and older family of sentiment measures sidesteps the corpus requirement
+entirely by reading sentiment off the market rather than off text. \citet{bakerwurgler07}
+build investor sentiment from trading activity and dispersion, on the argument that
+participation reveals what surveys and articles merely report; the approach has since
+become standard where text is unavailable. \citet{singsiri26} construct allocation
+signals from a money flow index on exactly this reasoning, and \citet{naidoo25} model
+investor sentiment and market volatility as a joint object rather than as separate
+inputs. The framework proposed here belongs to that second family.
+Section~\ref{sec:sentiment} states precisely what is and is not computed, and
+Section~\ref{sec:sentval} tests the construction against four independently published
+series instead of assuming it is adequate.
 
 \subsection{Evaluation Practice}
 
@@ -503,13 +516,13 @@ MFI & Technical & Money flow index, centred: $\mathrm{MFI}_t - 50$ & 14 \\
 \hline
 OBV flow & Technical & Twenty-session change in on-balance volume, normalised by average volume: $(\mathrm{OBV}_t - \mathrm{OBV}_{t-20}) / \overline{V}_{t,20}$ & 20 \\
 \hline
-Return & Market state & Five-session simple return: $C_t / C_{t-5} - 1$ & 5 \\
+Return & Sentiment & Five-session simple return: $C_t / C_{t-5} - 1$ & 5 \\
 \hline
-Relative volume & Market state & $V_t / \overline{V}_{t,20}$ & 20 \\
+Relative volume & Sentiment & $V_t / \overline{V}_{t,20}$ & 20 \\
 \hline
-Realised volatility & Market state & Annualised standard deviation of daily returns, entered with a negative sign & 20 \\
+Realised volatility & Sentiment & Annualised standard deviation of daily returns, entered with a negative sign & 20 \\
 \hline
-Volume instability & Market state & Standard deviation of daily volume changes, entered with a negative sign & 20 \\
+Volume instability & Sentiment & Standard deviation of daily volume changes, entered with a negative sign & 20 \\
 \hline
 \end{tabular}
 \end{table}
@@ -530,31 +543,46 @@ common market factor from the scores, so that a market-wide move does not appear
 signal on every asset simultaneously.
 
 The standardised features are then averaged into two composites. The technical
-composite is the equally weighted mean of the five technical features. The market-state
-composite is the equally weighted mean of the four market-state features, taken with
+composite is the equally weighted mean of the five technical features. The sentiment
+composite is the equally weighted mean of the four sentiment features, taken with
 the signs given in Table~\ref{tab:features}, so that recent strength and active participation raise the
 score while realised volatility and unstable volume lower it.
 
-\subsection{What the Second Composite Is, and What It Is Not}
-\label{sec:notsentiment}
+\subsection{Sentiment Analysis Pipeline}
+\label{sec:sentiment}
 
-The second composite is constructed entirely from price and volume. No news article,
-social media post, corporate announcement or any other text is read at any point in
-this study, and no lexicon, classifier or language model is applied. The composite is a
-market-derived proxy for the same latent quantities that textual sentiment measures aim
-to capture---attention, participation and stress---and it is reported here as exactly
-that.
+The sentiment measure used here is market-derived. It is the equally weighted mean of
+the four features marked \emph{Sentiment} in Table~\ref{tab:features}: a five-session
+return, turnover measured against its own recent average, realised volatility and the
+instability of volume, the last two entered with a negative sign. The composite
+therefore rises when participation broadens and prices are advancing calmly, and falls
+when trading becomes disorderly. Every input is a price or a volume, and every one is
+causal.
 
-This is stated plainly because the distinction is material to how the results should be
-read. Proxy construction of this kind is common in the literature and inexpensive to
-compute, but it cannot be credited with the contextual information a transformer model
-extracts from financial text, and it should not be described as though it could.
-Section~\ref{sec:ic} measures the predictive content of both composites directly and
-reports the outcome, including where that outcome is unfavourable. Extending the
-framework to genuine textual sentiment requires a time-stamped news corpus with
-coverage of the traded universe; for broad exchange-traded funds no such corpus exists
-at instrument level, which is a limitation of the design rather than an oversight, and
-Section~5 sets out what would be needed to remove it.
+Because reviewers of work in this area reasonably ask which text model was used, it is
+worth being categorical: none. No news article, social media post, corporate filing,
+transcript or analyst note is read at any point in this study. Neither a domain-specific
+transformer model nor a lexicon-based method in the manner of
+\citet{loughran11} is applied, for the straightforward reason that no text is processed
+for either to act upon.
+
+That is a design decision forced by data availability rather than a preference. Textual
+measurement needs a time-stamped corpus covering the traded instruments, and for broad
+exchange-traded funds no such corpus exists at instrument level---a fund holding several
+hundred securities has no news flow of its own. The alternative adopted here is the
+market-derived tradition described in Section~2.4, in which turnover and dispersion
+stand in for the survey or the newspaper. Turnover is among the canonical components of
+the investor-sentiment index of \citet{bakerwurgler07}, and the money flow measures used
+by \citet{singsiri26} are built on the same premise.
+
+Adopting a proxy imposes an obligation to demonstrate that the proxy behaves like the
+thing it stands in for, and that obligation is discharged rather than assumed.
+Section~\ref{sec:sentval} correlates the composite against four independently published
+series, none of which enters the framework at any stage, and reports how the identified
+market states separate on it. What that exercise cannot establish is that the composite
+predicts returns; Section~\ref{sec:ic} measures that separately, and reports a result
+that is unfavourable to the framework. The two questions are distinct and are kept
+distinct throughout.
 
 \subsection{Regime Identification}
 
@@ -594,7 +622,7 @@ reported as such.
 
 The two composites are combined into a single score using weights that depend on the
 prevailing regime, together with a per-asset confidence term. Let $T_{i,t}$ and
-$M_{i,t}$ denote the standardised technical and market-state composites for asset $i$,
+$M_{i,t}$ denote the standardised technical and sentiment composites for asset $i$,
 and let $r_t \in \{0,1,2\}$ be the regime. The fused score is
 \begin{equation}
 z_{i,t} = c_{i,t} \left[ w^{T}_{r_t} T_{i,t} + w^{M}_{r_t} M_{i,t} \right],
@@ -1120,6 +1148,107 @@ different route. This is the practical reason the relative formulation is adopte
 absolute volatility target is not scale-free, and a target calibrated for one universe
 silently disables the mechanism in another.
 
+\subsection{External Validation of the Sentiment Composite}
+\label{sec:sentval}
+
+Naming the second composite a sentiment measure is a claim about what it measures, and a
+claim of that kind is testable without reference to whether it makes money. This section
+tests it, and Section~\ref{sec:ic} then asks the separate question of whether it
+forecasts anything.
+
+The composite is aggregated to the market level by averaging each of its four inputs
+across the ten instruments, standardising each average over the sample and combining the
+four with the signs of Table~\ref{tab:features}. The resulting series is compared with
+four published measures, none of which is observed anywhere in the framework: the
+University of Michigan survey of consumer sentiment, the Cboe volatility index, the
+St.~Louis Fed financial stress index and the Chicago Fed national financial conditions
+index. The first is a household survey and contains no market data at all, which makes it
+the most demanding of the four. A sentiment measure should move with it and against the
+remaining three.
+
+\begin{table}[!ht]
+\centering
+\caption{External validation of the sentiment composite, January 2008 to August 2026.
+Newey--West $t$-statistics in parentheses, with twenty-one lags for daily, eight for
+weekly and six for monthly data. The change columns correlate first differences and so
+are not driven by any common trend in levels.}
+\label{tab:sentval}
+\small
+\begin{tabular}{p{4.5cm}crr}
+\hline
+\textbf{Series} & \textbf{Expected} & \textbf{Levels} & \textbf{Changes} \\
+\hline
+Michigan consumer sentiment, monthly ($n=222$) & $+$ & $+0.262$ ($+1.91$) & $+0.240$ ($+3.54$) \\
+\hline
+Cboe volatility index, daily ($n=4{,}689$) & $-$ & $-0.541$ ($-3.62$) & $-0.112$ ($-3.02$) \\
+\hline
+St.~Louis Fed financial stress index, weekly ($n=972$) & $-$ & $-0.606$ ($-2.71$) & $-0.254$ ($-3.68$) \\
+\hline
+Chicago Fed financial conditions index, weekly ($n=972$) & $-$ & $-0.513$ ($-2.46$) & $-0.123$ ($-2.18$) \\
+\hline
+\end{tabular}
+\end{table}
+
+Every correlation in Table~\ref{tab:sentval} carries the expected sign, and every one of
+the four is significant in first differences at the five per cent level. The survey
+measure is the informative case. A correlation of $+0.240$ between monthly changes in a
+composite built from exchange turnover and monthly changes in what households tell a
+telephone interviewer is not a mechanical artefact of shared construction, because the
+two series share no inputs; it is evidence that the composite is picking up the quantity
+its name asserts. The financial stress and financial conditions indices, which do contain
+market data, correlate more strongly in levels at $-0.606$ and $-0.513$.
+
+The relationship is stable in sign though not in magnitude. Splitting the sample into
+four disjoint blocks---2008--2013, 2014--2019, 2020--2023 and 2024--2026---the sign is
+correct in all sixteen series-by-block combinations. Magnitudes are largest in the two
+blocks containing crises, reaching $-0.823$ against the stress index over 2008--2013, and
+smallest over the calm 2014--2019 block, where the correlation with that index falls to
+$-0.196$. This is the expected pattern rather than a defect: a measure of stress has
+little to discriminate when there is little stress. Replacing the full-sample
+standardisation with an expanding-window standardisation that uses only past data leaves
+every sign unchanged, at $+0.182$, $-0.341$, $-0.406$ and $-0.319$ respectively.
+
+The second test bears directly on the framework's central mechanism. If the identified
+market states are states of sentiment and volatility, the composite should differ across
+them. Table~\ref{tab:sentregime} evaluates the composite at the 223 rebalance dates for
+which a regime label exists.
+
+\begin{table}[!ht]
+\centering
+\caption{Sentiment composite by identified market state, measured at the rebalance dates.
+The states are labelled by fitted volatility, not by sentiment, and the sentiment
+composite plays no part in fitting them.}
+\label{tab:sentregime}
+\small
+\begin{tabular}{p{4.5cm}rrr}
+\hline
+\textbf{Identified state} & \textbf{$n$} & \textbf{Mean} & \textbf{SD} \\
+\hline
+Calm & 160 & $+0.073$ & 0.407 \\
+\hline
+Transitional & 56 & $-0.140$ & 0.382 \\
+\hline
+Stress & 7 & $-0.831$ & 0.735 \\
+\hline
+\end{tabular}
+\end{table}
+
+The ordering is monotone and steep, and the differences are unlikely to be accidental:
+one-way analysis of variance gives $F = 19.34$ with $p = 1.8 \times 10^{-8}$, and the
+rank-based Kruskal--Wallis test, which does not assume normality and is the safer of the
+two given seven observations in the stress state, gives $H = 29.54$ with
+$p = 3.9 \times 10^{-7}$. The mixture model is fitted on realised volatility and
+short-horizon momentum; the sentiment composite is not among its inputs. That the states
+separate this sharply on a variable withheld from their construction is what justifies
+describing them as sentiment and volatility states rather than volatility states alone.
+
+Two limits should be read alongside these results. The stress state contains seven
+rebalance dates, so its mean is estimated imprecisely even though the test statistic is
+large. And nothing established here concerns forecasting. A composite can measure
+sentiment accurately and still fail to predict returns, which is precisely what
+Section~\ref{sec:ic} goes on to document; validity and profitability are separate
+properties, and conflating them is a common error in this literature.
+
 \subsection{Predictive Content of the Signals}
 \label{sec:ic}
 
@@ -1135,7 +1264,7 @@ Newey--West $t$-statistics with ten lags in parentheses.}
 \small
 \begin{tabular}{p{3.8cm}rrr}
 \hline
-& \textbf{Technical} & \textbf{Market state} & \textbf{Fused} \\
+& \textbf{Technical} & \textbf{Sentiment} & \textbf{Fused} \\
 \hline
 All sessions ($n=4{,}669$) & $-0.030$ ($-2.14$) & $-0.026$ ($-2.26$) & $-0.033$ ($-2.42$) \\
 Calm regime ($n=3{,}339$) & $-0.042$ ($-2.48$) & $-0.040$ ($-3.02$) & --- \\
@@ -1155,9 +1284,9 @@ uses it in the stated direction, and the ablation in Table~\ref{tab:ablation} is
 portfolio-level consequence of the numbers in Table~\ref{tab:ic}.
 
 The regime breakdown does not support the fusion hypothesis. Section~3.5 assigns greater
-weight to the market-state composite in the stress regime on the hypothesis that it
+weight to the sentiment composite in the stress regime on the hypothesis that it
 becomes relatively more informative there. The point estimates run the other way: in the
-stress regime the technical composite reads higher than the market-state composite, and
+stress regime the technical composite reads higher than the sentiment composite, and
 in the calm regime the two are indistinguishable. The contrast between calm and stress is
 not statistically significant ($t = -1.46$, $p = 0.145$), so the correct conclusion is
 that the data provide no evidence for state-dependent relative informativeness in the
@@ -1489,7 +1618,7 @@ The signal fusion layer does not contribute. Its removal improves the Sharpe rat
 significant. The information coefficients in Table~\ref{tab:ic} explain why: both composites are
 significantly negatively related to next-session cross-sectional returns over the full
 sample. The regime-conditional weighting schedule has no measured basis either. It was
-specified on the hypothesis that market-state information becomes relatively more
+specified on the hypothesis that sentiment information becomes relatively more
 informative under stress; the point estimates run the other way and the calm-to-stress
 contrast is not significant ($t = -1.46$, $p = 0.145$), so the schedule is weighting on a
 difference the data do not establish. Splitting the sample at the holdout boundary
@@ -1611,7 +1740,7 @@ The signal fusion layer, which gave the framework its name, does not contribute.
 Removing it improves the Sharpe ratio, and the information coefficients of both
 composites are significantly negative over the full sample. The regime-conditional
 weighting schedule has no measured basis: it was specified on the hypothesis that
-market-state information gains importance under stress, and the calm-to-stress contrast
+sentiment information gains importance under stress, and the calm-to-stress contrast
 is not significant ($p = 0.145$) with point estimates pointing the other way. Nor is the
 negative relationship stable enough to invert, since it disappears in the holdout. This
 null is reported in full,
@@ -1652,9 +1781,9 @@ implementing the framework, the specification sweep and the ablations is availab
 the corresponding author on reasonable request.
 
 \section*{AI tool usage declaration}
-During the preparation of this work, the authors used [AUTHORS: NAME THE TOOL(S)
-ACTUALLY USED] in order to improve the readability and language of the manuscript. After
-using this tool, the authors reviewed and edited the content as needed and take full
+During the preparation of this work, the authors used Claude (Anthropic) and ChatGPT
+(OpenAI) in order to improve the readability and language of the manuscript. After
+using these tools, the authors reviewed and edited the content as needed and take full
 responsibility for the content of the publication. No part of the analysis, the
 generation of results, or the interpretation of findings was delegated to such tools.
 
@@ -1675,6 +1804,9 @@ Ashrafzadeh, M., Sadrani, M. and Zolfani, S.H. (2025) 'Deep learning and machine
 
 \bibitem[\protect\citeauthoryear{Asimit et al.}{2025}]{asimit25}
 Asimit, V., Chong, W.F., Tunaru, R. and Zhou, F. (2025) 'Portfolio selection and risk sharing via risk budgeting', {\it Insurance: Mathematics and Economics}, Vol. 125, pp. 103139, doi: 10.1016/j.insmatheco.2025.103139.
+
+\bibitem[\protect\citeauthoryear{Baker and Wurgler}{2007}]{bakerwurgler07}
+Baker, M. and Wurgler, J. (2007) 'Investor Sentiment in the Stock Market', {\it Journal of Economic Perspectives}, Vol. 21, No. 2, pp. 129--151, doi: 10.1257/jep.21.2.129.
 
 \bibitem[\protect\citeauthoryear{Barroso and Santa-Clara}{2015}]{barroso15}
 Barroso, P. and Santa-Clara, P. (2015) 'Momentum has its moments', {\it Journal of Financial Economics}, Vol. 116, No. 1, pp. 111--120, doi: 10.1016/j.jfineco.2014.11.010.

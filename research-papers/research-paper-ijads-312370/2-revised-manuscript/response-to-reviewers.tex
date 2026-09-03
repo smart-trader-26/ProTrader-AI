@@ -51,8 +51,8 @@ rebalance out of 224 and the regime layer --- the central mechanism of the paper
 no effect on the portfolio at all.
 
 We corrected both defects: expected returns are now scaled to a return metric
-(Equation~(4), p.~10) and the regime risk budget is expressed as a fraction of the
-portfolio's own volatility rather than as an absolute target (Equation~(7), p.~11).
+(Equation~(4), p.~11) and the regime risk budget is expressed as a fraction of the
+portfolio's own volatility rather than as an absolute target (Equation~(7), p.~12).
 Following Reviewer~2's optional comment~4, we also extended the evaluation from the
 original five-year, ten-equity study to an eighteen-year, ten-instrument multi-asset
 study covering four major stress episodes. The evaluation window runs to every session
@@ -112,7 +112,7 @@ mean-conditional-value-at-risk portfolio optimisation, Zhang et~al. (2025) on th
 between in-sample and out-of-sample model selection, and Mazzotta and Baidoo (2025) on
 the informational value of alternative data.
 \end{itemize}
-\where{References, pp.~28--31; new citations throughout Section~2, pp.~4--7.}
+\where{References, pp.~31--35; new citations throughout Section~2, pp.~4--7.}
 
 \rc{R1.2 The paper has some serious acronym-related problems. \dots\ You need to expand
 an acronym once in the abstract upon the first use and once in the body upon the first
@@ -126,7 +126,7 @@ points (pp) in the caption to Table~6. The five technical indicators are defined
 in Table~2 (p.~9), which is their first appearance anywhere in the manuscript. We also
 reduced acronym use overall, writing ``maximum drawdown'' in running text and reserving
 the abbreviation for table headings.
-\where{Abstract, p.~1; Sections~3.4, 3.5 and 3.8, pp.~10--12; Table~2, p.~9.}
+\where{Abstract, p.~1; Sections~3.4, 3.5 and 3.8, pp.~10--13; Table~2, p.~9.}
 
 \rc{R1.3 Please carefully polish and clean up all figures and tables. All figures and
 tables in a paper must be consistent. Please make sure all figures are high-resolution
@@ -143,7 +143,7 @@ Two further faults in the submitted version have been corrected. All seven figur
 previously shared the same \verb|\label|, so every cross-reference resolved to the same
 figure; each figure now carries a unique label and is referenced individually in the
 text. All tables have been rebuilt to a single format.
-\where{Figures~1--8, pp.~8, 14, 17, 20, 22; Tables~1--13 throughout.}
+\where{Figures~1--8, pp.~8, 14, 15, 18, 23, 24 and~26; Tables~1--16 throughout.}
 
 \bigskip
 \hrule
@@ -155,14 +155,14 @@ text. All tables have been rebuilt to a single format.
 understand and reproduce the work.}
 
 \resp Section~3 has been rewritten with reproduction as its explicit objective, and now
-runs from p.~7 to p.~12. It states the study universe instrument by instrument, the data
+runs from p.~7 to p.~13. It states the study universe instrument by instrument, the data
 source and adjustment, the download window and the resulting evaluation period; gives
 the exact formula and window for all nine input features in a single table; specifies
 the mixture model and its refit protocol; states the fusion rule and the confidence term
 as equations; gives the optimisation problem with every constraint; and sets out the
 walk-forward protocol and the evaluation design. Nothing in the framework is now
 described only in prose.
-\where{Section~3, pp.~7--12.}
+\where{Section~3, pp.~7--13.}
 
 \rc{R2.2 More implementation details are needed, particularly regarding the data sources
 used, sampling frequency, sentiment analysis model, feature extraction process, Gaussian
@@ -176,8 +176,13 @@ through the \texttt{yfinance} interface, adjusted for splits and dividends; down
 window 1~January 2007 to 27~August 2026; evaluation period January~2008 to
 August~2026, comprising 4{,}689 sessions, of which the final 665 are held out
 (Section~3.1, p.~7).
-\item \textbf{Sentiment model.} See R2.o3 below. In short: there is none, and the
-manuscript now says so.
+\item \textbf{Sentiment model.} Market-derived rather than textual, and now specified
+in a subsection of its own (Section~3.3, p.~9): the equally weighted mean of a
+five-session return, turnover relative to its own recent average, realised volatility and
+volume instability, the last two entered with a negative sign. No transformer and no
+lexicon are involved, because no text is read. See R2.o3 below, and Section~4.8
+(pp.~20--22), which validates that construction against four independently published
+sentiment and stress series.
 \item \textbf{Feature extraction.} Table~2 (p.~9) gives the closed-form definition and
 rolling window of all nine features, followed by the cross-sectional standardisation in
 Equation~(1) and the two composite definitions.
@@ -193,7 +198,7 @@ We also documented one implementation detail that is easy to miss and that we ou
 initially handled incorrectly: mixture component indices permute freely between refits,
 so labels must be anchored --- here by sorting components on fitted volatility --- or the
 regime series is silently scrambled (Section~3.4, p.~10).
-\where{Section~3, pp.~7--12; Table~2, p.~9.}
+\where{Section~3, pp.~7--13; Table~2, p.~9.}
 
 \rc{R2.3 The experimental results also need stronger statistical support \dots\
 statistical significance tests, confidence intervals, robustness checks using different
@@ -204,29 +209,29 @@ described in the summary above.
 
 \begin{itemize}
 \item \textbf{Significance tests.} Paired $t$-test and a Newey--West $t$-statistic with
-ten lags on daily excess returns (Table~13, p.~23).
+ten lags on daily excess returns (Table~15, p.~27).
 \item \textbf{Confidence intervals.} A stationary block bootstrap with 21-session blocks
 and 2{,}000 replications gives interval estimates for the Sharpe ratio of the strategy,
-of the benchmark, and of their difference (Table~13, p.~23).
+of the benchmark, and of their difference (Table~15, p.~27).
 \item \textbf{Robustness across windows.} A full sweep of three random seeds $\times$ two
 covariance estimation windows $\times$ three rebalancing intervals. All eighteen cells
 are reported, not a summary (Table~5, p.~16).
 \item \textbf{Turnover statistics.} Annual one-way turnover, turnover per rebalance,
 mean and minimum effective number of assets, mean largest weight, and mean and minimum
-invested exposure (Table~11, p.~21).
+invested exposure (Table~13, p.~23).
 \item \textbf{Sensitivity analysis.} Transaction costs varied from 0 to 25 basis points
-(Table~11, p.~21), the regime risk budget varied over five specifications (Table~9,
-p.~19), and component ablations at matched exposure (Table~8, p.~18).
+(Table~13, p.~23), the regime risk budget varied over five specifications (Table~9,
+p.~20), and component ablations at matched exposure (Table~8, p.~19).
 \end{itemize}
 
 We draw the reviewer's attention to what this analysis shows. The Sharpe improvement
 over the benchmark is \emph{not} statistically significant: its bootstrap interval is
-$[-0.102, 0.574]$ and includes zero. Section~4.11 (p.~23) says so directly, and the
+$[-0.102, 0.574]$ and includes zero. Section~4.12 (p.~25) says so directly, and the
 abstract now states it too. What the evidence supports is consistency rather than
 significance --- 18 of 18 specifications, 18 of 19 calendar years, 4 of 4 stress
 episodes, and a holdout period the specification never saw --- and the manuscript is
 careful not to conflate the two.
-\where{Sections~4.3, 4.6, 4.7, 4.9 and 4.11; Tables~5, 8, 9, 11 and 13.}
+\where{Sections~4.3, 4.6, 4.7, 4.10 and 4.12; Tables~5, 8, 9, 13 and 15.}
 
 \rc{R2.4 The portfolio allocation results require further clarification. In Figure~5,
 the portfolio appears concentrated in only a few assets during certain periods, which
@@ -240,20 +245,20 @@ portfolio held exactly one asset on nearly every date --- an effective number of
 of 1.00, with a single holding persisting for 1{,}364 of 1{,}421 sessions --- because the
 raw indicator scale overwhelmed the risk term by roughly ten orders of magnitude.
 
-Equation~(4) (p.~10) now scales the fused score to a return metric before it enters the
+Equation~(4) (p.~11) now scales the fused score to a return metric before it enters the
 objective, which resolves the mismatch. The corrected allocation is diversified and
 stable: the effective number of assets averages 5.40 and never falls below 4.60, and
-annual one-way turnover is 0.96 times portfolio value. Section~4.9 (pp.~20--22) explains
+annual one-way turnover is 0.96 times portfolio value. Section~4.10 (pp.~23--24) explains
 the failure mode explicitly rather than quietly replacing the figure, since the
 diagnosis is itself a useful contribution.
-\where{Equation~(4), p.~10; Section~4.9, pp.~20--22; Table~11, p.~21; Figures~5 and~6,
-pp.~21--22.}
+\where{Equation~(4), p.~11; Section~4.10, pp.~23--24; Table~13, p.~23; Figures~5
+and~6, pp.~23--24.}
 
 \rc{R2.5 The regime detection section also needs stronger justification. The choice of
 three market regimes should be supported using model selection measures such as AIC,
 BIC, or regime persistence statistics.}
 
-\resp Table~12 (p.~23) now reports AIC and BIC for two through six components, together
+\resp Table~14 (p.~25) now reports AIC and BIC for two through six components, together
 with the persistence statistics for the three-state solution: the full transition
 matrix, self-transition probabilities, mean run lengths, in-sample and out-of-sample
 state shares, and the annualised volatility and momentum characterising each state.
@@ -263,13 +268,13 @@ monotonically across the range tested, so neither criterion selects three compon
 this is the expected behaviour of a mixture fitted to persistent, heavy-tailed financial
 features, which absorbs tail observations into additional components indefinitely. The
 choice of three is therefore justified on persistence and interpretability instead, and
-Table~12 supplies the grounds: the three states are economically distinct (annualised
+Table~14 supplies the grounds: the three states are economically distinct (annualised
 volatility of 12.0, 20.3 and 49.4~per cent), they persist (self-transition probabilities
 of 0.928 to 0.964, mean run lengths of 14 to 28 sessions), and the transition matrix is
 close to tridiagonal, so the volatility ordering recovered by the model is economically
 meaningful. Finer partitions produce states too short-lived for a monthly rebalancing
 schedule to act on.
-\where{Section~4.10, pp.~22--24; Table~12, p.~23; Figure~7, p.~24.}
+\where{Section~4.11, pp.~24--26; Table~14, p.~25; Figure~7, p.~26.}
 
 \rc{R2.6 In addition, the language and presentation require careful revision. There are
 grammatical inconsistencies, sudden changes in writing style, and some unfinished
@@ -283,7 +288,7 @@ Section~2.2.
 
 The AI declaration placeholder has been replaced. We have also added a data and code
 availability statement.
-\where{Throughout; declarations on p.~29.}
+\where{Throughout; declarations on p.~31.}
 
 \rc{R2.7 Finally, the equations should be explained in greater detail, with clear
 definitions of all parameters and constraints used in the optimization model.}
@@ -320,35 +325,58 @@ transitions, signal confidence behaviour, allocation stability.}
 
 \resp Every figure is now interpreted in the text rather than merely described.
 Regime transitions are analysed through the transition matrix and run lengths
-(Section~4.10), including the finding that direct calm-to-stress transitions have
+(Section~4.11), including the finding that direct calm-to-stress transitions have
 estimated probability zero. Allocation stability is quantified --- effective number of
-assets, largest weight, turnover --- and a new figure (Figure~6, p.~22) plots invested
+assets, largest weight, turnover --- and a new figure (Figure~6, p.~24) plots invested
 exposure with the transitional and stress states shaded, so the de-risking mechanism is
-directly visible. Signal behaviour is shown in Figure~8 (p.~24) and interpreted together
-with the information coefficients in Table~10.
-\where{Sections~4.1, 4.5, 4.9 and 4.10; Figures~2--8.}
+directly visible. Signal behaviour is shown in Figure~8 (p.~26) and interpreted together
+with the information coefficients in Table~12.
+\where{Sections~4.1, 4.5, 4.10 and 4.11; Figures~2--8.}
 
 \rc{R2.o3 The sentiment-analysis section may be improved by explicitly stating whether
 domain-specific transformer models or lexicon-based methods were used.}
 
-\resp Neither, and the revised manuscript states this plainly in a subsection written
-for the purpose (Section~3.3, p.~9). No news article, social media post, corporate
-announcement or any other text is read at any point in the study, and no lexicon,
-classifier or language model is applied. What the submitted version described as a
-sentiment pipeline is in fact a composite of four price and volume features, now
-correctly named the market-state composite and defined in Table~2.
+\resp Neither, and Section~3.3 (p.~9) has been rewritten as a subsection whose purpose
+is to say so without ambiguity. No news article, social media post, corporate filing,
+transcript or analyst note is read at any point in the study, so neither a
+domain-specific transformer nor a sentiment lexicon is applied --- there is no text for
+either to act upon. The reason is a data constraint rather than a preference: textual
+measurement needs a time-stamped corpus covering the traded instruments, and a fund
+holding several hundred securities has no news flow of its own.
 
-We went further than disclosure. Section~4.8 (pp.~19--20) measures the predictive
-content of that composite directly and reports that it has none: its information
-coefficient against next-session cross-sectional returns is $-0.026$
-($t = -2.26$), and the regime-conditional weighting hypothesis --- that market-state
-information becomes relatively more informative under stress --- is not supported: the
-calm-to-stress contrast is insignificant ($t = -1.46$, $p = 0.145$) with point estimates
-running the other way. Splitting at the holdout boundary also shows that the negative
-coefficient is era-specific and disappears after 2023, so the layer cannot be rescued by
-inverting its sign either. The corresponding portfolio-level ablation shows that removing
-the layer entirely does not harm performance.
-\where{Section~3.3, p.~9; Section~4.8, pp.~19--20; Table~10, p.~20; Table~8, p.~18.}
+What the submitted version called a sentiment pipeline is a composite of four price and
+volume features, now defined term by term in Table~2 and placed in the literature it
+actually belongs to --- the market-derived tradition of Baker and Wurgler (2007), in
+which turnover and dispersion stand in for the survey. That reference has been added.
+
+Naming a proxy, however, obliges one to show that it behaves like the thing it stands
+in for, so the revision does not stop at disclosure. Section~4.8 (pp.~20--22) is new. It
+aggregates the composite to the market level and correlates it against four published
+series that enter the framework nowhere: the University of Michigan survey of consumer
+sentiment, the Cboe volatility index, the St.~Louis Fed financial stress index and the
+Chicago Fed national financial conditions index. All four carry the expected sign, all
+four are significant in first differences, and the sign is correct in all sixteen
+series-by-block combinations when the sample is cut into four periods (Table~10, p.~20).
+The survey is the demanding case, because it contains no market data whatever; monthly
+changes in it move with monthly changes in the composite at $+0.240$ ($t = +3.54$). The
+identified market states also separate on the composite, monotonically, at $F = 19.34$,
+$p = 1.8 \times 10^{-8}$ (Table~11, p.~21), although the composite takes no part in
+fitting them --- which is what entitles the manuscript to call those states sentiment
+and volatility states rather than volatility states alone.
+
+The unfavourable half is reported just as fully. Section~4.9 (pp.~22--23) measures the
+predictive content of the composite and finds none: its information coefficient against
+next-session cross-sectional returns is $-0.026$ ($t = -2.26$), and the
+regime-conditional weighting hypothesis --- that sentiment information becomes
+relatively more informative under stress --- is not supported, the calm-to-stress
+contrast being insignificant ($t = -1.46$, $p = 0.145$) with point estimates running the
+other way. Splitting at the holdout boundary shows the negative coefficient to be
+era-specific and to disappear after 2023, so the layer cannot be rescued by inverting
+its sign either, and the portfolio-level ablation shows that removing it does not harm
+performance. A measure can be valid and still be unprofitable. The two findings are kept
+apart in the manuscript, and both are stated.
+\where{Section~3.3, p.~9; Sections~4.8 and~4.9, pp.~20--23; Tables~10--12, pp.~20--22;
+Table~8, p.~19.}
 
 \rc{R2.o4 Future work may include cross-market validation, larger asset universes,
 reinforcement learning-based adaptive parameter tuning.}
@@ -357,15 +385,15 @@ reinforcement learning-based adaptive parameter tuning.}
 moved to a ten-instrument multi-asset universe spanning US, developed and emerging
 equity, government and corporate fixed income, gold and real estate, over eighteen years
 (Section~3.1, p.~7), and the original mega-capitalisation equity universe is retained as
-a secondary study in Section~4.12 (p.~25). That secondary result is unfavourable and is
+a secondary study in Section~4.13 (p.~27). That secondary result is unfavourable and is
 reported as such: the framework loses on risk-adjusted return in a concentrated
 single-sector universe while retaining its drawdown advantage, which identifies the
 condition under which the framework is useful.
 
 Reinforcement-learning parameter tuning is retained as future work, now stated concretely
 as learning the risk-budget multipliers, with the overfitting caveats that apply
-(Section~5.5, p.~28).
-\where{Section~3.1, p.~7; Section~4.12, p.~25; Table~14, p.~25; Section~5.5, p.~28.}
+(Section~5.5, p.~30).
+\where{Section~3.1, p.~7; Section~4.13, p.~27; Table~16, p.~27; Section~5.5, p.~30.}
 
 \rc{R2.o5 The manuscript would benefit from minor restructuring to reduce repetition in
 Sections~4.2 and~4.3.}
@@ -377,18 +405,15 @@ behaviour, annual consistency, ablation, budget form, signal content, allocation
 behaviour, regime diagnostics, significance, secondary universe --- with no overlapping
 material. Interpretation that previously appeared twice has been consolidated into
 Section~5.
-\where{Sections~4 and~5, pp.~13--28.}
+\where{Sections~4 and~5, pp.~13--30.}
 
 \bigskip
 \hrule
 \section*{Changes not requested by the reviewers}
 
-For completeness, three changes were made that no reviewer asked for.
+For completeness, two changes were made that no reviewer asked for.
 
 \begin{itemize}
-\item \textbf{Title.} ``Sentiment'' has been removed. Once Section~3.3 states that no
-text or language model is used, the previous title asserted something the methodology
-contradicts.
 \item \textbf{Abstract.} The claim of ``significant alpha'' has been removed, because the
 corrected results do not support it. The abstract now states the return sacrifice and
 the absence of statistical significance alongside the positive findings.

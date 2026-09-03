@@ -5,9 +5,11 @@ Fails loudly on any figure in the text that the artifacts do not support.
 import io, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TEX = io.open(os.path.join(HERE, '..', 'single column', 'ai67.tex'), encoding='utf-8').read()
+TEX = io.open(os.path.join(HERE, '..', '2-revised-manuscript', 'ai67.tex'),
+              encoding='utf-8').read()
 R = json.load(open(os.path.join(HERE, 'final_tables.json')))
 MG = json.load(open(os.path.join(HERE, 'mega_results.json')))
+SV = json.load(open(os.path.join(HERE, 'sentiment_results.json')))
 ok, bad = 0, []
 
 
@@ -141,6 +143,39 @@ IS = R['T6_ic'].get('splits', {})
 for tag, d in IS.items():
     chk(f'IC split {tag} fused', abs(d['fused']['ic']),
         '$-{:.3f}$' if d['fused']['ic'] < 0 else '$+{:.3f}$')
+
+# ---- sentiment validation (Section 4.8) ----
+for b in SV['benchmarks']:
+    tag = b['name'].split()[0]
+    for part in ['level', 'change']:
+        d = b[part]
+        sgn = '+' if d['r'] > 0 else '-'
+        chk(f"sentval {tag} {part} r", abs(d['r']), '$' + sgn + '{:.3f}$')
+        chk(f"sentval {tag} {part} t", abs(d['t']),
+            '($' + ('+' if d['t'] > 0 else '-') + '{:.2f}$)')
+    chk(f'sentval {tag} expanding r', abs(b['r_expanding']),
+        '$' + ('+' if b['r_expanding'] > 0 else '-') + '{:.3f}$')
+    if not b['sign_ok']:
+        bad.append(f'sentval {tag}: sign disagrees with the expected direction')
+
+assert all(b['sign_ok'] for b in SV['benchmarks']), 'a benchmark sign flipped'
+assert len(SV['benchmarks']) == 4, 'expected four external benchmarks'
+_signs = [all((v is None) or (v > 0) == (bm['expected_sign'] > 0)
+              for bm in SV['benchmarks']
+              for k, v in [(bm['name'], blk['r'].get(bm['name']))])
+          for blk in SV['stability']]
+assert all(_signs), 'a sub-period sign disagrees with the full-sample direction'
+ok += 1
+
+G = SV['regimes']
+chk('sentval regime n', G['n'], '{:d}')
+chk('sentval ANOVA F', G['F'], '{:.2f}')
+chk('sentval KW H', G['H'], '{:.2f}')
+for r, lab in zip(G['by_regime'], ['Calm', 'Transitional', 'Stress']):
+    chk(f'sentval {lab} mean', abs(r['mean']),
+        '$' + ('+' if r['mean'] > 0 else '-') + '{:.3f}$')
+    chk(f'sentval {lab} sd', r['sd'], '{:.3f}')
+    chk(f'sentval {lab} n', r['n'], '{:d}')
 
 print(f'{ok} checks passed, {len(bad)} failed')
 for b in bad:
