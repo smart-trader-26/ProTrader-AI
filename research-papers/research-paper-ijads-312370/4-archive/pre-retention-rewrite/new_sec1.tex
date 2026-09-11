@@ -1,0 +1,118 @@
+\section{Introduction}
+\label{sec:intro}
+
+Quantitative finance has invested heavily in prediction and comparatively little in the
+step that follows it. A large body of work now forecasts returns, directions or
+volatilities with machine learning, and reports its success in statistical terms:
+accuracy, error, or the significance of a coefficient \citep{gu20, zhang22}. Far less
+work specifies what an investor should then hold. That second step is not a
+formality. A forecast becomes an investment only after it has been reconciled with a
+covariance structure, a risk budget, position limits and the cost of trading, and the
+translation can destroy the value of a forecast as easily as preserve it. This paper
+refers to the missing step as the \emph{signal--allocation gap}.
+
+\subsection{The Signal--Allocation Gap}
+
+The gap is visible in how results are reported. Systematic reviews of fusion-based
+prediction find that statistical accuracy remains the dominant success criterion, with
+economic value reported inconsistently or not at all \citep{zhang22}. Where allocation
+is addressed, it is often through heuristics rather than optimisation: the IntPort
+framework of \citet{sami25}, for instance, converts forecasts into weights by
+statistical averaging, without a covariance structure or an explicit risk objective.
+Reinforcement learning approaches optimise a policy directly and so avoid the
+translation problem, but the majority are formulated for a single instrument
+\citep{saijai26, jiang25}, which leaves the portfolio-level question open.
+
+This matters because the properties an investor cares about are portfolio properties.
+Diversification, drawdown and the stability of holdings are not visible at the level of
+an individual forecast, and \citet{demiguel09} showed that optimisation which ignores
+estimation error can underperform naive equal weighting out of sample. Any framework
+that claims to bridge prediction and allocation must therefore be judged on portfolio
+outcomes under realistic frictions, not on the quality of its forecasts.
+
+\subsection{Regime Dependence}
+
+Financial markets do not behave homogeneously through time. Since \citet{hamilton89},
+regime-switching models have been used to represent discrete shifts in the statistical
+behaviour of financial series, and \citet{angbekaert02} demonstrated that accounting for
+such shifts materially changes optimal international allocations. \citet{kritzman12}
+made the practical case that regime awareness alters what a dynamic strategy should do,
+not merely how it should be described. More recent work continues in this direction,
+combining regime identification with allocation rules \citep{li25, luo26}.
+
+Two consequences follow for a framework of the kind proposed here. The first is that a
+predictive signal's reliability is conditional: an indicator that is informative in a
+quiet trending market need not be informative when the market is disturbed. The second
+is that the appropriate amount of risk to carry is itself state-dependent, which is the
+premise behind volatility-managed strategies \citep{moreira17, hood25} and behind risk
+budgeting more generally \citep{asimit25}. A framework that detects regimes but acts on
+them in only one of these two ways will leave part of its own premise untested.
+
+\subsection{What This Paper Does}
+
+This paper specifies a three-stage decision-theoretic framework and tests it end to
+end. Latent market states are identified by a Gaussian mixture model fitted on an
+expanding window. Two composite signals---one technical, one derived from price and
+volume dynamics---are fused with regime-conditional weights and converted to expected
+excess returns using information-ratio scaling. The fused signal then enters a
+constrained quadratic program with Ledoit--Wolf covariance shrinkage
+\citep{ledoit04} and an explicit turnover penalty, and the resulting sleeve is scaled by
+a regime-dependent risk budget.
+
+The framework is evaluated on ten liquid exchange-traded funds spanning equities, fixed
+income, credit, gold and real estate over eighteen years, under a walk-forward protocol
+with transaction costs. The evaluation is designed to answer not only whether the
+framework works but which of its parts is responsible, and it reports the answer in
+both directions. The regime risk budget is shown to be the effective component: at
+identical average exposure, timing the de-risking by regime improves both the Sharpe
+ratio and the maximum drawdown. The signal fusion layer is shown not to be: the
+information coefficients of both composites are statistically indistinguishable from
+zero or significantly negative, and the regime-conditional weighting hypothesis is
+rejected by the data that motivated it.
+
+Reporting the second finding is a deliberate choice. Component-level nulls are rarely
+published, which is one reason architectures accumulate layers whose contribution has
+never been isolated. \citet{harvey15} and \citet{valls26} document how easily an
+unreported specification search inflates apparent performance in this setting, and
+\citet{demiguel09} showed the practical cost of trusting an unvalidated component. An
+ablation that locates the source of a result is more useful to a practitioner than an
+aggregate number that does not.
+
+\subsection{Contributions}
+
+\begin{itemize}
+
+\item A fully specified regime-conditional allocation framework, given in enough detail
+to be reproduced from the text alone: exact feature definitions, the mixture model and
+its label-anchoring requirement, the optimisation problem with all constraints, and the
+walk-forward protocol.
+
+\item A two-step separation of the allocation decision into relative composition and
+total risk. The paper shows that expressing the regime risk budget as a fraction of the
+portfolio's own volatility, rather than as an absolute volatility target, is what keeps
+the regime layer active: absolute targets calibrated for concentrated equity portfolios
+bind in one rebalance out of 224 on a diversified universe and render the layer inert.
+
+\item An ablation design that isolates component contributions at matched risk. Because
+scaling a portfolio toward cash changes both its return and its volatility, comparing a
+de-risked strategy with a fully invested benchmark confounds risk timing with risk
+level. Holding average exposure fixed separates the two, and shows that the regime
+layer earns its place through timing rather than through simply holding less.
+
+\item A reported null on regime-conditional signal fusion, together with the
+information coefficients that produce it, measured overall and within each state.
+
+\item A documented diagnosis of a failure mode in signal-to-allocation conversion:
+passing an unscaled indicator into a mean-variance objective allows the ratio of units
+between the linear and quadratic terms, rather than the information in the signal, to
+determine the solution, producing a degenerate single-asset portfolio.
+
+\end{itemize}
+
+\subsection{Organisation}
+
+Section~2 reviews portfolio construction, regime-aware allocation and the treatment of
+textual sentiment, and positions this study against them. Section~3 specifies the
+framework. Section~4 reports the results, including robustness, ablation and the
+negative findings. Section~5 discusses implications and limitations, and Section~6
+concludes.

@@ -15,12 +15,15 @@ Everything the journal needs is in `2-revised-manuscript/`:
 
 | File | What it is |
 |---|---|
-| `ai67.pdf` | the revised manuscript, 35 pp |
-| `response-to-reviewers.pdf` | point-by-point reply, 7 pp, all 10 mandatory and 5 optional comments |
+| `IJADS-312370-revised-with-response.pdf` | **the file to upload** — response letter (R1-R13) bound at the front of the 45 pp article, 58 pp |
+| `ai67.pdf` | the revised manuscript alone, 45 pp |
+| `response-to-reviewers.pdf` | point-by-point reply, 13 pp, all 10 mandatory and 5 optional comments |
 | `ai67.tex`, `singlecol-new.cls`, `images/` | the source, if the journal asks for it |
 
-Inderscience asks for the response letter at the *front of the revised article*. It is
-currently a separate PDF — either prepend it or upload it alongside.
+Inderscience asks for the response letter at the *front of the revised article*. That is
+already done: `make_submission_pdf.py` binds the two into
+`IJADS-312370-revised-with-response.pdf`, with the letter numbered R1-R13 so every
+"p. n" in it points at a manuscript page.
 
 ## Folder layout
 
@@ -37,8 +40,8 @@ currently a separate PDF — either prepend it or upload it alongside.
 3-analysis/              the code and artifacts behind the revision
    pipeline_core.py          the corrected strategy
    final_run.py, ic_analysis.py, mega_run.py, fix_significance.py
-   sentiment_validation.py   the external validation added for §4.8
-   assemble.py               rebuilds ai67.tex from new_sec1..6.tex
+   sentiment_validation.py   the external validation added for §4.3.3
+   assemble.py               rebuilds ai67.tex from new_sec1..5.tex
    verify_numbers.py         the gate: 223 checks against the JSON artifacts
    run_all_ext.sh            runs the four analysis scripts in the required order
 
@@ -93,7 +96,7 @@ Ten liquid multi-asset ETFs, 4,689 sessions, January 2008 – August 2026.
 18 of 18 specifications beat equal weight on both measures; drawdown wins in 18 of 19
 years, Sharpe in 9 of 19.
 
-**The holdout (§4.2) is the strongest section.** The 665 sessions from January 2024
+**The holdout (§4.3.1) is the strongest section.** The 665 sessions from January 2024
 postdate every specification decision, and there the framework beats all three benchmarks
 on both measures. Two of those comparisons reverse the in-sample ordering.
 
@@ -104,23 +107,57 @@ with no significant difference in mean return.
 **Claims dropped, deliberately.** Significant alpha (excess return is *negative*,
 p = 0.171). Signal fusion (removing it *improves* Sharpe to 0.908).
 
-**Sentiment (§3.3 and §4.8).** The second composite is market-derived, not textual — no
-transformer, no lexicon, no text of any kind. §4.8 validates it against four independently
+**Sentiment (§3.1.3 and §4.3.3).** The second composite is market-derived, not textual — no
+transformer, no lexicon, no text of any kind. §4.3.3 validates it against four independently
 published series: all four carry the expected sign, all four are significant in first
 differences, and the sign holds in all sixteen series-by-block combinations. The
 identified market states separate on it monotonically (F = 19.34, p = 1.8e-08) although
-it takes no part in fitting them. §4.9 then reports that it does not predict returns. A
+it takes no part in fitting them. §4.2.5 then reports that it does not predict returns. A
 measure can be valid and still be unprofitable; the paper keeps the two findings apart.
+
+## Structure and reference retention (author's decision, revision 2)
+
+The submitted version's section headings are restored in full, so the revision reads
+against the original section by section:
+
+| | Submitted | Revised |
+|---|---|---|
+| Sections | 5 | 5 (same titles; `Results and Discussion` stays merged) |
+| §3 | Phase 1 / Phase 2 / Phase 3 / Cross-Cutting, 13 subsubsections | identical headings, truthful content |
+| §4 | Overview / Detailed Analysis (6 figures) / Implications | same, plus one new §4.3 `Robustness and Attribution` |
+| References | 33 | 54 = all 33 retained + 21 added |
+| Abstract | 245 words | 337 words |
+| Pages | 22 | 45 |
+| Body words | 6,825 | 17,653 |
+
+Measured retention against `1-original-submission/ai92.tex`. The honest figure depends on
+the threshold, so all three are given: **13% of sentences near-identical (>=95% similar),
+42% substantially kept (>=80%), 58% recognisable (>=60%)**; at the word level
+**65.0% of the submitted manuscript's words survive in order**. Per section, word level:
+§1 75%, §2 75%, §3 55%, §4 53%, §5 65%. The §3 and §4 shortfall is not recoverable: the
+submitted §3 describes components the implementation does not contain (LLM sentiment
+scoring, named entity recognition, macroeconomic ingestion, Bayesian weight updating,
+Brinson attribution, stop-loss, liquidity-adjusted sizing, an automated refinement loop),
+and every number in the submitted §4 came from the two defective code paths below.
+
+**Open risk — R1.1.** Reviewer 1 required no more than three references per journal.
+24 of the 33 retained references are from *IEEE Access*. Retaining them is a deliberate
+author decision; the response letter states this plainly rather than claiming compliance,
+and offers to cut the list to three if the Editor prefers. Every other journal is within
+the limit (max 3: IJADS, JPM, The Journal of Finance), no author appears more than twice,
+no citation cluster exceeds two, there are no self-citations, and 10 of the 54 are from
+2025–26.
 
 ## Before uploading
 
-1. **Read §4.6, §4.8, §5.2 and §6.** They report that the signal fusion layer does not
+1. **Read §4.2.5, §4.3.3, §4.3.4 and §4.3.5.** They report that the signal fusion layer does not
    work and that the Sharpe gain is not statistically significant. This is deliberate and
    is, in our judgement, the strongest defensible position — but be comfortable with it
    before the reviewers see it.
-2. **Decide how to submit the response letter** (prepend, or upload alongside).
-3. **Highlighting changed text**, as the editor asked: essentially everything from §1
-   onward is new, so a covering sentence saying so will serve better than highlighting.
+2. Upload `IJADS-312370-revised-with-response.pdf`. The letter is already bound at the front.
+3. **Highlighting changed text**, as the editor asked: §1 and §2 are close to the
+   submitted text, so highlighting is practical there; §3 onward is substantially new and
+   a covering sentence will serve better.
 
-The AI declaration on p. 31 now names Claude (Anthropic) and ChatGPT (OpenAI) for
+The AI declaration on p. 40 now names Claude (Anthropic) and ChatGPT (OpenAI) for
 language editing only, which is what Reviewer 2 comment 6 asked to be completed.

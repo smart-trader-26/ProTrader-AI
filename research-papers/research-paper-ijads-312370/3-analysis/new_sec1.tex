@@ -1,118 +1,155 @@
 \section{Introduction}
 \label{sec:intro}
 
-Quantitative finance has invested heavily in prediction and comparatively little in the
-step that follows it. A large body of work now forecasts returns, directions or
-volatilities with machine learning, and reports its success in statistical terms:
-accuracy, error, or the significance of a coefficient \citep{gu20, zhang22}. Far less
-work specifies what an investor should then hold. That second step is not a
-formality. A forecast becomes an investment only after it has been reconciled with a
-covariance structure, a risk budget, position limits and the cost of trading, and the
-translation can destroy the value of a forecast as easily as preserve it. This paper
-refers to the missing step as the \emph{signal--allocation gap}.
+The proliferation of computational finance methodologies has fundamentally transformed
+investment decision-making processes, with machine learning and artificial intelligence
+emerging as dominant paradigms for financial market analysis. Contemporary research has
+demonstrated considerable sophistication in predictive modelling, particularly through
+the integration of diverse data modalities including technical indicators, market
+microstructure data, and alternative data sources such as social media sentiment and
+news analytics \citep{li20,zhang22}. Despite these advancements, a critical disconnect
+persists between the generation of predictive signals and their systematic translation
+into executable portfolio allocation decisions---a gap that remains largely unaddressed
+in the current literature.
 
-\subsection{The Signal--Allocation Gap}
+\subsection{Current State of Predictive Modeling in Finance}
 
-The gap is visible in how results are reported. Systematic reviews of fusion-based
-prediction find that statistical accuracy remains the dominant success criterion, with
-economic value reported inconsistently or not at all \citep{zhang22}. Where allocation
-is addressed, it is often through heuristics rather than optimisation: the IntPort
-framework of \citet{sami25}, for instance, converts forecasts into weights by
-statistical averaging, without a covariance structure or an explicit risk objective.
-Reinforcement learning approaches optimise a policy directly and so avoid the
-translation problem, but the majority are formulated for a single instrument
-\citep{saijai26, jiang25}, which leaves the portfolio-level question open.
+The evolution of financial forecasting methodology has been a continuing movement
+towards greater sophistication and the systematic combination of heterogeneous data
+modalities. Initial models were largely based on technical analysis, seeking to predict
+future price movement using historically derived price indicators and geometric pattern
+recognition \citep{lee07}. The subsequent arrival of machine learning pushed the field
+through a complete change. The introduction of algorithms such as support vector
+machines, ensemble techniques and multilayer perceptrons, in order to increase the
+accuracy of market predictions, marked that change \citep{chou18,liu19}. Deep-learning
+systems now constitute the modern frontier and have shown a strong ability to capture
+the complex nonlinear relationships that exist within high-frequency financial data
+\citep{nayak22}.
 
-This matters because the properties an investor cares about are portfolio properties.
-Diversification, drawdown and the stability of holdings are not visible at the level of
-an individual forecast, and \citet{demiguel09} showed that optimisation which ignores
-estimation error can underperform naive equal weighting out of sample. Any framework
-that claims to bridge prediction and allocation must therefore be judged on portfolio
-outcomes under realistic frictions, not on the quality of its forecasts.
+Another equally significant trend has been the methodical integration of sentiment
+analysis into predictive models. Early attempts in this direction used simple
+dictionary-based models \citep{loughran11}, but more recent approaches progressively use
+transformer-based large language models (LLMs) to extract complex sentiment and thematic
+indications from unstructured financial text \citep{jung24,liu24}. Empirical studies such
+as those of \citet{mu23} and \citet{bacco24} show that quantitatively well-founded
+measurements of investor sentiment can considerably increase the explanatory value of
+traditional technically based models. Going beyond sentiment, \citet{onozo24} point out
+the emerging capacity of LLMs to support the nowcasting of macroeconomic features, which
+extends the range of predictive characteristics that can be quantitatively analysed.
 
-\subsection{Regime Dependence}
+\subsection{The Signal Fusion Paradigm and Its Limitations}
 
-Financial markets do not behave homogeneously through time. Since \citet{hamilton89},
-regime-switching models have been used to represent discrete shifts in the statistical
-behaviour of financial series, and \citet{angbekaert02} demonstrated that accounting for
-such shifts materially changes optimal international allocations. \citet{kritzman12}
-made the practical case that regime awareness alters what a dynamic strategy should do,
-not merely how it should be described. More recent work continues in this direction,
-combining regime identification with allocation rules \citep{li25, luo26}.
+A current trend in modern quantitative finance research is to combine heterogeneous
+types of signals in order to arrive at a stronger forecasting model. An example is the
+study of \citet{moodi24}, combining technical indicators and sentiment analysis into a
+hybrid deep-learning model. In a similar manner, \citet{farimani24} designed a multimodal
+adaptive learning framework that dynamically synthesises heterogeneous sources of data to
+predict financial markets. Such fused methodologies are consistently shown to perform
+better in prediction than their uni-modal counterparts, and are particularly effective in
+describing the multifaceted, multi-dimensional drivers of market dynamics.
 
-Two consequences follow for a framework of the kind proposed here. The first is that a
-predictive signal's reliability is conditional: an indicator that is informative in a
-quiet trending market need not be informative when the market is disturbed. The second
-is that the appropriate amount of risk to carry is itself state-dependent, which is the
-premise behind volatility-managed strategies \citep{moreira17, hood25} and behind risk
-budgeting more generally \citep{asimit25}. A framework that detects regimes but acts on
-them in only one of these two ways will leave part of its own premise untested.
+Despite these substantive methodological developments, an overwhelming deficiency stands
+out in the body of extant research: a near-exclusive focus on predictive accuracy, at the
+cost of the decision-making mechanisms that are necessary to put a forecast into
+practice. With statistical forecasting precision as the primary measure of success, the
+predominant notion of success---as \citet{zhang22} note in their systematic review of
+decision fusion---is not actual economic value or achieved portfolio performance. The
+critical discontinuity that arises out of this singular interest in prediction is what we
+refer to herein as the \emph{signal-allocation gap}: the gap between the production of
+informative signals and their encoding into a rational process of portfolio construction
+that takes account of real-world investment restrictions and investment goals.
 
-\subsection{What This Paper Does}
+\subsection{The Regime Dependency Challenge}
 
-This paper specifies a three-stage decision-theoretic framework and tests it end to
-end. Latent market states are identified by a Gaussian mixture model fitted on an
-expanding window. Two composite signals---one technical, one derived from price and
-volume dynamics---are fused with regime-conditional weights and converted to expected
-excess returns using information-ratio scaling. The fused signal then enters a
-constrained quadratic program with Ledoit--Wolf covariance shrinkage
-\citep{ledoit04} and an explicit turnover penalty, and the resulting sleeve is scaled by
-a regime-dependent risk budget.
+Financial markets are dynamic in nature, evolving over discrete structural regimes,
+whether of high volatility, persistent trend or mean reversion, that inherently
+condition the behaviour of trading signals and investment strategies \citep{wang19}. An
+important gap in the modern literature is the overwhelming oversight of these regime
+requirements. Even though the presence of such market states is frequently accepted, its
+systematic integration into portfolio-forming structures remains significantly
+underdeveloped \citep{kritzman12}.
 
-The framework is evaluated on ten liquid exchange-traded funds spanning equities, fixed
-income, credit, gold and real estate over eighteen years, under a walk-forward protocol
-with transaction costs. The evaluation is designed to answer not only whether the
-framework works but which of its parts is responsible, and it reports the answer in
-both directions. The regime risk budget is shown to be the effective component: at
-identical average exposure, timing the de-risking by regime improves both the Sharpe
-ratio and the maximum drawdown. The signal fusion layer is shown not to be: the
-information coefficients of both composites are statistically indistinguishable from
-zero or significantly negative, and the regime-conditional weighting hypothesis is
-rejected by the data that motivated it.
+A number of studies have attempted to deal with market-state variability. As an example,
+\citet{huang20} studied dependencies using bicluster mining and fuzzy inference to arrive
+at automated trading predictions. Similarly, \citet{alsheebah24} modelled various market
+conditions in an emerging economy by combining endogenous and exogenous variables. More
+recent work has taken the state variable directly into the allocation decision
+\citep{li25,luo26}. The methodologies of the predictive strand, however, are typically
+limited to increasing predictive accuracy and do not advance to regime-aware portfolio
+optimisation.
 
-Reporting the second finding is a deliberate choice. Component-level nulls are rarely
-published, which is one reason architectures accumulate layers whose contribution has
-never been isolated. \citet{harvey15} and \citet{valls26} document how easily an
-unreported specification search inflates apparent performance in this setting, and
-\citet{demiguel09} showed the practical cost of trusting an unvalidated component. An
-ablation that locates the source of a result is more useful to a practitioner than an
-aggregate number that does not.
+Accordingly, the key issue is twofold: it involves not only the determination of the
+prevailing market regime, but also the dynamic re-tuning of both the signal-fusion
+parameters and the underlying optimisation dynamics in response to the properties of the
+diagnosed regime.
 
-\subsection{Contributions}
+\subsection{Portfolio Construction: The Neglected Frontier}
+
+Modern studies show a significant lack of methodologies focused on the derivation of
+portfolio allocations from predictive signals. An intelligent method of constructing
+portfolios based on the prediction of financial returns, named IntPort, was proposed by
+\citet{sami25}; the approach is, however, based on statistical averaging heuristics,
+which is insufficiently analytical to constitute a modern optimisation model. In line
+with this, most reinforcement-learning applications in automated trading, such as the one
+\citet{kabbani22} describe, focus on the trading of individual assets rather than on the
+allocation of a portfolio.
+
+This lack of explicit research on portfolio construction is particularly worrying given
+the underlying principles of modern portfolio theory, which emphasise the imperative of
+the covariance structure and the diversification of risk \citep{markowitz52}. The
+existing failure to convert individual asset predictions systematically into a single
+allocation method is a significant obstacle to the improvement of risk-adjusted returns.
+Moreover, the traditional methodology largely ignores critical practical restrictions,
+including transaction costs, position size limits and liquidity provision, which are
+inseparable from the implementation of a strategy in live investment settings
+\citep{demiguel09}.
+
+\subsection{Our Contributions}
+
+This study bridges the identified methodological gaps through several pivotal
+contributions to financial decision science:
 
 \begin{itemize}
 
-\item A fully specified regime-conditional allocation framework, given in enough detail
-to be reproduced from the text alone: exact feature definitions, the mixture model and
-its label-anchoring requirement, the optimisation problem with all constraints, and the
-walk-forward protocol.
+\item An explicit regime detection framework employs Gaussian mixture models to isolate
+discrete market states from volatility and momentum data, extending the principles of
+\citet{wang19}. The implementation integrates this regime intelligence into the
+subsequent signal fusion and optimisation stages, and the fitted model is reported with
+order selection, transition matrix and run lengths rather than asserted.
 
-\item A two-step separation of the allocation decision into relative composition and
-total risk. The paper shows that expressing the regime risk budget as a fraction of the
-portfolio's own volatility, rather than as an absolute volatility target, is what keeps
-the regime layer active: absolute targets calibrated for concentrated equity portfolios
-bind in one rebalance out of 224 on a diversified universe and render the layer inert.
+\item A decision-theoretic fusion mechanism recalibrates the influence of technical and
+sentiment indicators according to their conditional performance within each identified
+regime, in place of a static weighting scheme. The paper specifies this mechanism in full
+and then tests it: the state-dependent weighting hypothesis is \emph{not} supported by
+the evidence, and we report that result rather than the specification that flatters it.
 
-\item An ablation design that isolates component contributions at matched risk. Because
-scaling a portfolio toward cash changes both its return and its volatility, comparing a
-de-risked strategy with a fully invested benchmark confounds risk timing with risk
-level. Holding average exposure fixed separates the two, and shows that the regime
-layer earns its place through timing rather than through simply holding less.
+\item The research formulates a regime-contingent optimisation paradigm. This framework
+uses a shrinkage covariance estimate \citep{ledoit04}, an explicit turnover penalty and a
+regime-dependent risk budget, progressing beyond the static assumptions of conventional
+mean-variance analysis. The fused signal is converted to a return metric before it enters
+the objective, so that the risk model and the signal are commensurate.
 
-\item A reported null on regime-conditional signal fusion, together with the
-information coefficients that produce it, measured overall and within each state.
+\item A backtesting protocol with walk-forward validation is deployed, featuring
+regime-aware performance attribution to delineate the contribution of each strategic
+component under varying market environments. Components are separated by ablation at
+matched average exposure, which isolates the effect of timing risk from the effect of
+simply holding less.
 
-\item A documented diagnosis of a failure mode in signal-to-allocation conversion:
-passing an unscaled indicator into a mean-variance objective allows the ratio of units
-between the linear and quadratic terms, rather than the information in the signal, to
-determine the solution, producing a degenerate single-asset portfolio.
+\item An out-of-sample holdout is reported separately. The final 665 sessions of the
+sample postdate every specification decision taken in this study, and are evaluated only
+once, which addresses the concern that a walk-forward backtest reported in full can still
+be tuned in aggregate \citep{harvey15,prado16}.
 
+\item Ultimately, the proposed methodology constructs a transparent, systematic pipeline
+to traverse the critical divide between multi-modal signal prediction and executable
+allocation, directly countering the signal-allocation gap highlighted by
+\citet{zhang22}.
 \end{itemize}
 
-\subsection{Organisation}
-
-Section~2 reviews portfolio construction, regime-aware allocation and the treatment of
-textual sentiment, and positions this study against them. Section~3 specifies the
-framework. Section~4 reports the results, including robustness, ablation and the
-negative findings. Section~5 discusses implications and limitations, and Section~6
-concludes.
+Collectively, these contributions furnish both a methodological architecture and an
+empirical evaluation of a regime-conscious strategy. The framework improves risk-adjusted
+performance over an equal-weighted benchmark on every measure reported, though not
+significantly, and does so by timing risk rather than by selecting assets.
+Section~\ref{sec:lit} reviews the relevant literature, Section~\ref{sec:method} specifies
+the framework, Section~\ref{sec:results} reports the evidence and
+Section~\ref{sec:conclusion} concludes.

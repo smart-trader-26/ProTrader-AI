@@ -1,0 +1,36 @@
+Title: Integrating Multi-Source Data with Sentiment Analysis and Language Models to Enhance Stock Market Decision Making
+
+Research Objectives
+●	To investigate and develop a comprehensive model that integrates diverse data sources—such as financial metrics, news articles, social media sentiment, and macroeconomic factors—aiming to enhance the accuracy of stock market predictions by providing a holistic analysis. 
+●	To design a hybrid framework that combines large language models (LLMs), sentiment analysis techniques, and conventional financial indicators, focusing on optimizing deep learning architectures for real-time stock market predictions. 
+●	To establish and evaluate an explainable AI framework capable of delivering transparent and interpretable predictions in stock selection, analyzing the impact of sentiment data noise and exploring the temporal dynamics between sentiment shifts and stock price movements. 
+●	To evaluate and validate the result and practical application of the proposed model across different stock markets, exploring transfer learning techniques for cross-market applications and validating the model against benchmark datasets and real-world market data.
+
+
+References:
+1.	V. Snášel, J. D. Velásquez, M. Pant, D. Georgiou, and L. Kong, "A Generalization of Multi-Source Fusion-Based Framework to Stock Selection," Information Fusion, vol. 102, 2024, Elsevier.
+2.	W. Long, J. Gao, K. Bai, and Z. Lu, "A Hybrid Model for Stock Price Prediction Based on Multi-View Heterogeneous Data," Financial Innovation, 2024, SpringerOpen.
+3.	K. J. L. Koa, Y. Ma, R. Ng, and T.-S. Chua, "Learning to Generate Explainable Stock Predictions using Self-Reflective Large Language Models," in Proc. WWW '24, May 13–17, 2024, Singapore.
+4.	J. Doe, A. Smith, and B. Johnson, "Stock Market Prediction with Transductive Long Short-Term Memory and Social Media Sentiment Analysis," in Proc. IEEE Int. Conf. Data Mining (ICDM), 2024.
+5.	G. Mu, N. Gao, Y. Wang, and L. Dai, "A Stock Price Prediction Model Based on Investor Sentiment and Optimized Deep Learning," IEEE Access, vol. 11, pp. 51353–51367, Jan. 2023.
+6.	A. T. Haryono, R. Sarno, and K. R. Sungkono, "Transformer-Gated Recurrent Unit Method for Predicting Stock Price Based on News Sentiments and Technical Indicators," IEEE Access, vol. 11, pp. 77132-77146, July 2023.
+7.	J. Choi, S. Yoo, X. Zhou, and Y. Kim, "Hybrid Information Mixing Module for Stock Movement Prediction," IEEE Access, vol. 11, pp. 28781-28790, 2023.
+8.	A. Luo, L. Zhong, J. Wang, Y. Wang, S. Li, and W. Tai, "Short-Term Stock Correlation Forecasting Based on CNN-BiLSTM Enhanced by Attention Mechanism," IEEE Access, 2024.
+9.	N. Javaid, F. Aslam, et al., "Enhanced Prediction of Stock Markets Using a Novel Deep Learning Model PLSTM-TAL in Urbanized Smart Cities," Heliyon, vol. 10, e27747, 2024.
+10.	Trang-Thi Ho and Yennun Huang. "Stock Price Movement Prediction Using Sentiment Analysis and CandleStick Chart Representation," Sensors, vol. 21, no. 23, pp. 7957, Nov. 2021.
+11.	H. Yang, X.-Y. Liu, and C. D. Wang, "FinGPT: Open-Source Financial Large Language Models," arXiv, 2023.
+12.	N. Rouf, M. B. Malik, T. Arif, S. Sharma, S. Singh, S. Aich, and H.-C. Kim, "Stock Market Prediction Using Machine Learning Techniques: A Decade Survey on Methodologies, Recent Developments, and Future Directions," Electronics, vol. 10, no. 21, pp. 2717, 2021.
+13.	Y. Song, "Enhancing Stock Market Trend Reversal Prediction Using Feature-Enriched Neural Networks," Heliyon, vol. 10, no. 2024, pp. e24136, 2024. 
+14.	Y. Li, S. Wang, H. Ding, and H. Chen, "Large Language Models in Finance: A Survey," Columbia University and New York University, New York, NY, USA, 2024. 
+15.	M. G. Haas and F. J. Peter, "Implementing Intraday Model-Free Implied Volatility for Individual Equities to Analyze the Return–Volatility Relationship," J. Risk Financial Manag., vol. 17, no. 1, pp. 39, Jan. 2024. 
+16.	V.-D. Ta, C.-M. Liu, and D. A. Tadesse, "Portfolio Optimization-Based Stock Prediction Using Long-Short Term Memory Network in Quantitative Trading," Department of Computer Science and Information Engineering, National Taipei University of Technology, Taipei, Taiwan, Jan. 2020. 
+17.	A. Todd, J. Bowden, and Y. Moshfeghi, "Text-Based Sentiment Analysis in Finance: Synthesising the Existing Literature and Exploring Future Directions," Intell. Syst. Account. Finance Manag., vol. 31, no. 1, pp. e1549, Mar. 2024.
+18.	S. Bahoo, M. Cucculelli, X. Goga, and J. Mondolo, "Artificial Intelligence in Finance: A Comprehensive Review Through Bibliometric and Content Analysis," SN Bus Econ, vol. 4, no. 23, Jan. 2024. 
+19.	S. Wu, O. Irsoy, S. Lu, V. Dabravolski, M. Dredze, S. Gehrmann, P. Kambadur, D. Rosenberg, and G. Mann, "BloombergGPT: A Large Language Model for Finance," Bloomberg, New York, NY, USA; Toronto, ON, Canada; Johns Hopkins University, Baltimore, MD, USA, 2024.
+20.	M. S. Khan and H. Umer, "ChatGPT in finance: Applications, challenges, and solutions," *Heliyon*, vol. 10, no. 2, pp. e24890, Jan. 2024.
+21.	N. Wang, H. (B.) Yang, and C. D. Wang, "FinGPT: Instruction Tuning Benchmark for Open-Source Large Language Models in Financial Datasets," University of California, Los Angeles; Columbia University; Shanghai Frontiers Science Center of Artificial Intelligence and Deep Learning, NYU Shanghai; Business Division, NYU Shanghai, 2024. 
+22.	M. Wilksch and O. Abramova, "PyFin-sentiment: Towards a machine-learning-based model for deriving sentiment from financial tweets," University of Potsdam, Potsdam, Germany, 2024.
+23.	G. Fatouros, J. Soldatos, K. Kouroumali, G. Makridis, and D. Kyriazis, "Transforming sentiment analysis in the financial domain with ChatGPT," Department of Digital Systems, University of Piraeus, Piraeus, Greece; Innov-Acts Limited, Nicosia, Cyprus; Hellenic Telecommunications Organisation S.A., Athens, Greece, 2024.
+24.	W. M. Shaban et al., "SMP-DL: A Novel Stock Market Prediction Approach Based on Deep Learning for Effective Trend Forecasting," Neural Computing and Applications, vol. 36, pp. 1849–1873, 2024.
+25.	G. Mu, L. Dai, X. Ju, Y. Chen, and X. Huang, “MS-IHHO-LSTM: Carbon price prediction model of multi-source data based on improved swarm intelligence algorithm and deep learning method,” Jilin University of Finance and Economics, School of Management Science and Information Engineering, Changchun, China, 2022. DOI: 10.1109/ACCESS.2022.
+

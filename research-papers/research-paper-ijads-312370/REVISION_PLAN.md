@@ -2,12 +2,12 @@
 
 **Submission:** "From Signal Fusion to Asset Allocation" (Pardeshi & Deshmukh)
 **Verdict:** Acceptable with major revisions · **Due:** 2026-09-20
-**Status:** **complete — ready for the author's read-through and upload** (2026-08-27; sentiment validation and title restored 2026-09-03)
+**Status:** **complete — ready for the author's read-through and upload** (2026-08-27; sentiment validation and title restored 2026-09-03; structure, headings and full reference list of the submitted version restored 2026-09-11 — see §9)
 
 | Deliverable | File | State |
 |---|---|---|
-| Revised manuscript | `2-revised-manuscript/ai67.tex` → `ai67.pdf` | 35 pp, compiles clean, no undefined refs |
-| Response to reviewers | `2-revised-manuscript/response-to-reviewers.tex` → `.pdf` | 7 pp, every comment answered with page numbers |
+| Revised manuscript | `2-revised-manuscript/ai67.tex` → `ai67.pdf` | 47 pp, compiles clean, no undefined refs |
+| Response to reviewers | `2-revised-manuscript/response-to-reviewers.tex` → `.pdf` | 8 pp, every comment answered with page numbers |
 | Submitted version, preserved | `1-original-submission/ai92.tex` + `2026_IJADS-312370.pdf` | as submitted |
 | Previous (2008–2023) revision | `4-archive/v1-2008-2023/` | full snapshot: tex, sections, JSON, cache |
 | Evidence | `3-analysis/final_tables.json`, `mega_results.json`, `ic_results.json`, `sentiment_results.json` | 223/223 numbers in the manuscript verified against these |
@@ -178,3 +178,103 @@ framework gives up ~1.3pp of annual return (p = 0.016) for 3.6pp of drawdown.
   the inference blocks so that every Sharpe ratio in the paper uses the same
   compound-growth definition.
 - `verify_numbers.py` is the gate. 223 checks, all tied to the JSON artifacts.
+
+
+---
+
+## 9. Restoration of the submitted structure (2026-09-11)
+
+Requested by the author after reading the 35-page revision against the submitted paper.
+The revision had retained **zero** of the submitted manuscript's 246 sentences.
+
+- [x] 9.1 All section, subsection and subsubsection headings of the submitted version
+      restored. `Results` and `Discussion` merged back into `Results and Discussion`, so
+      the paper is 5 sections again.
+- [x] 9.2 One new subsection only — §4.3 `Robustness and Attribution` — holding the
+      holdout, sweep, sentiment validation, ablation, inference and secondary-universe
+      analyses the reviewers required. §4 drops from 14 subsections to 4.
+- [x] 9.3 All 33 submitted references retained, 21 added, 54 total. 10 from 2025–26.
+      `lu25` key collision resolved in favour of the submitted entry (Lu et al., 2025,
+      electricity price prediction); Lu and Tian (2025) dropped.
+- [x] 9.4 §1 and §2 restored close to the submitted wording, with the grammatical faults
+      R1.2/R2.6 flagged fixed (`LLPs` → `LLMs`, `near-monosaccharic` → `near-exclusive`,
+      `A advanced` → `An explicit`) and the three submitted comparison tables reinstated.
+- [x] 9.5 §3 keeps all 13 submitted subsubsection headings, with content that matches the
+      implementation. Headings describing absent components are filled truthfully:
+      `Input Layer` states that the news and macroeconomic streams are not used;
+      `Model Refinement Loop` is the expanding-window GMM and covariance refit and names
+      the parameters that are *not* re-optimised; `Performance Attribution` is ablation
+      plus IC, not Brinson.
+- [x] 9.6 §4 restored to the submitted per-figure rhythm — figure, characteristics
+      bullets, bold interpretation paragraphs — with corrected numbers and honest
+      conclusions where the submitted ones are refuted.
+- [x] 9.7 Abstract: submitted wording retained, 46% changed. `significant alpha` gone;
+      non-significance, holdout and ablation added. No unexpanded acronym.
+- [x] 9.8 Response letter rebuilt: R1.1 answer now states the *IEEE Access* retention
+      openly instead of claiming three-per-journal compliance; stale §4.11 regime figures
+      (12.0/20.3/49.4, 0.928–0.964, 14–28) corrected to 12.22/20.04/47.07,
+      0.910–0.961, 11.1–25.3; all 40+ section, table, figure and page references
+      re-derived from the rebuilt `ai67.aux`.
+- [x] 9.9 `verify_numbers.py` still passes 223/223. Assemble reports 54 bibitems, 54
+      cited, no dangling refs, no duplicate labels. Compiles with zero errors.
+
+**Measured retention** (sentence level, citation-style and emphasis markup normalised):
+62.7% of the submitted manuscript survives, i.e. **37.3% changed**, against 100% changed
+before this pass.
+
+**Open item.** §9.3 knowingly leaves R1.1's three-per-journal limit unmet (24 *IEEE
+Access*). The letter asks the Editor to choose. If the answer is to comply, the work is
+to cut *IEEE Access* to three and rebuild §2.1–§2.4 and Tables 1–3 around what remains.
+
+**Open item.** The manuscript is now 47 pp, against 22 pp submitted and 35 pp at the
+previous revision. If the journal objects, the reducible material is §4.3 — but every
+part of it was required by a reviewer.
+
+---
+
+## 10. Post-review fixes and length reduction (2026-09-11, second pass)
+
+Three defects found by auditing the revision against the reviewer letter, plus a
+length-reduction pass. Manuscript **47 pp -> 45 pp**; response letter re-derived against
+the final build.
+
+- [x] 10.1 **R1.2 was broken by the §9 restoration.** Tables 1-3, restored verbatim from
+      the submitted version, carried `LSTM`, `GRU`, `CNN`, `SVM`, `RBF` and `ML`
+      unexpanded anywhere in the manuscript, while the response letter claimed every
+      acronym was expanded at first use and "checked programmatically". All six are now
+      expanded in the table cells at first use (Tables 1 and 2, pp. 6-7), and the letter's
+      R1.2 answer lists them. All 17 acronyms verified programmatically: none unexpanded.
+- [x] 10.2 **Author block restored.** `\authorA`/`\affA`/`\authorB`/`\affB` were commented
+      out, so the title page carried no names or affiliations and left empty `Reference`
+      and `Biographical notes:` stubs. Names, departments, institutions and e-mails are
+      back on p. 1; `\REF{}` now carries the Inderscience "Reference to this paper"
+      line; `\begin{bio}` carries factual notes for both authors. **The bios state only
+      affiliation and research area — expand with degrees, positions and publication
+      record before upload.**
+- [x] 10.3 **All page references in the response letter re-derived** from the final
+      45-page build: 57 corrections. Every one of the 15 table and figure references now
+      resolves exactly. Three section references deliberately cite the page of the item
+      rather than the section's first page (§1.1 p. 3 for the LLM expansion, §3.3.2 p. 18
+      for CAGR, §4.4.2 p. 39 for the reinforcement-learning bullet).
+- [x] 10.4 **Length reduction, ~1,600 words.** Cut only material that was self-inflicted
+      duplication, never reviewer-mandated evidence: §4.4.1 916 -> ~560 w, §5 739 ->
+      ~610 w, §4.4.2 591 -> ~510 w, plus the numeric restatements of Tables 5 and 8 in
+      §4.1 and §4.2.4, which R2.o5 asked to be reduced. All 18 tables, all 8 figures and
+      every number retained.
+- [x] 10.5 Tables set uniformly in `\footnotesize` (8 pt against the 10 pt body, matching
+      the class's own `\EIGHT` convention). Saves a page and cuts underfull boxes
+      223 -> 168, which also serves R1.3's consistency requirement. Figure 1 scaled to
+      0.70\textwidth, Figures 4 and 5 to 0.92\textwidth.
+- [x] 10.6 `verify_numbers.py` still 223/223. 54 bibitems, 54 cited, no dangling refs, no
+      duplicate labels, zero compile errors.
+
+**Measured retention after this pass** (was 58.2% recognisable before the cuts, 65.0%
+word-level): sentence level 13% near-identical, 42% substantially kept, 58% recognisable;
+word level 65.0% of the submitted manuscript's words survive in order.
+
+**Open item — length.** 45 pp and 17,653 body words against 22 pp and 6,825 submitted.
+Roughly 60% of the growth is evidence the reviewers required (18 tables, 8 figures, seven
+equations, the holdout, the sweep, the ablations, the inference); the rest is the §9
+restoration layering the submitted prose on top of the rewritten prose. Going below
+~42 pp now requires giving up one of two things the author asked to keep: the restored
+submitted structure, or reviewer-mandated evidence. That is a decision for the author.

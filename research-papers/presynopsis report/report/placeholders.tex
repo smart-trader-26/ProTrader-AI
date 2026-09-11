@@ -1,0 +1,60 @@
+%=====================================================================
+%  PLACEHOLDERS — the only file you need to edit with your own details.
+%
+%  Every entry below is currently a PLACEHOLDER and prints in RED in the
+%  compiled PDF so that nothing unverified reaches the committee by accident.
+%
+%  To fill one in, replace the whole  \ph{...}  with your real text, e.g.
+%      \newcommand{\RegNo}{\ph{PhD registration number}}
+%  becomes
+%      \newcommand{\RegNo}{2021/PhD/CE/0147}
+%
+%  For a URL use \url{...}, e.g.
+%      \newcommand{\LiberteURL}{\url{https://libertejournal.com/article/1234}}
+%
+%  If a field genuinely does not apply, replace it with \notapplicable
+%  (prints an em dash and stays black).
+%=====================================================================
+
+%--------------------------------------------------- title page
+\newcommand{\Discipline}{\ph{degree discipline, e.g. Computer Engineering}}
+\newcommand{\RegNo}{\ph{PhD registration number}}
+\newcommand{\SubMonth}{\ph{month and year of submission, e.g. October 2026}}
+\newcommand{\GuideDesignation}{\ph{guide's designation, e.g. Professor}}
+\newcommand{\ResearchCentre}{Fr.\ C.\ Rodrigues College of Engineering, Bandra, Mumbai}
+\newcommand{\Univ}{University of Mumbai}
+\newcommand{\ScholarORCID}{0000-0003-2806-3305}
+\newcommand{\GuideORCID}{0000-0001-9893-6947}
+
+%--------------------------------------------------- [P3] Liberte Journal (published)
+\newcommand{\LiberteIndexing}{\ph{indexing, e.g. Scopus / UGC-CARE Group II / not indexed}}
+\newcommand{\LiberteURL}{\ph{article URL or DOI}}
+
+%--------------------------------------------------- [P4] IJCISIM (communicated)
+\newcommand{\IJCISIMDate}{\ph{submission month and year}}
+\newcommand{\IJCISIMURL}{\ph{submission acknowledgement URL or manuscript ID, if any}}
+
+%--------------------------------------------------- [P5] IJADS, Inderscience (under review)
+\newcommand{\IJADSURL}{\ph{Inderscience submission URL, if you wish to include it}}
+
+%--------------------------------------------------- [P1] ICSIT 2026 (conference)
+\newcommand{\ICSITVenue}{\ph{host institute, city, and conference dates}}
+\newcommand{\ICSITPages}{\ph{pages, or ``in press''}}
+\newcommand{\ICSITURL}{\ph{IEEE Xplore DOI or proceedings URL}}
+
+%--------------------------------------------------- [P2] DCHF NIFTY50 (communicated)
+\newcommand{\DCHFVenue}{\ph{full conference name, host institute, city and dates}}
+\newcommand{\DCHFURL}{\ph{submission acknowledgement URL or paper ID, if any}}
+
+%--------------------------------------------------- [P6] ICETI4T 2025 (published)
+\newcommand{\ICETIPages}{\ph{pages}}
+\newcommand{\ICETIURL}{\ph{IEEE Xplore DOI or proceedings URL}}
+
+%--------------------------------------------------- copyrights / patents
+%  Set \HasIPRtrue below if you have registered copyrights or filed patents,
+%  then fill \IPRentries. Otherwise leave it as is and the section is omitted.
+\newif\ifHasIPR
+\HasIPRfalse
+\newcommand{\IPRentries}{%
+  \ph{copyright / patent title, registration number and date}%
+}

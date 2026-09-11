@@ -1,0 +1,144 @@
+%=====================================================================
+%  PhD Pre-Synopsis Report
+%  Integrating Multi-Source Data with Sentiment Analysis and Language
+%  Models to Enhance Stock Market Decision Making
+%=====================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[left=1.05in,right=0.95in,top=0.9in,bottom=0.95in]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{ragged2e}
+\usepackage{url}
+\usepackage{multicol}
+
+%--------------------------------------------------- placeholder machinery
+\definecolor{phcolor}{RGB}{178,34,34}
+\newcommand{\ph}[1]{{\color{phcolor}\bfseries[\,#1\,]}}
+\newcommand{\notapplicable}{---}
+\newcommand{\link}[1]{{\footnotesize\sloppy #1}}
+\newcommand{\indexing}[1]{{\footnotesize Indexing: #1}}
+\input{placeholders}
+
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,shapes.geometric,shapes.misc}
+
+%--------------------------------------------------- layout tuning
+\setstretch{1.28}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.40em}
+\setlist[itemize]{topsep=2pt,itemsep=1.5pt,parsep=0pt,leftmargin=1.5em}
+\setlist[enumerate]{topsep=2pt,itemsep=1.5pt,parsep=0pt,leftmargin=1.8em}
+
+\titleformat{\chapter}[hang]
+  {\normalfont\large\bfseries}{\chaptertitlename~\thechapter:}{0.5em}{}
+\titlespacing*{\chapter}{0pt}{-14pt}{14pt}
+\titleformat{\section}[hang]{\normalfont\normalsize\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titleformat{\subsection}[hang]{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{3pt}
+
+\captionsetup{font=small,labelfont=bf,skip=4pt,justification=centering}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{9pt plus 2pt minus 2pt}
+\setlength{\intextsep}{9pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.90}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.88}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\captionsetup[table]{skip=4pt}
+\renewcommand{\arraystretch}{1.12}
+
+\newcommand{\tabfont}{\footnotesize\setstretch{1.02}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\bibname}{References}
+\newcommand{\pubcite}[1]{\textbf{[#1]}}
+
+\renewcommand{\cftchapfont}{\normalsize}
+\renewcommand{\cftchappagefont}{\normalsize}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftbeforechapskip}{3pt}
+\renewcommand{\cftfigfont}{\small}
+\renewcommand{\cfttabfont}{\small}
+\renewcommand{\cftfigpagefont}{\small}
+\renewcommand{\cfttabpagefont}{\small}
+
+%--------------------------------------------------- tikz styles
+\tikzset{
+  blk/.style={draw=black!65,fill=blue!4,rounded corners=2pt,align=center,
+              font=\scriptsize,inner sep=3.4pt,minimum height=8mm},
+  blkd/.style={draw=black!70,fill=black!8,rounded corners=2pt,align=center,
+              font=\scriptsize,inner sep=3.4pt,minimum height=8mm},
+  blka/.style={draw=black!65,fill=orange!12,rounded corners=2pt,align=center,
+              font=\scriptsize,inner sep=3.4pt,minimum height=8mm},
+  blkg/.style={draw=black!65,fill=green!7,rounded corners=2pt,align=center,
+              font=\scriptsize,inner sep=3.4pt,minimum height=8mm},
+  lbl/.style={font=\scriptsize\itshape,align=center,text=black!70},
+  ar/.style={-{Latex[length=1.7mm,width=1.3mm]},draw=black!70,line width=0.5pt},
+  arb/.style={-{Latex[length=1.7mm,width=1.3mm]},draw=black!70,line width=0.5pt,dashed},
+  grp/.style={draw=black!35,dashed,rounded corners=3pt,inner sep=5pt},
+}
+
+\begin{document}
+
+%=====================================================================
+\pagestyle{plain}
+\pagenumbering{roman}
+
+\begin{titlepage}
+\centering
+\vspace*{0.4cm}
+{\large\bfseries PRE-SYNOPSIS REPORT}\\[0.3cm]
+{\normalsize on}\\[0.45cm]
+{\large\bfseries Integrating Multi-Source Data with Sentiment Analysis\\[2pt]
+and Language Models to Enhance Stock Market\\[2pt] Decision Making}\\[1.0cm]
+{\normalsize Submitted in partial fulfilment of the requirements\\ for the degree of}\\[0.3cm]
+{\large\bfseries Doctor of Philosophy}\\[0.15cm]
+{\normalsize in \Discipline}\\[1.0cm]
+{\normalsize by}\\[0.25cm]
+{\large\bfseries Anandkumar Pardeshi}\\[0.12cm]
+{\normalsize Research Scholar \quad ORCID \ScholarORCID}\\[0.12cm]
+{\normalsize Registration No.\ \RegNo}\\[1.0cm]
+{\normalsize under the guidance of}\\[0.25cm]
+{\large\bfseries Dr.\ Sujata Deshmukh}\\[0.12cm]
+{\normalsize \GuideDesignation, Department of Computer Engineering}\\[0.12cm]
+{\normalsize ORCID \GuideORCID}\\[1.2cm]
+{\normalsize \ResearchCentre}\\[0.2cm]
+{\normalsize \Univ}\\[1.2cm]
+{\normalsize \SubMonth}
+\vfill
+{\footnotesize\color{phcolor} Items shown in red are placeholders; edit
+\texttt{placeholders.tex} to replace them.}
+\end{titlepage}
+
+\input{front}
+
+%=====================================================================
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{ch1_3}
+\input{ch4}
+\input{ch5}
+\input{ch6_end}
+
+\end{document}
