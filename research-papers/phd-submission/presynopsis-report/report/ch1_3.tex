@@ -1,0 +1,433 @@
+%=====================================================================
+\chapter{Introduction}
+%=====================================================================
+
+The price of a traded security is the outcome of a continuous negotiation between participants
+who do not observe the same information at the same time. Part of that information is
+structured and numerically clean --- open, high, low, close and volume records and the
+technical indicators derived from them. A larger part is unstructured and arrives irregularly,
+in news articles, corporate disclosures, regulatory announcements and social media commentary.
+A third part changes slowly and shapes the environment rather than the individual security:
+policy rates, inflation, industrial output and currency movements. Any forecasting system that
+reads only one of these streams is, by construction, reasoning from an incomplete description
+of the market it is trying to anticipate~\cite{snasel2024,long2024}.
+
+Two developments have made the integration of these streams practical rather than
+aspirational: the maturation of multi-source data fusion, which supplies a principled account
+of how heterogeneous streams may be combined so that their complementary content is preserved
+instead of being averaged away~\cite{snasel2024,zhang2022fusion,nti2021}; and the arrival of
+transformer-based large language models, which read financial text with a contextual
+sensitivity that lexicon and bag-of-words methods never achieved and can therefore convert
+narrative information into a numerically usable
+signal~\cite{vaswani2017,araci2019,li2024llmsurvey}. Together they make it reasonable to ask
+whether a single system can absorb quantitative, textual and macroeconomic evidence and convert
+it into a decision an investor could actually execute.
+
+That question is sharper than it appears, because three difficulties sit between a fused signal
+and a defensible decision. First, the reliability of a source is not constant: technical
+indicators are informative in quiet trending conditions and degrade when the market is
+disturbed, while news and volatility signals behave in the opposite manner, so a fusion rule
+with fixed weights misweights its inputs precisely when accurate weighting matters
+most~\cite{farimani2024,tai2022}. Second, a prediction produced by a deep architecture is not
+by itself an account of why the prediction was made; where capital is committed on the strength
+of the output, opacity is a practical obstacle and not merely a philosophical
+one~\cite{koa2024,lundberg2017}. Third, predictive accuracy and economic usefulness are
+different properties: a forecast becomes an investment only after it has been reconciled with a
+covariance structure, a risk budget, position limits and the cost of trading, and that
+translation can destroy the value of a forecast as easily as preserve
+it~\cite{demiguel2009,gu2020}.
+
+This research is directed at those three difficulties simultaneously. Its title,
+\emph{Integrating Multi-Source Data with Sentiment Analysis and Language Models to Enhance
+Stock Market Decision Making}, states the ambition, and the emphasis falls on the final two
+words. The work is not an attempt to add another architecture to a crowded field of predictors,
+but to build, instrument and honestly evaluate the complete path from heterogeneous raw
+information to an executable allocation, and to determine which stages of that path actually
+contribute to the outcome. Figure~\ref{fig:context} places the four research objectives on that
+path: Objective~1 governs the integration of sources, Objective~2 the extraction of signal from
+language and its combination with conventional indicators, Objective~3 the transparency of the
+reasoning and the behaviour of sentiment as a noisy, time-lagged input, and Objective~4 the
+conversion of a signal into a position and the validation of that conversion across markets.
+The objectives are sequential in that each consumes the output of the one before it, but they
+are not merely stages of a pipeline: each raises a distinct research question and each is
+answered by distinct experimental evidence.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.68}{\begin{tikzpicture}[node distance=3.2mm]
+\node[blk,minimum width=23mm] (m) {Market data\\OHLCV, indicators};
+\node[blk,right=of m,minimum width=23mm] (n) {News and social\\media text};
+\node[blk,right=of n,minimum width=23mm] (mac) {Macroeconomic\\series};
+\node[blk,right=of mac,minimum width=23mm] (alt) {Alternative data\\volatility index};
+
+\node[blkg,below=9mm of n,minimum width=52mm,xshift=9mm] (fuse)
+  {\textbf{Objective 1} --- multi-source integration\\
+   time-varying source weighting};
+\node[blka,below=7mm of fuse,minimum width=52mm] (llm)
+  {\textbf{Objective 2} --- LLM sentiment extraction\\
+   hybrid fusion with financial indicators};
+\node[blka,below=7mm of llm,minimum width=52mm] (xai)
+  {\textbf{Objective 3} --- transparent reasoning\\
+   sentiment noise and temporal dynamics};
+\node[blkg,below=7mm of xai,minimum width=52mm] (alloc)
+  {\textbf{Objective 4} --- validated decision making\\
+   allocation, risk budget, cross-market test};
+\node[blkd,below=7mm of alloc,minimum width=52mm] (dec)
+  {Executable position with a stated risk profile};
+
+\draw[ar] (m.south) -- ++(0,-3mm) -| (fuse.north west);
+\draw[ar] (n.south) -- ++(0,-3mm) -| ([xshift=-14mm]fuse.north);
+\draw[ar] (mac.south) -- ++(0,-3mm) -| ([xshift=14mm]fuse.north);
+\draw[ar] (alt.south) -- ++(0,-3mm) -| (fuse.north east);
+\draw[ar] (fuse) -- (llm);
+\draw[ar] (llm) -- (xai);
+\draw[ar] (xai) -- (alloc);
+\draw[ar] (alloc) -- (dec);
+\node[lbl,right=5mm of fuse,align=left] {what to fuse};
+\node[lbl,right=5mm of llm,align=left] {how to read text};
+\node[lbl,right=5mm of xai,align=left] {why to trust it};
+\node[lbl,right=5mm of alloc,align=left] {how much to hold};
+\end{tikzpicture}}
+\caption[Research context and the position of the four objectives]{Research context: the
+path from heterogeneous market information to an executable decision, and the position of
+the four research objectives on that path.}
+\label{fig:context}
+\end{figure}
+
+The Indian equity market is the primary empirical setting, by choice rather than
+convenience. The National Stock Exchange combines high retail participation, strong
+sensitivity to domestic policy events such as the Union Budget and Reserve Bank of India
+monetary policy announcements, pronounced sectoral concentration in financial services, and
+simultaneous exposure to global factors including crude oil prices and United States
+monetary policy~\cite{mu2023investor,bacco2024,khan2025asymmetric}. These features make it
+an unusually demanding test of a multi-source system, because the sources genuinely disagree
+and the disagreement is informative. Cross-market validation on United States multi-asset
+and mega-capitalisation universes is carried out separately under Objective~4 to establish
+where the framework transfers and where it does not.
+
+The remainder of this report is organised as follows. Chapter~2 reviews the literature and
+states the research gaps that follow from it. Chapter~3 formalises the problem statement and
+the four objectives. Chapter~4 states the research contributions and maps the candidate's
+published work onto those objectives. Chapter~5 presents the methodology, implementation and
+experimental evidence for each objective and shows how the contributions compose into a
+single system. Chapter~6 discusses the consolidated results and the significance of the
+work. Chapter~7 concludes and states the future scope, and Chapter~8 gives the intended
+organisation of the thesis.
+
+%=====================================================================
+\chapter{Literature Survey}
+%=====================================================================
+
+This chapter reviews the research directly relevant to the thesis along the same four axes
+as the objectives, so that the gap identified at the end of each section is the gap the
+corresponding objective addresses. Emphasis is placed on what each body of work establishes
+and, more importantly, on what it leaves unresolved.
+
+\section{Multi-Source Data Fusion in Financial Prediction}
+
+That heterogeneous sources outperform any single source is now well supported. Sn\'a\v{s}el et
+al.~\cite{snasel2024} formalised a generalised multi-source fusion framework for stock selection
+and showed that complementary streams mitigate each other's individual weaknesses; Long et
+al.~\cite{long2024} reached the same conclusion from a multi-view heterogeneous data
+perspective; and Nti et al.~\cite{nti2021} reported accuracy gains of 15--20 per cent from
+combining technical, fundamental and sentiment features while emphasising that sources sampled
+at different frequencies must be synchronised before they are combined. The pattern recurs
+across investor-sentiment models~\cite{mu2023investor}, multi-source sentiment and price
+fusion~\cite{fu2024}, trend forecasting~\cite{shaban2024}, multi-level dynamic
+fusion~\cite{dong2024}, calendar-aware recurrent modelling~\cite{chen2024lasso}, multiple
+instance learning over text and price~\cite{zhang2018mil}, long-sequence transformers over
+social media~\cite{zhu2025informer}, multi-task prediction of correlated financial
+variables~\cite{hong2025mtl} and emerging-market recurrent models with exogenous
+variables~\cite{alsheebah2024}. Parallel work on single-source architectures establishes the
+ceiling that fusion must beat: Song~\cite{song2024} enriched the feature space for
+trend-reversal prediction and Javaid et al.~\cite{javaid2024} combined a peephole recurrent
+network with a time-attention layer, both improving on conventional deep baselines while
+remaining confined to price-derived inputs.
+
+The methodological question is not whether to fuse but how, and three strategies dominate.
+Early fusion concatenates features from all sources before modelling, which is simple but
+forces one architecture to learn cross-domain interactions and is prone to modality
+dominance~\cite{moodi2024,li2023datafusion}. Late fusion trains source-specific models and
+combines their predictions, preserving modularity but usually fixing the combination weights in
+advance~\cite{farimani2024,vargas2022}. Hybrid or attention-based fusion learns modality
+importance inside the network~\cite{choi2023,haryono2023,liu2019attention,zong2025,tai2022}, a
+genuine advance that nonetheless produces weights which are point estimates over an entire
+training set rather than statements about the reliability of a source at a particular moment. A
+survey of thirty-six recent multi-source studies conducted as part of this research found that
+44.4 per cent combine text with technical data and 25.0 per cent remain price-only, but that
+\emph{none} conditions its fusion weights on a time-varying uncertainty estimate. Where fusion
+output is carried through to a portfolio at all, the conversion is typically heuristic: Sami et
+al.~\cite{sami2025} construct holdings by statistical averaging of forecasts, without a
+covariance structure or an explicit risk objective.
+
+\section{Sentiment Analysis and Language Models in Finance}
+
+Financial text analysis has passed through three generations. Dictionary methods scored text
+against predefined polarity lexicons; Loughran and McDonald~\cite{loughran2011} showed that
+general-purpose lexicons misclassify financial language badly enough to require domain-specific
+alternatives, and VADER~\cite{hutto2014} remains a widely used reference implementation.
+Supervised machine learning improved accuracy but required large annotated corpora and
+generalised poorly across market conditions~\cite{rouf2021}. Transformer
+architectures~\cite{vaswani2017} displaced both: FinBERT~\cite{araci2019} adapted bidirectional
+encoders to financial language, and domain models~\cite{wu2023bloomberggpt,yang2023fingpt,
+wang2024fingptbench} extended this to generative reasoning over financial documents. Surveys
+converge on the finding that contextual language models extract market-relevant meaning that
+lexicon methods miss~\cite{li2024llmsurvey,todd2024,bahoo2024}.
+
+Applications have followed quickly. Conversational language models outperform established
+financial sentiment baselines~\cite{fatouros2024}; dedicated models exist for sentiment in
+financial tweets~\cite{wilksch2024}; Haryono et al.~\cite{haryono2023,haryono2024} coupled a
+transformer news encoder with a gated recurrent unit and later extended it to generative
+aspect-based sentiment; Ho and Huang~\cite{ho2021} combined sentiment with candlestick chart
+representations; Jung and Jang~\cite{jung2024} improved sentiment quality by masking numerically
+significant tokens so that quantitative context is preserved; and \'On\'oz\'o et
+al.~\cite{onozo2024} applied language models to news analysis and macroeconomic nowcasting.
+Applied studies span markets and asset classes, and the obstacles are
+surveyed~\cite{khan2024chatgpt,vargas2022,wang2024spcm,shang2025,elahi2024,mishra2025}. What
+this literature establishes is that language models improve sentiment \emph{measurement}. What
+it establishes far less clearly is how much of that improvement survives into forecast quality
+once the sentiment score is fused with price history, aligned to trading sessions and evaluated
+without look-ahead.
+
+\section{Explainability, Causality and Uncertainty}
+
+Opacity is a recognised obstacle to the adoption of learned models in finance. Koa et
+al.~\cite{koa2024} used self-reflective large language models to generate natural-language
+explanations alongside stock predictions, and general-purpose attribution
+methods~\cite{lundberg2017,ribeiro2016} are now standard instruments for post-hoc
+interpretation. Post-hoc attribution, however, explains a model; it does not establish that the
+relationships the model has learned are anything more than correlations that happen to hold in
+the training window.
+
+Causal formulations address this directly. Xu et al.~\cite{xu2026causal} showed that causal
+feature selection is more robust out of sample than correlation-based feature engineering, but
+their causal graph is static and cannot represent the structural breaks produced by policy
+announcements. Liu et al.~\cite{liu2026dynamic} introduced a dynamic-causal lens that encodes
+stock interactions as symbolic movement patterns and adapts to changing conditions, at a
+computational cost that scales quadratically in the number of instruments. Related work couples
+factor investing with causal graph networks using factors calibrated to United States
+equities~\cite{yu2025causalseqgnn}, adds memory to a causal interaction
+network~\cite{luo2025magicnet}, or models the vagueness of inter-stock
+relations~\cite{xing2024vague}. Alongside this, multi-granularity
+architectures~\cite{zhu2025multigran,wang2025mtmd} demonstrated that financial series carry
+structure at several time scales at once, with Wang et al.~\cite{wang2025mtmd} adding a
+debiasing layer that assumes stationary noise properties --- an assumption in tension with the
+conditional heteroskedasticity that has been the standard description of financial volatility
+since Bollerslev~\cite{bollerslev1986}.
+
+Relational formulations extend the same idea to the
+cross-section~\cite{patel2024hybrid,liu2024heterogeneous,gao2025relational}, treating
+securities as nodes in a learned graph and modelling their mutual interplay. The statistical
+instrument underlying directed inference here remains the notion of predictive precedence
+formalised by Granger~\cite{granger1969} and the constraint-based discovery procedures of
+Spirtes et al.~\cite{spirtes2000}, while the learning components rest on long short-term
+memory~\cite{hochreiter1997}, gated recurrent units~\cite{cho2014gru} and gradient-boosted
+tree ensembles~\cite{chen2016xgboost}.
+
+A related and less examined issue is that a signal's reliability is itself uncertain. Most
+fusion architectures pass point predictions forward without any statement of confidence, so a
+source that has recently become noisy continues to be weighted as though it had not; Bacco et
+al.~\cite{bacco2024} study prediction explicitly under high uncertainty yet still fuse sentiment
+and price statically. Explicit, time-varying uncertainty
+quantification~\cite{gal2016dropout,kendall2017} is the natural remedy and is largely absent
+from the reviewed fusion literature.
+
+\section{From Prediction to Decision: Allocation and Validation}
+
+Portfolio construction has its own long literature. Markowitz~\cite{markowitz1952} established
+the mean-variance formulation, whose extreme sensitivity to estimated inputs motivated both
+shrinkage estimators~\cite{ledoit2004} and the demonstration by DeMiguel et
+al.~\cite{demiguel2009} that naive equal weighting can outperform optimisation that ignores
+estimation error. Regime-switching models following Hamilton~\cite{hamilton1989} showed that
+financial series are not homogeneous through time; Ang and Bekaert~\cite{ang2002} demonstrated
+that accounting for regime shifts materially changes optimal allocations, and Kritzman et
+al.~\cite{kritzman2012} made the practical case for regime-aware dynamic strategies.
+Volatility-managed portfolios~\cite{moreira2017} scale total risk by recent volatility but say
+nothing about composition; Kumar and Yadav~\cite{kumar2024rdmdea} handle positive and negative
+returns without assuming normality but without integration to a dynamic signal; risk-based
+construction~\cite{lopezdeprado2016} forgoes signal information by design; and recent work
+generates risk-aware prediction intervals~\cite{gu2025ragic} or builds sparse portfolios from
+irregular, English-only news streams~\cite{zhu2025spin}. Position sizing under an estimated
+edge remains governed by the growth-optimal criterion of Kelly~\cite{kelly1956} and the
+information-ratio scaling of Grinold and Kahn~\cite{grinold2000}.
+
+A second and older family of sentiment measures reads sentiment off the market rather than off
+text. Baker and Wurgler~\cite{bakerwurgler2007} construct investor sentiment from trading
+activity and dispersion, on the argument that participation reveals what surveys merely report,
+and later work builds allocation signals on exactly this
+reasoning~\cite{singsiri2026,naidoo2025}. This family matters here because instrument-level news
+corpora do not exist for broad index instruments, which constrains what can be measured at the
+allocation layer.
+
+Evaluation practice is the final concern. Risk-adjusted performance is still summarised by the
+ratio introduced by Sharpe~\cite{sharpe1966}, and Gu et al.~\cite{gu2020} provide the
+benchmark machine-learning study in asset pricing, noting that measured predictability is
+small. Harvey and Liu~\cite{harvey2015} showed that conventional significance thresholds are
+inadequate once the number of strategies examined is taken into account, and Bailey and
+L\'opez de Prado~\cite{bailey2014dsr} formalised the deflated Sharpe ratio for exactly that
+reason. Robust inference under serial dependence requires corrections~\cite{newey1987},
+resampling schemes~\cite{politis1994} and forecast-comparison tests~\cite{diebold1995}. The
+practical consequence is that a reported gain is credible only when the specification search
+behind it is reported alongside it.
+
+Table~\ref{tab:lit} consolidates the representative work reviewed above, stating for each the
+contribution that is relevant to this thesis and the limitation this thesis must work around.
+
+\begin{table}[!htb]
+\centering
+\caption[Consolidated review of representative work]{Consolidated review of representative
+work, with the limitation relevant to this research}
+\label{tab:lit}
+\tabfont
+\begin{tabular}{@{}L{2.35cm}L{3.5cm}L{3.9cm}L{4.3cm}@{}}
+\toprule
+\textbf{Reference} & \textbf{Technique} & \textbf{Contribution relevant here} &
+\textbf{Limitation to be addressed} \\
+\midrule
+Sn\'a\v{s}el et al.~\cite{snasel2024} & Generalised multi-source fusion for stock selection &
+Formal basis for combining numerical and textual streams & Fusion weights are not conditioned
+on the prevailing market state \\
+Long et al.~\cite{long2024}; Nti et al.~\cite{nti2021} & Multi-view and multi-source deep
+fusion & Views carry non-overlapping information; frequency alignment is essential &
+Developed and tested outside emerging-market conditions \\
+Haryono et al.~\cite{haryono2023}; Mu et al.~\cite{mu2023investor} & Sentiment fused with
+technical indicators & Gated and optimised fusion of text and price streams & Gate learned
+globally; sentiment quality assumed rather than validated \\
+Farimani et al.~\cite{farimani2024} & Adaptive multimodal weighting & Moves toward
+time-varying source importance & No explicit probabilistic confidence per source \\
+Araci~\cite{araci2019}; Wu et al.~\cite{wu2023bloomberggpt} & Domain-adapted language models
+& Contextual sentiment extraction from financial text & Gain in sentiment quality is not
+traced through to decision quality \\
+Koa et al.~\cite{koa2024}; Lundberg and Lee~\cite{lundberg2017} & LLM explanations;
+post-hoc attribution & Natural-language and feature-level justification & Explains the model,
+not the causal structure \\
+Xu et al.~\cite{xu2026causal}; Liu et al.~\cite{liu2026dynamic} & Causal and dynamic-causal
+graph modelling & Causal features are more robust out of sample & Static graph cannot absorb
+policy shocks; dynamic variant scales quadratically \\
+Wang et al.~\cite{wang2025mtmd} & Multi-scale temporal memory with debiasing & Multiple
+horizons processed jointly & Debiasing assumes stationary noise \\
+Kumar and Yadav~\cite{kumar2024rdmdea}; Moreira and Muir~\cite{moreira2017} & Credibilistic
+selection; volatility-managed portfolios & Optimisation without normality; total risk scaled by
+recent volatility & Neither is coupled to a dynamic signal, and neither addresses composition
+and risk level separately \\
+DeMiguel et al.~\cite{demiguel2009}; Harvey and Liu~\cite{harvey2015} & Naive
+diversification; backtesting under multiple testing & Estimation error can defeat
+optimisation; reported gains must account for specification search & Sets the benchmark any
+framework must beat and requires every specification to be disclosed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Research Gaps}
+
+The review supports five gaps, stated below and traced to objectives in
+Figure~\ref{fig:gapmap}.
+
+\begin{enumerate}[label=\textbf{G\arabic*.}]
+\item \textbf{Static fusion of dynamically reliable sources.} Existing frameworks fuse
+financial, textual and macroeconomic streams using fixed weights, globally learned attention or
+simple averaging. None conditions the contribution of a source on a measured, time-varying
+estimate of that source's own predictive reliability, so a stream that has become noisy
+continues to influence the forecast at its historical weight.
+
+\item \textbf{Incomplete coverage of the Indian information environment.} Most multi-source
+frameworks are designed and validated on developed markets. Frameworks that jointly incorporate
+financial indicators, news sentiment, social media signals and Indian macroeconomic variables
+--- policy rate, inflation, industrial production, currency --- under a single architecture and
+a strict temporal protocol are rare.
+
+\item \textbf{Unverified translation from language-model sentiment to decision quality.}
+Language models demonstrably improve sentiment measurement. Whether that improvement survives
+temporal alignment, fusion with technical indicators and honest out-of-sample evaluation at a
+single-name horizon has not been established, and reported gains are seldom accompanied by the
+baseline against which they should be judged.
+
+\item \textbf{Correlational rather than mechanistic transparency.} Post-hoc attribution explains
+a fitted model; it does not distinguish a genuine driver from a spurious association, nor
+describe how a sentiment shock propagates into a price movement over time. A mechanism grounded
+in directed causal structure and multi-scale temporal dynamics is required, together with a
+direct measurement of how much noise the sentiment channel carries.
+
+\item \textbf{Prediction reported in place of decision.} Statistical accuracy remains the
+dominant success criterion and economic value is reported inconsistently. Where allocation is
+addressed it is often heuristic, and the contribution of individual layers is almost never
+isolated, so architectures accumulate components whose value has never been tested. Cross-market
+transfer is asserted more often than demonstrated.
+\end{enumerate}
+
+%=====================================================================
+\chapter{Problem Statement and Research Objectives}
+%=====================================================================
+
+\section{Problem Statement}
+
+To design, develop and validate an integrated decision-support framework that fuses
+heterogeneous financial information --- market metrics, news and social media sentiment
+extracted using large language models, and macroeconomic indicators --- into interpretable
+and reliability-aware predictions, and that converts those predictions into executable,
+risk-controlled stock market decisions whose performance is demonstrated across market
+states and across markets. The framework must address the limitations of existing
+approaches, namely static source weighting under non-stationary reliability, opaque and
+correlational reasoning, unquantified sentiment noise, and the routine substitution of
+statistical accuracy for economic value.
+
+\section{Research Objectives}
+
+\begin{enumerate}[label=\textbf{RO\arabic*.},leftmargin=2.6em]
+\item To investigate and develop a comprehensive model that integrates diverse data sources
+--- such as financial metrics, news articles, social media sentiment and macroeconomic
+factors --- aiming to enhance the accuracy of stock market predictions by providing a
+holistic analysis.
+
+\item To design a hybrid framework that combines large language models, sentiment analysis
+techniques and conventional financial indicators, focusing on optimising deep learning
+architectures for real-time stock market predictions.
+
+\item To establish and evaluate an explainable artificial intelligence framework capable of
+delivering transparent and interpretable predictions in stock selection, analysing the impact
+of sentiment data noise and exploring the temporal dynamics between sentiment shifts and
+stock price movements.
+
+\item To evaluate and validate the result and practical application of the proposed model
+across different stock markets, exploring transfer learning techniques for cross-market
+applications and validating the model against benchmark datasets and real-world market data.
+\end{enumerate}
+
+Figure~\ref{fig:gapmap} traces each gap to the objective that addresses it and to the
+contribution reported in Chapter~4. The mapping is many-to-many by design: G1 and G2 are
+jointly answered by the fusion work of RO1, while G5 requires evidence from both the decision
+layer of RO4 and the transparency instruments of RO3.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.68}{\begin{tikzpicture}[node distance=3mm]
+\node[blkd,minimum width=30mm,minimum height=6mm] (g1) {\textbf{G1} static fusion weights};
+\node[blkd,below=3mm of g1,minimum width=30mm,minimum height=6mm] (g2) {\textbf{G2} Indian information environment};
+\node[blkd,below=3mm of g2,minimum width=30mm,minimum height=6mm] (g3) {\textbf{G3} sentiment $\to$ decision unverified};
+\node[blkd,below=3mm of g3,minimum width=30mm,minimum height=6mm] (g4) {\textbf{G4} correlational transparency};
+\node[blkd,below=3mm of g4,minimum width=30mm,minimum height=6mm] (g5) {\textbf{G5} prediction reported as decision};
+
+\node[blkg,right=26mm of g1,minimum width=27mm,minimum height=6mm] (o1) {\textbf{RO1} integrated multi-source model};
+\node[blkg,below=5mm of o1,minimum width=27mm,minimum height=6mm] (o2) {\textbf{RO2} hybrid LLM + indicator framework};
+\node[blkg,below=5mm of o2,minimum width=27mm,minimum height=6mm] (o3) {\textbf{RO3} explainable and causal framework};
+\node[blkg,below=5mm of o3,minimum width=27mm,minimum height=6mm] (o4) {\textbf{RO4} validation and cross-market transfer};
+
+\node[blka,right=24mm of o1,minimum width=27mm,minimum height=6mm] (c1) {\textbf{RC1} MSFN and Bayesian dynamic fusion};
+\node[blka,below=5mm of c1,minimum width=27mm,minimum height=6mm] (c2) {\textbf{RC2} LLM sentiment--indicator pipeline};
+\node[blka,below=5mm of c2,minimum width=27mm,minimum height=6mm] (c3) {\textbf{RC3} DCHF and sentiment diagnostics};
+\node[blka,below=5mm of c3,minimum width=27mm,minimum height=6mm] (c4) {\textbf{RC4} decision-theoretic allocation};
+
+\draw[ar] (g1) -- (o1); \draw[ar] (g2) -- (o1);
+\draw[ar] (g3) -- (o2); \draw[ar] (g4) -- (o3);
+\draw[ar] (g5) -- (o4); \draw[arb] (g5) -- (o3);
+\draw[ar] (o1) -- (c1); \draw[ar] (o2) -- (c2);
+\draw[ar] (o3) -- (c3); \draw[ar] (o4) -- (c4);
+\node[lbl,above=1.5mm of g1] {Research gaps};
+\node[lbl,above=1.5mm of o1] {Research objectives};
+\node[lbl,above=1.5mm of c1] {Research contributions};
+\end{tikzpicture}}
+\caption[Alignment of research gaps, objectives and contributions]{Alignment of research
+gaps, research objectives and research contributions. Dashed links denote partial rather than
+primary coverage.}
+\label{fig:gapmap}
+\end{figure}

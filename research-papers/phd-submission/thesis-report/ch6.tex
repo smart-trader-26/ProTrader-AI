@@ -1,0 +1,498 @@
+%=====================================================================
+\chapter{Hybrid Language Model and Indicator Framework}
+\label{ch:llm}
+%=====================================================================
+
+\textbf{Research Objective 2.} \emph{To design a hybrid framework that combines large language
+models, sentiment analysis techniques and conventional financial indicators, focusing on
+optimising deep learning architectures for real-time stock market predictions.}
+
+\vspace{0.4em}
+Chapters~\ref{ch:fusion} and~\ref{ch:dynfusion} maximised the number of sources and showed that
+combining them helps. This chapter does the opposite. It isolates a single source --- news text
+read by a transformer language model --- and asks precisely what that source adds to a
+conventional indicator set at the horizon and granularity at which a practitioner actually
+takes a position: the next-day direction of an individual equity.
+
+The answer is more interesting than a headline accuracy figure, and it is reported in full
+including the part that does not flatter the method. Language-model sentiment turns out to be
+the single most important feature in the fused space and to carry information orthogonal to
+price, while delivering only a small increment in raw directional accuracy, with every model
+examined operating close to the random classifier. Section~\ref{sec:llm-limit} treats that
+combination as the finding rather than as a disappointment, and Section~\ref{sec:llm-implication}
+explains why it redirects the remainder of the thesis toward the decision layer.
+
+The work reported in this chapter appears in publication~\pubcite{P3}; the architectural
+feasibility evidence in Section~\ref{sec:llm-feasibility} draws on~\pubcite{P1}.
+
+\section{Design Rationale}
+\label{sec:llm-rationale}
+
+\subsection{Why isolate a single source}
+
+A multi-source architecture that outperforms its baselines has demonstrated that the collection
+of sources is useful. It has not established what any individual source contributes, because the
+sources are confounded: any gain could come from any of them, or from their interaction, or from
+the additional model capacity the architecture required to accommodate them.
+Section~\ref{sec:msfn-ablation} addressed part of this problem by ablation, but ablation within a
+fused model measures the \emph{marginal} contribution of a stream in the presence of the others,
+which is not the same as its standalone informativeness.
+
+This chapter therefore constructs the cleanest available comparison: one textual source, one
+conventional feature set, one fusion step, and baselines that differ from the proposed model in
+exactly that one source. Every model sees the same sessions, the same partition, the same
+protocol. Whatever difference appears is attributable to the sentiment feature.
+
+\subsection{Why a continuous score rather than a label}
+
+The sentiment encoder emits a continuous polarity score $s_t \in [-1,+1]$ together with a
+confidence, rather than a categorical positive, neutral or negative label. The reason is that
+intensity is informative and categorisation destroys it. A routine quarterly result described in
+mildly favourable terms and a transformative regulatory approval both map to ``positive''; the
+market does not treat them alike. Retaining the continuous value preserves the distinction for
+the downstream model, and it also makes the empirical distribution of sentiment available as a
+diagnostic, which Section~\ref{sec:llm-distribution} uses.
+
+\subsection{Why a tree ensemble rather than a deep network}
+
+The model operating on the fused feature space is a gradient-boosted tree
+ensemble~\cite{chen2016xgboost} rather than a deep network, for three reasons stated in
+Section~2.6.3 and restated here because the choice is deliberate. Tree ensembles are invariant to
+monotone rescaling, which matters when combining a bounded sentiment score with unbounded volume
+accumulators. They handle heterogeneous feature types without embedding layers. And their
+split-gain statistics supply a feature-importance measure intrinsic to the fitted model rather
+than a post-hoc approximation --- which is what makes the central finding of
+Section~\ref{sec:llm-importance} a measurement rather than an estimate.
+
+There is also a practical reason. A design goal of this study was that the entire pipeline should
+run to completion in a freely accessible hosted notebook environment, so that the result can be
+independently re-derived by a reader without specialised hardware. A tree ensemble over a
+few thousand daily observations satisfies that constraint; a large recurrent architecture over
+the same data does not, and would in any case be over-parameterised for the sample size.
+
+\section{Framework Architecture}
+\label{sec:llm-arch}
+
+The framework is organised as five interconnected layers, shown in Figure~\ref{fig:llm}: data
+collection, technical indicator computation, sentiment analysis, feature fusion, and model
+training with evaluation.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.90}{\begin{tikzpicture}[node distance=3mm]
+\node[blkd,minimum width=32mm,minimum height=8mm] (a1) {Historical prices\\daily OHLCV};
+\node[blkd,right=10mm of a1,minimum width=32mm,minimum height=8mm] (a2) {Financial news\\headlines and articles};
+
+\node[blk,below=7mm of a1,minimum width=32mm,minimum height=11mm] (b1)
+  {\textbf{Technical layer}\\15 indicators: SMA, RSI,\\MACD, Bollinger, VWAP};
+\node[blk,below=7mm of a2,minimum width=32mm,minimum height=11mm] (b2)
+  {\textbf{Sentiment layer}\\transformer encoder $\rightarrow$\\continuous score $s_t \in [-1,+1]$};
+
+\node[blkg,below=7mm of b1,minimum width=32mm,minimum height=8mm] (c1)
+  {$z$-score standardisation};
+\node[blkg,below=7mm of b2,minimum width=32mm,minimum height=8mm] (c2)
+  {min--max scaling and\\session alignment};
+
+\node[blka,below=7mm of c1,minimum width=74mm,minimum height=8mm,xshift=21mm] (d)
+  {\textbf{Feature fusion layer} --- early, feature-level concatenation};
+\node[blka,below=5mm of d,minimum width=74mm,minimum height=8mm] (e)
+  {\textbf{Model layer} --- gradient-boosted ensemble on the fused space};
+\node[blkd,below=5mm of e,minimum width=74mm,minimum height=10mm] (f)
+  {\textbf{Evaluation layer} --- temporal cross-validation, directional accuracy,\\
+   Diebold--Mariano testing, confidence calibration, simulated trading};
+
+\foreach \a/\b in {a1/b1,a2/b2,b1/c1,b2/c2} \draw[ar] (\a) -- (\b);
+\draw[ar] (c1.south) -- ++(0,-2mm) -| (d.north);
+\draw[ar] (c2.south) -- ++(0,-2mm) -| (d.north);
+\draw[ar] (d) -- (e);
+\draw[ar] (e) -- (f);
+\node[lbl,right=3mm of b2,align=left,xshift=2mm] {contextual reading\\replaces lexicon\\polarity};
+\end{tikzpicture}}
+\caption[Hybrid language model and technical indicator framework]{Hybrid framework combining
+large-language-model sentiment extraction with conventional financial indicators. The continuous
+sentiment score preserves intensity that categorical classification would discard.}
+\label{fig:llm}
+\end{figure}
+
+\subsection{Data collection layer}
+
+Market data are retrieved for Indian large-capitalisation equities --- TCS, RELIANCE and
+HDFCBANK --- as daily open, high, low, close and volume records over a multi-year period
+sufficient to span several distinct market conditions. The three names were chosen to cover
+different sectors (information technology, energy and conglomerate, banking) and because all
+three carry news coverage dense enough to produce a meaningful daily sentiment aggregate; a
+thinly covered name would yield a sentiment series that is mostly missing, which tests the
+imputation rule rather than the hypothesis.
+
+News acquisition uses a two-stage strategy combining syndicated news feeds with targeted
+retrieval, and applies filtering at two levels: non-financial content is excluded, and sources
+are prioritised by established credibility in financial reporting. Items are validated for
+temporal consistency --- an item whose time stamp is missing or implausible is discarded rather
+than imputed --- and for content quality.
+
+\subsection{Technical indicator layer}
+
+Fifteen indicators are computed, following the definitions of Section~2.2. Trend is represented
+by simple moving averages over 5, 10 and 20 sessions; momentum by the relative strength
+index~\cite{wilder1978} and the moving average convergence divergence with its signal line;
+volatility by Bollinger band measures and historical volatility; and participation by
+volume-weighted average price derivatives and volume momentum oscillators. Each indicator was
+selected for established efficacy in the financial literature and for computational efficiency,
+the two criteria being in tension only rarely at this scale.
+
+\subsection{Sentiment analysis engine}
+
+Each headline is scored by a transformer sentiment encoder operating on the raw text. The
+pipeline has four stages: text normalisation to remove markup and boilerplate; batched inference
+for computational efficiency; extraction of a continuous polarity score and an associated
+confidence; and daily aggregation over all items attributed to the session.
+
+The contextual reading performed by a transformer is what distinguishes this stage from a lexicon
+baseline. A lexicon scores ``the bank wrote back provisions after the regulator eased norms'' by
+summing token polarities, several of which are negative in general usage; a contextual encoder
+reads the sentence. This is the improvement in \emph{measurement} that the literature surveyed in
+Section~3.2 establishes, and the entire purpose of this chapter is to determine how much of it
+survives into forecast quality.
+
+\subsection{Feature fusion layer}
+
+Fusion is performed at feature level, before modelling. Technical indicators are standardised by
+$z$-score, which equalises scales across features measured in incompatible units --- a price
+level, a bounded oscillator and a volume ratio have no common scale. The sentiment score is
+min--max scaled, which preserves its interpretable range rather than mapping it to an arbitrary
+standardised scale. The two blocks are concatenated into a single input vector.
+
+Temporal alignment is applied here and is the most error-prone step in the framework. The rule,
+as in Section~2.5, is that an item is attributed to the first trading session beginning strictly
+after its publication time stamp. An article published at 18:30 on a Tuesday is attributed to
+Wednesday's session, not to Tuesday's, which has already closed. Attributing it to Tuesday would
+be a form of look-ahead that leaves no trace in the code and inflates every downstream metric.
+
+\subsection{Model training and evaluation layers}
+
+A gradient-boosted tree ensemble is trained on the fused space. Three baselines are trained on
+technical indicators alone under an identical protocol: random forest~\cite{breiman2001}, support
+vector machine~\cite{cortes1995svm} and logistic regression. The target is the sign of the
+next-session return.
+
+The evaluation layer applies a chronological 80/20 partition with temporal cross-validation,
+reports accuracy, precision, recall and $F_1$, tests differences by the Diebold--Mariano
+statistic~\cite{diebold1995}, examines confidence calibration, and converts predictive accuracy
+into economic terms through a simulated trading strategy. The implementation stack is recorded
+in Table~\ref{tab:llm-stack} for reproducibility.
+
+\begin{table}[!htb]
+\centering
+\caption[Implementation stack for the hybrid framework]{Implementation stack for the hybrid
+language-model and indicator framework}
+\label{tab:llm-stack}
+\tabfont
+\begin{tabular}{@{}L{4.0cm}L{9.6cm}@{}}
+\toprule
+\textbf{Component} & \textbf{Implementation} \\
+\midrule
+Environment & Hosted notebook environment, freely accessible, no specialised hardware required \\
+Data processing & \texttt{pandas}, \texttt{numpy} \\
+Market data & \texttt{yfinance}, \texttt{pandas\_datareader} \\
+Machine learning & \texttt{scikit-learn}, \texttt{xgboost} \\
+Language model & \texttt{transformers}, \texttt{torch} \\
+Visualisation & \texttt{matplotlib}, \texttt{seaborn}, \texttt{plotly} \\
+Design principle & Modular separation of data processing, feature engineering, model training and
+evaluation, so that each subsystem can be tested independently \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Results: Classification Performance}
+\label{sec:llm-results}
+
+Table~\ref{tab:llmres} and Figure~\ref{fig:llmres} report the comparison. The result must be read
+carefully, because the headline number and the useful number are not the same.
+
+\begin{table}[!htb]
+\centering
+\caption[Directional classification with LLM-extracted sentiment]{Single-name directional
+classification with and without language-model-extracted sentiment features}
+\label{tab:llmres}
+\tabfont
+\begin{tabular}{@{}L{4.5cm}L{3.3cm}rrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Feature set} & \textbf{Accuracy} & \textbf{Precision} &
+\textbf{Recall} & \textbf{$F_1$} \\
+\midrule
+Random Forest & technical only & 0.4982 & 0.4345 & 0.6033 & 0.5052 \\
+Support Vector Machine & technical only & 0.4246 & 0.4246 & 1.0000 & 0.5961 \\
+Logistic Regression & technical only & 0.4702 & 0.4257 & 0.7107 & 0.5325 \\
+XGBoost with sentiment & technical + LLM sentiment & 0.4772 & 0.4103 & 0.5289 & 0.4621 \\
+\midrule
+\multicolumn{2}{@{}l}{Mean of technical-only baselines} & 0.4643 & --- & --- & --- \\
+\multicolumn{2}{@{}l}{Relative improvement of the proposed model} & \textbf{+2.77\%} & --- &
+--- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.90\linewidth]{figs/f_models.pdf}
+\caption[Comparative classification performance with sentiment features]{Comparative
+classification performance. All models operate close to the random classifier at a single-name
+daily horizon, which is the correct baseline against which the sentiment increment should be
+judged.}
+\label{fig:llmres}
+\end{figure}
+
+The sentiment-augmented model attains 47.72 per cent accuracy against a baseline mean of 46.43
+per cent, a relative improvement of 2.77 per cent. It does \emph{not} attain the highest raw
+accuracy: random forest reaches 49.82 per cent. Reporting only the first of these numbers would
+misrepresent the finding, so both are stated prominently.
+
+The precision--recall columns are instructive and are the reason accuracy alone is an inadequate
+summary. The support vector machine attains perfect recall of 1.0000 with precision of 0.4246,
+which is exactly the signature of a degenerate classifier: it predicts the positive class
+unconditionally, and its precision is therefore simply the base rate of upward sessions in the
+sample. Its $F_1$ of 0.5961 is the highest in the table and means nothing at all. Any evaluation
+that ranked models by $F_1$ alone would select the one model that has learned nothing.
+
+What makes the result meaningful is the structure beneath the aggregate, and the next four
+sections examine it.
+
+\section{Feature Importance: Sentiment Dominates the Fused Space}
+\label{sec:llm-importance}
+
+In the fused model, the sentiment score is the highest-gain predictor, ranking above established
+technical features including the twenty-session moving average and the moving average convergence
+divergence. The measure is the intrinsic split-gain statistic of the tree ensemble --- the total
+reduction in loss attributable to splits on that feature --- rather than a post-hoc attribution,
+so it reports what the fitted model actually relied upon.
+
+The interpretation deserves care. Feature importance measures how heavily a model \emph{uses} a
+feature, not how much predictive accuracy that feature delivers; a model can rely on a feature and
+still predict poorly if the feature is the best available in a fundamentally hard problem. That is
+precisely the situation here, and recognising it is what makes the combination of findings in this
+chapter coherent rather than contradictory: sentiment is the most useful thing available, and the
+most useful thing available is not very useful at this horizon.
+
+The finding nonetheless establishes something the literature surveyed in Section~3.2 asserts
+without demonstrating: language-model sentiment is not a marginal addition that a model tolerates
+alongside its real features. When it is present, it is the feature the model leans on most.
+
+\section{Orthogonality: Sentiment Carries Information Price Does Not}
+\label{sec:llm-orthogonality}
+
+The correlation structure of the fused feature space settles the question of whether sentiment is
+redundant. Two correlations are decisive.
+
+The correlation between the sentiment score and the price level is 0.04 --- effectively zero. The
+correlation between the sentiment score and momentum indicators, principally the moving average
+convergence divergence, is 0.74 --- substantial.
+
+Both numbers are necessary to the interpretation and neither alone is sufficient. Sentiment aligns
+with \emph{momentum}, which is expected: news and price both respond to the same underlying
+events, so a stream of favourable reports and a rising momentum reading are two views of one
+process. If this correlation had been near zero, one would have to suspect that the sentiment
+pipeline was measuring noise. Simultaneously, sentiment carries information essentially
+independent of the \emph{price level}, which is the condition under which fusion can help at all.
+A feature perfectly correlated with an existing feature adds nothing regardless of how predictive
+it is; a feature uncorrelated with the existing set can add information even if its standalone
+predictive power is modest.
+
+This orthogonality is the structural justification for the entire multi-source programme of this
+thesis, measured directly at the single-name level rather than inferred from an aggregate
+improvement. It is also consistent with the superadditivity observed in
+Section~\ref{sec:msfn-ablation}: sources that carry non-overlapping information should
+substitute imperfectly for one another, and both measurements are detecting the same property from
+different directions.
+
+\section{Asymmetry Across Sentiment Regimes}
+\label{sec:llm-regimes}
+
+Accuracy measured separately under positive, neutral and negative sentiment shows two patterns.
+
+First, accuracy is higher under positive sentiment for \emph{all} models, including those with no
+access to the sentiment feature. This is consistent with the asymmetric market response to adverse
+news that the behavioural finance literature documents: negative news produces faster, larger and
+less predictable moves, so sessions dominated by negative sentiment are harder to forecast for any
+model. That the baselines share the pattern confirms it is a property of the market rather than an
+artefact of the sentiment pipeline.
+
+Second, and more usefully, the sentiment-augmented model varies \emph{least} across the three
+regimes. This is a stability property rather than an accuracy property, and it is the foundation
+of the economic result reported in Section~\ref{sec:llm-economic}. A model whose accuracy is
+uniform across conditions is more valuable in deployment than one with the same average accuracy
+concentrated in favourable conditions, because the sessions in which it degrades are exactly those
+in which a position is most exposed.
+
+The same stability appears through time. Tracked across the evaluation period, the
+sentiment-augmented model's accuracy is more stable through regime transitions, while the
+technical-only baselines fluctuate more sharply. This is the behaviour that adaptive fusion
+schemes are designed to produce and that Chapter~\ref{ch:dynfusion} formalises: multi-source
+integration provides stability against the degradation of any single information channel.
+
+\section{Confidence Calibration and Economic Significance}
+\label{sec:llm-economic}
+
+\subsection{Prediction confidence}
+
+The sentiment-augmented model produces the highest mean prediction confidence of the four models
+examined. Taken alone this would be unremarkable and possibly a warning sign --- an overconfident
+model is worse than a diffident one. Taken together with comparable accuracy, it means the model
+is better \emph{calibrated}: its high-confidence predictions are more often correct and its
+low-confidence predictions are correctly flagged as uncertain. This is what feature diversity is
+expected to produce, and it is the mechanism by which a statistically unremarkable model can
+support better decisions.
+
+\subsection{Simulated trading}
+
+Converting the predictions into positions over a thirty-session simulated trading window, the
+sentiment-augmented model produces higher cumulative returns than the baselines despite
+comparable statistical accuracy, and avoids large drawdowns during the volatile stretches of the
+window.
+
+The divergence between statistical and economic performance is itself the finding of this section,
+and it is worth stating explicitly because it recurs throughout the thesis. A model that is right
+no more often, but is right \emph{with better-calibrated confidence}, produces better decisions,
+because position sizing responds to confidence. A well-calibrated model takes larger positions
+when it is more likely to be right and smaller positions when it is not, and the resulting return
+stream can differ substantially from that of an equally accurate but poorly calibrated model.
+
+\subsection{Signal-level performance}
+
+Disaggregating by signal direction sharpens the picture. The proposed model performs strongly on
+buy signals, with success rates near 72 and 65 per cent against the baselines. Performance on sell
+signals is not materially differentiated.
+
+The asymmetry has a plausible mechanism. Positive sentiment amplifies upward price momentum ---
+favourable coverage attracts attention, attention attracts participation, participation sustains
+the move --- whereas negative sentiment coincides with abrupt declines whose timing is far less
+predictable. The framework is therefore differentially useful: it identifies conditions favourable
+for entry more reliably than it identifies conditions favourable for exit. A practitioner should
+read this as a statement about where the tool applies, not as a general endorsement.
+
+\section{Sentiment Distribution and Lead--Lag Structure}
+\label{sec:llm-distribution}
+
+Two diagnostics characterise the sentiment channel itself, independently of any model fitted on
+it. They are reported here and revisited in Chapter~\ref{ch:causal}, where sentiment noise is the
+explicit object of study.
+
+\textbf{The distribution.} The empirical distribution of the extracted sentiment scores is
+approximately symmetric about neutral with moderate tails. This matters as a validity check on the
+pipeline. A pipeline that mapped most items to a single class, or that produced a strongly skewed
+distribution, would be measuring something other than sentiment --- a source bias, a template
+effect, or a failure of the encoder on the domain. A symmetric distribution with genuine
+dispersion indicates that the continuous scoring is capturing meaningful variation rather than
+producing a biased categorical output, and it justifies the design decision of
+Section~\ref{sec:llm-rationale} to retain intensity.
+
+\textbf{Lead--lag structure.} Overlaying the sentiment series on the price series over the
+evaluation window shows that strong sentiment spikes frequently \emph{precede} major price
+changes. The relationship between magnitude and direction is not simple, however, and two distinct
+patterns appear. Sustained periods of positive sentiment accompany gradual price advances, whereas
+sharp negative sentiment spikes accompany abrupt declines. The two channels therefore operate on
+different timescales: favourable sentiment works through slow accumulation, adverse sentiment
+through discrete shocks.
+
+This partially confirms the timeline of sentiment incorporation described in the literature and
+partially complicates it. A simple causal ordering --- sentiment moves, price follows --- is not
+what the data show. What they show is two regimes of incorporation with different dynamics, which
+is one reason a multi-granularity temporal encoder is worth building, as
+Chapter~\ref{ch:causal} does.
+
+\section{The Limit of the Result}
+\label{sec:llm-limit}
+
+Receiver operating characteristic analysis places \emph{all} models close to the random classifier
+line, with areas under the curve clustered near 0.50. The clustering is tight: no model separates
+meaningfully from any other, and none separates meaningfully from chance.
+
+This is reported as prominently as the positive findings, and three things follow from it.
+
+\textbf{Language-model sentiment does not overturn market efficiency at this horizon.} At
+single-name daily granularity the prediction problem remains close to the efficiency limit of
+Fama~\cite{fama1970}, and this thesis does not claim otherwise. The measured increment is of the
+order the empirical asset pricing literature leads one to expect~\cite{gu2020}, and a study
+reporting a large increment at this horizon would warrant scepticism about its protocol rather
+than enthusiasm about its method.
+
+\textbf{The correct baseline is the random classifier, not zero.} A directional accuracy of 47.72
+per cent sounds poor until it is placed against a class balance in which upward sessions occur
+42.46 per cent of the time --- the precision of the degenerate support vector machine reveals this
+directly. Reporting a gain without its baseline is one of the recurring evaluation weaknesses
+identified in Section~3.2.2, and this chapter therefore reports the baseline mean of 46.43 per cent
+alongside every claim about improvement.
+
+\textbf{The bounded increment is informative, not merely disappointing.} If the value of a
+language-model sentiment channel were large at a single-name daily horizon, the correct research
+programme would be to refine the channel. Since it is small, the correct programme is to ask
+whether value can be created elsewhere in the pipeline. Section~\ref{sec:llm-implication} takes up
+that question and Chapter~\ref{ch:allocation} answers it.
+
+\section{Architectural Feasibility at a Real-Time Horizon}
+\label{sec:llm-feasibility}
+
+The objective refers to optimising deep learning architectures for real-time prediction, and the
+feasibility evidence comes from the optimised architecture of Chapter~\ref{ch:fusion}. That model
+has approximately 2.1 million trainable parameters, converges in under two hours on a single
+consumer-grade accelerator, and executes a forward pass in milliseconds. Inference cost is
+therefore negligible relative to a daily decision horizon.
+
+The binding constraint on ``real time'' in this domain is not inference but ingestion. Retrieving
+and scoring hundreds of news items and social posts through transformer encoders introduces
+latency measured in seconds to minutes, depending on feed access and batching. For a daily
+decision this is comfortable. For an intraday or high-frequency decision it is not, and no
+architectural optimisation within the model changes that, because the cost lies in acquiring and
+reading the text rather than in predicting from it. The honest statement of scope is therefore
+that the framework is real-time at a daily horizon and is not a high-frequency system.
+
+\section{What This Chapter Establishes, and What It Changes}
+\label{sec:llm-implication}
+
+Four findings stand, and they must be read together rather than selectively.
+
+\begin{enumerate}
+\item Language-model sentiment is the \textbf{highest-gain feature} in the fused space, ahead of
+established technical indicators.
+\item It is \textbf{orthogonal to price} --- correlation 0.04 with price level, 0.74 with
+momentum --- which is the condition under which fusion can add value.
+\item It improves \textbf{confidence calibration and simulated economic performance}, with
+markedly stronger buy-side signal quality, and it stabilises accuracy across sentiment regimes.
+\item It delivers only a \textbf{bounded increment in raw directional accuracy}, 47.72 per cent
+against a 46.43 per cent baseline mean, with every model near the random classifier.
+\end{enumerate}
+
+The fourth finding is the one that changes the thesis. If the signal channel is weak at the
+granularity and horizon where decisions are taken, then refining the signal channel has limited
+expected return, and the value of the system must be sought elsewhere. Two candidate explanations
+for the weakness present themselves, and they have opposite implications. Either the
+\emph{measurement} is inadequate --- the sentiment construct is noisy, and a better extraction
+pipeline would recover a larger edge --- or the measurement is sound and the \emph{predictability}
+simply is not there at this horizon.
+
+These are distinguishable empirically, and distinguishing them is the task of
+Chapter~\ref{ch:causal}, which validates a sentiment construct against four independently
+published series and separately measures whether the validated construct forecasts anything.
+Chapter~\ref{ch:allocation} then acts on the answer by moving the search for value from the
+prediction layer to the decision layer.
+
+\section{Summary}
+
+This chapter isolated a single information source --- news text read by a transformer language
+model --- and measured what it contributes to single-name daily directional prediction when fused
+with fifteen conventional technical indicators and evaluated against technical-only baselines
+under a like protocol.
+
+The sentiment score is the highest-gain feature in the fused space, ranking above established
+technical indicators; it is orthogonal to price, correlating 0.04 with price level and 0.74 with
+momentum; it produces the highest prediction confidence of the models examined, the most stable
+accuracy across sentiment regimes, and the strongest buy-side signal quality, translating into
+higher simulated cumulative returns over a thirty-session window. The sentiment-augmented model
+attains 47.72 per cent directional accuracy against a baseline mean of 46.43 per cent, a relative
+improvement of 2.77 per cent, and does not attain the highest raw accuracy in the comparison.
+Receiver operating characteristic analysis places every model close to the random classifier.
+
+The framework runs to completion in a freely accessible hosted environment, so the result is
+independently reproducible, and the architectural evidence of Chapter~\ref{ch:fusion} establishes
+feasibility at a daily decision horizon with negligible inference cost. The bounded nature of the
+accuracy increment is reported rather than concealed, and it is what redirects the remainder of
+this thesis from the prediction layer to the decision layer.

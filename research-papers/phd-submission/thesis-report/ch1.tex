@@ -1,0 +1,356 @@
+%=====================================================================
+\chapter{Introduction}
+\label{ch:intro}
+%=====================================================================
+
+\section{Stock Market Decision Making as an Information Problem}
+
+The price of a traded security is the outcome of a continuous negotiation between
+participants who do not observe the same information at the same time. Part of that
+information is structured and numerically clean: the open, high, low, close and volume
+records of each session, and the technical indicators derived from them. A larger part is
+unstructured and arrives irregularly, in news articles, corporate disclosures, regulatory
+announcements, analyst commentary and social media discussion. A third part changes slowly
+and shapes the environment rather than the individual security, in the form of policy rates,
+inflation, industrial output, currency movements and commodity prices. Any forecasting
+system that reads only one of these streams is, by construction, reasoning from an
+incomplete description of the market it is trying to
+anticipate~\cite{snasel2024,long2024,nti2021}.
+
+This is not a new observation. What is new is that acting on it has become technically
+feasible. Two developments are responsible. The first is the maturation of multi-source
+data fusion, which supplies a principled account of how heterogeneous streams may be
+combined so that their complementary content is preserved instead of being averaged
+away~\cite{snasel2024,zhang2022fusion,li2023datafusion}. The second is the arrival of
+transformer-based large language models, which read financial text with a level of
+contextual sensitivity that lexicon and bag-of-words methods never achieved, and which can
+therefore convert narrative information into a numerically usable
+signal~\cite{vaswani2017,araci2019,li2024llmsurvey}. Together they make it reasonable to ask
+a question that was previously out of reach: whether a single system can absorb
+quantitative, textual and macroeconomic evidence and convert it into a decision that an
+investor could actually execute.
+
+The framing matters. A very large share of the published literature in this area treats the
+problem as one of \emph{prediction}: given a feature vector, forecast tomorrow's return or
+its sign, and report an accuracy figure. That framing is legitimate but incomplete, because
+an investor does not consume a prediction. An investor consumes a position --- a vector of
+holdings, sized against a risk budget, rebalanced at a cost, and held through drawdowns.
+The translation from the first object to the second is not a formality. It involves a
+covariance structure that must be estimated, position limits that bind, turnover that must
+be paid for, and a decision about how much total risk to carry that is logically separate
+from the decision about what to hold. Each of those steps can destroy the value of a
+forecast as easily as preserve it~\cite{demiguel2009,gu2020,markowitz1952}.
+
+\section{Three Obstacles Between a Fused Signal and a Defensible Decision}
+
+Three difficulties sit between the raw heterogeneous information and a defensible decision,
+and this thesis is directed at all three simultaneously rather than at any one of them in
+isolation.
+
+\subsection{The reliability of a source is not constant}
+
+Technical indicators are informative in quiet trending conditions and degrade when the
+market is disturbed; news and volatility signals behave in the opposite manner, carrying
+little information in placid stretches and a great deal during a shock. A fusion rule with
+fixed weights therefore misweights its inputs precisely when accurate weighting matters
+most~\cite{farimani2024,tai2022}. This is a structural problem rather than a tuning problem.
+Attention mechanisms, which are the standard remedy, learn weights over an entire training
+set; the resulting weight expresses the \emph{average} relevance of a source across the
+training period and cannot express the proposition that a particular source has become
+unreliable in the last fortnight. Between retraining cycles, a stream that has degraded
+continues to influence the forecast at its historical weight.
+
+What is missing is a measurement. If the reliability of a source can be estimated
+continuously from observable evidence --- specifically, from the variance of that source's
+own recent prediction errors --- then the fusion weight becomes a function of that estimate
+and the architecture self-corrects without human intervention and without waiting for the
+next training run. Chapter~\ref{ch:dynfusion} develops this idea formally and tests it.
+
+\subsection{A prediction is not an explanation}
+
+A forecast produced by a deep architecture is not, by itself, an account of why the forecast
+was made. In a domain where capital is committed on the basis of the output, and where a
+regulator or an investment committee may reasonably demand a justification, opacity is a
+practical obstacle and not merely a philosophical one~\cite{koa2024,lundberg2017}.
+
+The standard response is post-hoc attribution: methods such as Shapley additive
+explanations~\cite{lundberg2017} or local surrogate models~\cite{ribeiro2016} report which
+inputs the fitted model relied upon. This is genuinely useful, and it is not what this thesis
+pursues as its primary transparency instrument. The reason is that post-hoc attribution
+explains a \emph{model}; it does not establish that the relationships the model has learned
+are anything more than correlations that happened to hold in the training window. A feature
+that co-moves with the target for spurious reasons will be attributed importance exactly as
+a genuine driver would be. Chapter~\ref{ch:causal} therefore pursues transparency at the level
+of \emph{structure}: the feature set entering the model is constrained, before any learning
+takes place, to variables with demonstrable directed influence, recovered by conditional
+independence testing over lagged series~\cite{spirtes2000,granger1969,xu2026causal}.
+
+\subsection{Statistical accuracy and economic usefulness are different properties}
+
+The third obstacle is the one most often elided. A model that is accurate is not thereby
+profitable, and a model that is profitable is not necessarily accurate. The two properties
+come apart for reasons that are well understood in principle and routinely ignored in
+practice: predictions are not equally costly to act on, a small edge can be consumed entirely
+by transaction costs, an unconditional accuracy figure says nothing about performance in the
+states where losses are concentrated, and --- most importantly --- a portfolio's risk-adjusted
+return depends on the timing of risk as much as on the selection of assets.
+
+This thesis treats the decision layer as a first-class object of study rather than as a
+postscript. Chapter~\ref{ch:allocation} develops a decision-theoretic allocation framework,
+evaluates it over eighteen years with transaction costs, and --- unusually --- disassembles it
+to determine which of its layers actually produce the measured outcome. The answer, reported
+in full including the parts that do not favour the original design, is the central finding of
+the thesis.
+
+\section{Research Context and the Position of the Four Objectives}
+
+Figure~\ref{fig:context} places the four research objectives on the path from heterogeneous
+raw information to an executable decision. Objective~1 governs the integration of sources.
+Objective~2 governs the extraction of signal from language and its combination with
+conventional indicators. Objective~3 governs the transparency of the reasoning and the
+behaviour of sentiment as a noisy, time-lagged input. Objective~4 governs the conversion of a
+signal into a position and the validation of that conversion across markets.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.86}{\begin{tikzpicture}[node distance=3.2mm]
+\node[blk,minimum width=23mm] (m) {Market data\\OHLCV, indicators};
+\node[blk,right=of m,minimum width=23mm] (n) {News and social\\media text};
+\node[blk,right=of n,minimum width=23mm] (mac) {Macroeconomic\\series};
+\node[blk,right=of mac,minimum width=23mm] (alt) {Alternative data\\volatility index};
+
+\node[blkg,below=9mm of n,minimum width=52mm,xshift=9mm] (fuse)
+  {\textbf{Objective 1} --- multi-source integration\\
+   time-varying source weighting};
+\node[blka,below=7mm of fuse,minimum width=52mm] (llm)
+  {\textbf{Objective 2} --- LLM sentiment extraction\\
+   hybrid fusion with financial indicators};
+\node[blka,below=7mm of llm,minimum width=52mm] (xai)
+  {\textbf{Objective 3} --- transparent reasoning\\
+   sentiment noise and temporal dynamics};
+\node[blkg,below=7mm of xai,minimum width=52mm] (alloc)
+  {\textbf{Objective 4} --- validated decision making\\
+   allocation, risk budget, cross-market test};
+\node[blkd,below=7mm of alloc,minimum width=52mm] (dec)
+  {Executable position with a stated risk profile};
+
+\draw[ar] (m.south) -- ++(0,-3mm) -| (fuse.north west);
+\draw[ar] (n.south) -- ++(0,-3mm) -| ([xshift=-14mm]fuse.north);
+\draw[ar] (mac.south) -- ++(0,-3mm) -| ([xshift=14mm]fuse.north);
+\draw[ar] (alt.south) -- ++(0,-3mm) -| (fuse.north east);
+\draw[ar] (fuse) -- (llm);
+\draw[ar] (llm) -- (xai);
+\draw[ar] (xai) -- (alloc);
+\draw[ar] (alloc) -- (dec);
+\node[lbl,right=5mm of fuse,align=left] {what to fuse};
+\node[lbl,right=5mm of llm,align=left] {how to read text};
+\node[lbl,right=5mm of xai,align=left] {why to trust it};
+\node[lbl,right=5mm of alloc,align=left] {how much to hold};
+\end{tikzpicture}}
+\caption[Research context and the position of the four objectives]{Research context: the
+path from heterogeneous market information to an executable decision, and the position of
+the four research objectives on that path.}
+\label{fig:context}
+\end{figure}
+
+The objectives are sequential in the sense that each consumes the output of the one before
+it, but they are not merely stages of a pipeline. Each raises a distinct research question,
+each is answered by distinct experimental evidence on a study universe chosen for that
+question, and --- importantly for how this thesis should be read --- the answer obtained at
+one stage redirected the design of the next. The framework reported in
+Chapter~\ref{ch:allocation} is not the framework that was envisaged at the outset. It is the
+framework that survived the evidence.
+
+\section{The Indian Equity Market as the Primary Empirical Setting}
+
+The Indian equity market is the primary empirical setting of this research. The choice is
+deliberate rather than convenient, and it is worth stating the reasons explicitly because
+they also bound the generality of several results.
+
+The National Stock Exchange combines four features that make it an unusually demanding test
+of a multi-source system. First, retail participation is high and has risen sharply, so
+sentiment expressed on social platforms is not merely commentary on the market but a
+partial cause of short-term price movement~\cite{khan2025asymmetric,mu2023investor}. Second,
+the market is strongly sensitive to domestic policy events --- the annual Union Budget,
+Reserve Bank of India monetary policy committee announcements, and regulatory decisions by
+the Securities and Exchange Board of India --- which produce discrete structural breaks
+rather than smooth transitions. Third, the index carries pronounced sectoral concentration
+in financial services, so a shock in that sector propagates to the aggregate in a way it
+would not in a more evenly weighted index. Fourth, the market is simultaneously exposed to
+global factors, including crude oil prices, the rupee--dollar exchange rate and United States
+monetary policy, so domestic and international information can and frequently do
+disagree~\cite{bacco2024,dong2024}.
+
+That disagreement is the point. A fusion architecture is only interesting when the sources
+it fuses carry genuinely different information; in a market where every stream says the same
+thing, the fusion rule is irrelevant and a single source would do. The Indian market supplies
+sources that disagree, and the disagreement is informative rather than noise.
+
+Two qualifications are recorded here and revisited where they bind. The first is that
+instrument-level, time-stamped news corpora of the depth available for United States
+large-capitalisation equities do not exist for broad Indian index instruments, which
+constrains what can be measured at the allocation layer and is the direct reason the
+sentiment construct used in Chapter~\ref{ch:allocation} is market-derived rather than
+textual. The second is that the allocation study of Chapter~\ref{ch:allocation} requires
+eighteen years of daily data on a universe with genuine dispersion in asset volatility,
+including two severe crises; the instruments that satisfy that requirement with clean,
+survivorship-free history are United States exchange-traded funds, and the study is
+therefore conducted there and treated as a cross-market test of the mechanism rather than as
+a claim about Indian allocation. Both decisions are stated rather than concealed, because
+they determine precisely which claims in this thesis are about the Indian market and which
+are about the mechanism.
+
+\section{Research Questions}
+
+The thesis addresses five research questions, each of which is answered by evidence reported
+in a specific chapter.
+
+\begin{enumerate}[label=\textbf{RQ\arabic*.},leftmargin=2.8em]
+\item Does fusing financial, textual and macroeconomic streams under a learned, time-varying
+weighting improve forecast quality over the best single-source and fixed-weight alternatives,
+and can the improvement be attributed to individual streams rather than merely asserted?
+(Chapter~\ref{ch:fusion}.)
+
+\item Can the weight assigned to a source be made a function of that source's measured,
+instantaneous predictive reliability rather than its historical average relevance, and does
+doing so improve risk-adjusted outcomes? (Chapter~\ref{ch:dynfusion}.)
+
+\item How much of the improvement that large language models deliver in sentiment
+\emph{measurement} survives into forecast quality once the sentiment score is temporally
+aligned, fused with technical indicators, and evaluated out of sample at the horizon and
+granularity at which decisions are actually taken? (Chapter~\ref{ch:llm}.)
+
+\item Can transparency be grounded in directed causal structure rather than in post-hoc
+attribution, and can the noise carried by the sentiment channel be measured rather than
+assumed? (Chapter~\ref{ch:causal}.)
+
+\item When the fused signal is converted into an executable portfolio under realistic
+constraints, which layers of the resulting framework actually produce the measured outcome,
+and under what conditions does the framework transfer to a different market?
+(Chapter~\ref{ch:allocation}.)
+\end{enumerate}
+
+\section{Contributions of the Thesis}
+
+The contributions claimed are stated here in summary and developed with their supporting
+evidence in the chapters indicated. They are stated as bounded claims; where the evidence
+supports only a qualified statement, the qualification is part of the contribution.
+
+\begin{enumerate}[label=\textbf{C\arabic*.},leftmargin=2.8em]
+\item \textbf{An attributable four-stream fusion architecture for an emerging market.} A
+Multi-Source Fusion Network integrating technical indicators, news sentiment, social media
+sentiment and Indian macroeconomic series through modality-specific encoders and a
+cross-modal attention layer, evaluated on ten years of National Stock Exchange data across
+ten sectoral indices under a strictly chronological protocol with expanding-window
+walk-forward confirmation. The contribution is not that fusion improves accuracy, which was
+already known, but that the improvement is \emph{attributable}: source ablation isolates the
+marginal value of each stream and demonstrates superadditivity between the two textual
+sources, and the learned attention distribution demonstrates that source importance is
+state-dependent. (Chapter~\ref{ch:fusion}.)
+
+\item \textbf{A fusion rule conditioned on measured source reliability.} A Bayesian dynamic
+uncertainty-weighted formulation in which each source is modelled by its own expert network,
+its predictive uncertainty is estimated continuously from the variance of its recent errors,
+and the fusion weights are obtained by a softmax over the negative uncertainties. The
+contribution is isolated by construction: the same expert networks fused with fixed weights
+perform no better than the established static baselines, which locates the measured gain in
+the weighting mechanism rather than in the networks. (Chapter~\ref{ch:dynfusion}.)
+
+\item \textbf{A measured account of what language-model sentiment contributes.} A hybrid
+pipeline coupling a transformer sentiment encoder with fifteen technical indicators,
+evaluated against technical-only baselines under a like protocol. Three findings constitute
+the contribution: sentiment is the highest-gain feature in the fused space; it is orthogonal
+to price, correlating 0.04 with price level and 0.74 with momentum; and the incremental gain
+in raw directional accuracy is small, with all models close to the random classifier at a
+single-name daily horizon. The third finding is reported as prominently as the first two, and
+it is what redirects the thesis toward the decision layer. (Chapter~\ref{ch:llm}.)
+
+\item \textbf{Structural rather than post-hoc transparency, with sentiment noise quantified.}
+A Dynamic-Causal Hybrid Framework that constrains the feature set by directed causal structure
+recovered through conditional independence testing, encodes intraday, daily and weekly
+horizons through a multi-scale memory encoder, and allocates through a credibilistic
+optimiser. It recovers an interpretable causal graph of density 0.850 with an identifiable
+causal hub, and demonstrates that strong directed influence can coexist with weak linear
+correlation --- the mechanistic justification for causal rather than correlational feature
+selection. Separately, the sentiment construct is validated against four independently
+published series and shown to separate identified market states at $p = 1.8 \times 10^{-8}$,
+while its predictive content is measured independently and found not to be significant.
+Keeping construct validity and predictive usefulness apart is itself a methodological
+contribution. (Chapter~\ref{ch:causal}.)
+
+\item \textbf{A decision framework ablated at matched risk, with its applicability bounded by
+evidence.} A regime-conditional allocation framework that separates relative composition from
+total risk, evaluated over eighteen years with transaction costs, a fully disclosed
+specification sweep, four pre-selected stress episodes, a 665-session holdout postdating every
+design decision, and a secondary market universe. The ablation is conducted \emph{at matched
+average exposure}, which is what makes it possible to distinguish the timing of risk from its
+level; it finds that regime-conditional risk timing improves both the Sharpe ratio and the
+drawdown with no significant change in mean return, and that the signal fusion layer
+contributes nothing detectable. (Chapter~\ref{ch:allocation}.)
+
+\item \textbf{Two generalisable engineering failure modes.} Both were found only by
+disassembling the framework and both are reported because they are silent: an absolute
+volatility target calibrated for a concentrated equity portfolio binds in one rebalance out of
+224 on a diversified universe, leaving the regime layer present in the specification but
+inert; and a signal-to-allocation conversion in which mismatched units between the linear and
+quadratic terms of a mean-variance objective, rather than the information in the signal,
+determine the optimiser's solution. Neither produces an error message.
+(Chapter~\ref{ch:allocation}.)
+\end{enumerate}
+
+\section{Scope and Delimitations}
+
+Six delimitations bound the work and are stated at the outset so that no claim in later
+chapters is read more widely than the evidence supports.
+
+\textbf{Horizon.} All studies operate at a daily decision horizon. Intraday microstructure,
+order-book dynamics and execution algorithms are outside scope. The multi-granularity encoder
+of Chapter~\ref{ch:causal} uses intraday-derived features but produces daily decisions.
+
+\textbf{Direction of exposure.} Every portfolio constructed in this thesis is long-only and
+unlevered. Risk budgeting is one-sided: the framework de-risks toward cash in disturbed states
+but never levers up. This is a deliberate restriction, because it guarantees that any measured
+performance difference is attributable to risk reduction rather than to leverage.
+
+\textbf{Language coverage.} Sentiment extraction is English-only. A substantial share of Indian
+retail participants consume financial news in regional languages, and the sentiment channel
+measured here therefore observes only part of the information actually reaching the market.
+This is identified as future work in Chapter~\ref{ch:conclusion} rather than dismissed.
+
+\textbf{Transfer.} The cross-market evidence in Chapter~\ref{ch:allocation} comes from applying
+the framework to a second universe \emph{without modification}. This is direct transfer, not
+transfer learning: no parameter was fine-tuned on the target market, no representation was
+pre-trained and re-used, and no domain-adaptation objective was optimised. The result is
+therefore a lower bound on cross-market performance, and it is labelled as such wherever it
+appears.
+
+\textbf{Explainability methods.} Transparency in this thesis rests on directed causal structure
+and on the interpretability of the fusion weights. Attribution methods such as Shapley additive
+explanations and local surrogate models are reviewed and cited but are not run as experiments;
+where the thesis speaks of explainability it means structural transparency, and the distinction
+is maintained throughout.
+
+\textbf{Costs and frictions.} Transaction costs are modelled as a one-way charge of ten basis
+points in the allocation study and are absent from the prediction studies of
+Chapters~\ref{ch:fusion} to~\ref{ch:llm}, where the evaluation is of forecast quality rather
+than of realised profit. Slippage, market impact and financing costs are not modelled. The
+consequence --- that directional accuracy reported in Chapter~\ref{ch:fusion} does not
+translate directly into trading profit --- is stated in that chapter rather than left implicit.
+
+\section{Organisation of the Thesis}
+
+The thesis is organised into nine chapters. Chapter~\ref{ch:background} presents the technical
+foundations required to read the later chapters without recourse to external material:
+technical indicator construction, the three generations of sentiment extraction, fusion
+strategies, regime modelling, portfolio construction, and the evaluation metrics and
+statistical procedures used throughout. Chapter~\ref{ch:litsurvey} reviews the research
+literature along the four axes of the objectives and derives the five research gaps that
+define the scope of the work. Chapter~\ref{ch:fusion} develops and evaluates the Multi-Source
+Fusion Network. Chapter~\ref{ch:dynfusion} develops the Bayesian dynamic uncertainty-weighted
+formulation of the fusion rule. Chapter~\ref{ch:llm} develops the hybrid language-model and
+indicator framework. Chapter~\ref{ch:causal} develops the explainable and causal framework and
+the sentiment diagnostics. Chapter~\ref{ch:allocation} develops the decision-theoretic
+allocation framework and reports the ablation, the holdout and the cross-market test.
+Chapter~\ref{ch:conclusion} consolidates the findings, states the limits of the evidence and
+sets out the future scope. A statement of the publications underlying the thesis and the
+consolidated reference list follow.

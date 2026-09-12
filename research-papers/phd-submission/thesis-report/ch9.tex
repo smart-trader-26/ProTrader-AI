@@ -1,0 +1,432 @@
+%=====================================================================
+\chapter{Conclusion and Future Scope}
+\label{ch:conclusion}
+%=====================================================================
+
+This chapter consolidates what the thesis has established across its four research objectives,
+states the limits of the evidence explicitly, explains why two accuracy figures reported in
+different chapters are not in conflict, sets out the research significance, and identifies the
+work that remains.
+
+\section{Consolidated Outcomes Against the Objectives}
+\label{sec:concl-outcomes}
+
+Table~\ref{tab:outcomes} summarises what each objective produced and the status of the evidence
+behind it. The final column is stated deliberately, because the strength of a result and the
+confidence that can be placed in it are separate properties and have been treated separately
+throughout this work.
+
+\begin{table}[!htb]
+\centering
+\caption[Objective-wise consolidated outcomes and evidence status]{Objective-wise consolidated
+outcomes and the status of the supporting evidence}
+\label{tab:outcomes}
+\tabfont
+\begin{tabular}{@{}L{0.9cm}L{3.9cm}L{4.6cm}L{4.4cm}@{}}
+\toprule
+\textbf{Obj.} & \textbf{Principal outcome} & \textbf{Key quantitative evidence} &
+\textbf{Status and limits} \\
+\midrule
+RO1 & Four-stream fusion model with adaptive, then uncertainty-conditioned, source weighting
+(Ch.~\ref{ch:fusion}--\ref{ch:dynfusion}) & MAE 0.018, $R^2$ 0.988, DA 84.7\% against 76.3\% for a
+fixed-weight ensemble on identical inputs; both textual sources contribute 10.9\% of $R^2$
+superadditively; dynamic weighting adds 22.7\% Sharpe and removes 18.3\% of drawdown &
+Established. Index-level, one-day horizon; macro interpolation understates announcement-day
+effects; dynamic result reported relative to a baseline \\
+RO2 & Hybrid LLM sentiment and indicator framework in a reproducible environment
+(Ch.~\ref{ch:llm}) & Sentiment is the highest-gain feature; correlation with price 0.04, with
+momentum 0.74; accuracy 47.72\% against a 46.43\% baseline mean; highest prediction confidence;
+buy-signal success 72\% and 65\% & Established but bounded. All models near the random classifier
+at a single-name daily horizon \\
+RO3 & Causal, multi-granularity transparency and a measured account of sentiment noise
+(Ch.~\ref{ch:causal}) & Causal graph density 0.850 with an identifiable hub; correct external sign
+in 16 of 16 series-by-period tests; market states separated at $p=1.8\times10^{-8}$ on a withheld
+variable & Established for construct validity. Predictive content separately measured and not
+usable; five instruments only \\
+RO4 & Regime-conditional decision framework, ablated at matched risk and tested across markets
+(Ch.~\ref{ch:allocation}) & Sharpe 0.878 against 0.628; drawdown $-18.98\%$ against $-36.08\%$;
+wins in 18/18 specifications, 18/19 years, 4/4 stress episodes; holdout Sharpe 1.614 & Established
+as consistent, not as statistically significant. Bootstrap interval $[-0.102, 0.574]$ includes
+zero; signal layer returns a null \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Read as a ledger, the pattern is consistent. Adaptive fusion beats fixed-weight combination, but
+index-level accuracy does not transfer to single-name daily direction. Language-model sentiment is
+orthogonal and highest-importance, but does not overturn market efficiency at a daily horizon. The
+sentiment construct is validated against four independent external series, but a validated
+construct does not thereby forecast returns. Regime risk timing improves both the Sharpe ratio and
+the drawdown at matched exposure, but the Sharpe gain is not statistically significant on eighteen
+years of data. The defensive behaviour transfers to a second universe, but the framework does not
+add risk-adjusted value in a concentrated single-factor one.
+
+These bounding statements are not shortcomings appended to the results. They are the boundary of
+the contribution, and stating them is what makes the positive claims credible.
+
+\section{How the Contributions Compose}
+\label{sec:concl-compose}
+
+The four contributions are not four independent studies with a shared subject. Each was produced
+in response to a limitation exposed by the one before it, and Figure~\ref{fig:integrated} shows the
+composed system together with the two places where a finding redirected the design of the next
+stage.
+
+\begin{figure}[!htb]
+\centering
+\scalebox{0.80}{\begin{tikzpicture}[node distance=3mm]
+\node[blkd,minimum width=100mm,minimum height=7mm] (i)
+  {Heterogeneous inputs: market records, financial news, social media, macroeconomic series,
+   volatility indices};
+
+\node[blk,below=5mm of i,minimum width=100mm,minimum height=11mm] (c1)
+  {\textbf{Ch.~4--5 --- integration.} Four-stream fusion with cross-modal attention; source
+   weights conditioned on\\ measured, time-varying reliability \hfill
+   \textit{establishes: what to fuse, and how much to trust each stream}};
+
+\node[blkg,below=4mm of c1,minimum width=100mm,minimum height=11mm] (c2)
+  {\textbf{Ch.~6 --- signal extraction.} Language-model sentiment fused with technical indicators
+   in an optimised\\ architecture \hfill
+   \textit{establishes: sentiment is the highest-importance feature, and its increment is
+   bounded}};
+
+\node[blka,below=4mm of c2,minimum width=100mm,minimum height=11mm] (c3)
+  {\textbf{Ch.~7 --- transparency.} Directed causal structure replaces correlation; sentiment
+   validated externally\\ and its noise measured \hfill
+   \textit{establishes: which relationships are real, and how far sentiment can be trusted}};
+
+\node[blkg,below=4mm of c3,minimum width=100mm,minimum height=11mm] (c4)
+  {\textbf{Ch.~8 --- decision.} Regime-conditional allocation under cost, turnover and position
+   constraints;\\ ablated at matched risk \hfill
+   \textit{establishes: which layer produces the outcome, and where it transfers}};
+
+\node[blkd,below=5mm of c4,minimum width=100mm,minimum height=7mm] (o)
+  {An integrated framework whose every layer has been separately tested, with its applicability
+   bounded by evidence};
+
+\draw[ar] (i) -- (c1); \draw[ar] (c1) -- (c2); \draw[ar] (c2) -- (c3);
+\draw[ar] (c3) -- (c4); \draw[ar] (c4) -- (o);
+\draw[arb] (c2.east) -- ++(7mm,0) |- node[lbl,right=3mm,pos=0.25,align=left]
+  {bounded increment\\$\Rightarrow$ measure noise} (c3.east);
+\draw[arb] (c3.west) -- ++(-7mm,0) |- node[lbl,left=3mm,pos=0.25,align=right]
+  {validated construct\\$\Rightarrow$ testable claim} (c4.west);
+\end{tikzpicture}}
+\caption[Integration of the four research contributions]{Integration of the four contributions.
+Each layer is a response to a limitation exposed by the previous one, and the dashed paths show the
+two places where a finding in one study redirected the design of the next.}
+\label{fig:integrated}
+\end{figure}
+
+The logic of the progression is as follows. Chapter~\ref{ch:fusion} established that fusing four
+sources improves prediction and that the value of each source is state-dependent, which raised the
+question of how to weight a source whose reliability changes --- answered in
+Chapter~\ref{ch:dynfusion} by deriving the weight from measured predictive uncertainty rather than
+from learned average relevance. Chapter~\ref{ch:llm} isolated the language-model sentiment channel
+and found it to be the most important single feature yet to deliver only a bounded increment in
+raw accuracy, which raised the question of whether the limitation lay in the measurement or in the
+horizon. Chapter~\ref{ch:causal} answered by separating the two: the sentiment construct was
+validated externally and found sound, while its predictive content was measured separately and
+found unusable, so the limitation is \emph{not} one of measurement. Chapter~\ref{ch:allocation}
+followed directly. If the signal channel is bounded and the boundedness does not stem from poor
+measurement, the framework must earn its value at the decision layer --- and the matched-exposure
+ablation confirms exactly this: risk timing by market state works, and the signal layer does not.
+
+The final system is therefore not the one originally envisaged, and it is better supported for
+that reason. An architecture whose components have each been tested, one of which has been shown
+not to work, is a more reliable engineering artefact than one whose aggregate performance conceals
+which of its parts is doing the work.
+
+\section{Reconciling the Divergent Accuracy Figures}
+\label{sec:reconcile}
+
+A reader comparing Chapters~\ref{ch:fusion} and~\ref{ch:llm} will notice an apparent contradiction:
+the first reports 84.7 per cent directional accuracy, the second 47.72 per cent. The two numbers
+are not in conflict, and understanding why is central to the significance of this research.
+
+They answer different questions about different objects. Chapter~\ref{ch:fusion} predicts the
+next-day level of a \emph{diversified index} from four fused sources. An index aggregates hundreds
+of constituents, so idiosyncratic noise largely cancels and the remaining signal is dominated by
+persistent market-wide state --- exactly the component that macroeconomic conditions, aggregate
+sentiment and index-level technical structure describe well. Chapter~\ref{ch:llm} predicts the
+next-day \emph{direction of an individual equity}, which carries its full idiosyncratic component,
+has close to balanced classes, and offers no aggregation to average the noise away. Predictability
+is therefore expected to be far lower, and this is exactly what the empirical asset pricing
+literature reports~\cite{gu2020,fama1970}.
+
+Three implications follow, and together they define the trajectory of the research programme.
+
+\textbf{An accuracy figure is meaningless without its object and horizon.} Comparing 84.7 per cent
+to 47.72 per cent as though they measured the same thing is a category error, and the fact that
+both numbers appear in this thesis makes the point more sharply than any argument could.
+
+\textbf{The level at which a system is applied should match where the signal lives.} Aggregate
+market state is predictable; single-name daily direction is largely not. A system that attempts to
+extract single-name daily alpha from the same information that describes aggregate state is
+applying a tool at the wrong granularity.
+
+\textbf{If the signal channel is weak where decisions are taken, value must be created at the
+decision layer.} This is the most consequential implication and it is what Chapter~\ref{ch:allocation}
+tests directly. The matched-exposure ablation confirms it: risk timing works where signal
+selection does not.
+
+The apparent contradiction between the two figures is therefore not an inconsistency to be
+explained away. It is the finding that organises the thesis.
+
+\section{Research Significance}
+\label{sec:concl-signif}
+
+\subsection{Methodological significance}
+
+The work advances multi-source fusion from a question of \emph{what} to combine to a question of
+\emph{how} to combine under changing reliability. Expressing fusion weights as a function of
+measured, time-varying predictive uncertainty gives a source-weighting rule that self-corrects
+within days rather than at the next retraining cycle, and does so in response to causes that need
+not be represented in the training inputs. Distribution-aware normalisation, fitted on an expanding
+window, prevents a heavy-tailed input from dominating the fused representation without leaking
+future information into the scaler.
+
+Separating the allocation decision into relative composition and total risk is a second
+methodological contribution. It makes each layer independently falsifiable, and without it the
+central ablation of this thesis could not have been constructed at all --- the matched-exposure
+control requires that the level of risk be settable independently of its composition.
+
+\subsection{Evaluation significance}
+
+Three evaluation practices used here are uncommon in this literature and are, in the author's
+judgement, the most transferable part of the work.
+
+The first is \textbf{ablation at matched risk}, which separates the timing of risk from its level.
+Comparing a de-risked strategy against a fully invested benchmark confounds the two and credits a
+framework for merely holding less. The literature contains many risk-managed strategies whose
+reported advantage has never been decomposed in this way.
+
+The second is \textbf{disclosure of the entire specification sweep} rather than its best cell ---
+the minimum required once multiple testing is taken seriously~\cite{harvey2015,bailey2014dsr,
+valls2026}. In this thesis the reported specification sits near the middle of its sweep rather than
+at the top, and reporting the range rather than the maximum costs roughly nine per cent of headline
+Sharpe ratio. That cost is the price of a credible number.
+
+The third is \textbf{separation of construct validity from predictive usefulness}. The sentiment
+composite is shown to measure sentiment --- sixteen of sixteen correct signs against independent
+external series, market states separated at $p = 1.8\times10^{-8}$ on a withheld variable --- and,
+separately, shown not to forecast returns. Conflating those questions is a recurring error, and
+keeping them apart changes what a null result means: it converts ``the measure is bad'' into ``the
+predictability is absent'', which points research in a completely different direction.
+
+\subsection{Engineering significance}
+
+Two failure modes were diagnosed that generalise beyond this framework, and both are silent.
+
+\textbf{Scale mismatch in signal-to-allocation conversion.} Passing an unscaled indicator into a
+mean-variance objective lets the ratio of units between the linear and quadratic terms, rather than
+the information in the signal, determine the solution, producing a degenerate nearly single-asset
+portfolio. Information-ratio scaling~\cite{grinold2000} removes it. The diagnostic symptom is a
+concentrated solution on almost every rebalance date.
+
+\textbf{An inert risk layer.} An absolute volatility target calibrated for a concentrated equity
+portfolio binds in one rebalance out of 224 on a diversified universe, so the layer is present,
+consumes computation and does nothing. A relative budget is scale-free and remains active. The
+diagnostic is a one-line counter of how often the constraint binds.
+
+Mixture-model label anchoring has the same character: omitting it produces no error message, only a
+silently scrambled regime series. The common property of all three is that the software runs
+correctly and the results are plausible. This class of defect is under-reported precisely because
+it leaves no trace, and documenting instances of it is a contribution in itself.
+
+\subsection{Practical significance}
+
+For a practitioner the results support a specific and limited prescription.
+
+\begin{itemize}
+\item \textbf{Fuse sources, but weight them by measured reliability} rather than by historical
+average importance. The weighting rule, not the expert networks, produced the measured gain in
+Chapter~\ref{ch:dynfusion}.
+\item \textbf{Use language-model sentiment for what it demonstrably provides} --- orthogonal
+information and better-calibrated confidence --- rather than for a directional edge it does not
+provide at a daily horizon. Its buy-side signal quality is materially better than its sell-side
+quality.
+\item \textbf{Prefer causally selected features where the structure is recoverable}, because they
+survive regime change better and, as Chapter~\ref{ch:causal} showed, retain relationships that a
+correlational filter discards silently.
+\item \textbf{Implement a regime risk budget in relative rather than absolute form}, evaluate it
+against a volatility-matched benchmark, and expect it to help only where the universe contains
+genuine dispersion in asset volatility.
+\item \textbf{Size positions conservatively}, in the fractional form the growth-optimal criterion
+recommends once estimation error is admitted~\cite{kelly1956}.
+\item \textbf{Instrument every risk layer with a binding counter}, so that an inert mechanism
+announces itself.
+\end{itemize}
+
+For the Indian market specifically, the measured weights matter. Macroeconomic indicators carry 25
+per cent of average attention, reflecting the influence of policy rates, inflation and industrial
+output on valuations. Sentiment sources jointly carry 40 per cent, with the social media share
+rising from 18 to 28 per cent at market extremes --- corroborating independently published findings
+on the asymmetric influence of social sentiment on Indian sectoral
+returns~\cite{khan2025asymmetric}. Sectoral predictability varies systematically with information
+availability and factor exposure, from $R^2$ above 0.99 in financials to below 0.96 in real estate.
+These are measured properties of that information environment rather than assumptions imported from
+elsewhere.
+
+\section{Conclusion}
+\label{sec:concl-main}
+
+This research set out to integrate multi-source data with sentiment analysis and language models
+in order to improve stock market decision making, and to determine which parts of such an
+integration actually contribute to the outcome. Both aims are met, though not entirely in the
+direction originally anticipated, and the divergence is itself the most useful result.
+
+A four-stream fusion model integrating financial metrics, news sentiment, social media sentiment
+and macroeconomic indicators was developed and evaluated on ten years of Indian market data across
+ten sectoral indices. It attains a normalised mean absolute error of 0.018, a coefficient of
+determination of 0.988 and a directional accuracy of 84.7 per cent against 76.3 per cent for a
+fixed-weight ensemble over identical inputs, with stability confirmed by walk-forward evaluation
+at $0.0016 \pm 0.0004$ normalised error across five sequential folds. Removing both textual sources
+costs 10.9 per cent of explained variance, exceeding the sum of their individual removals of 5.3
+and 3.6 per cent --- the quantitative signature of complementary rather than redundant information.
+The fusion rule was then advanced from learned average relevance to measured instantaneous
+reliability through a Bayesian formulation in which weights are obtained by a softmax over negative
+predictive uncertainties, improving the Sharpe ratio by 22.7 per cent and reducing maximum drawdown
+by 18.3 per cent against the strongest static-fusion baseline while the same experts fused
+statically add nothing.
+
+A hybrid framework coupling a transformer language model with fifteen conventional technical
+indicators was implemented in a reproducible computational environment and evaluated under a strict
+temporal protocol. Language-model sentiment emerged as the highest-gain feature in the fused space,
+correlating 0.74 with momentum yet only 0.04 with price, establishing that it supplies orthogonal
+information; it produced the highest prediction confidence of the models examined, the most stable
+accuracy across sentiment regimes, and buy-signal success rates near 72 and 65 per cent. The gain
+in raw accuracy is modest --- 47.72 per cent against a baseline mean of 46.43 per cent --- and all
+models operate close to the random classifier at a single-name daily horizon. That limit is
+reported rather than concealed, and it redirected the research toward the decision layer.
+
+Transparency was established structurally rather than by post-hoc attribution. A directed causal
+adjacency matrix recovered by conditional independence testing yields a graph of density 0.850 with
+an identifiable causal hub whose outgoing influence systematically exceeds its incoming influence,
+and demonstrates that strong directed influence can coexist with weak linear correlation --- the
+precise justification for causal rather than correlational feature selection, since a correlational
+selector would have discarded a genuine driver. Sentiment noise was quantified rather than assumed:
+the composite carries the expected sign against four independently published series, is significant
+against all four in first differences, holds the correct sign in all sixteen series-by-sub-period
+combinations, and separates the identified market states at $p = 1.8 \times 10^{-8}$ on a variable
+withheld from the fitting procedure, while its predictive content, measured separately, is not
+usable. Keeping construct validity and forecasting power apart is a contribution in its own right.
+
+The decision framework was evaluated over eighteen years on ten liquid multi-asset instruments
+under a walk-forward protocol with transaction costs charged to the framework and not to its
+benchmarks. It attains a Sharpe ratio of 0.878 against 0.628 for an equal-weighted benchmark and
+reduces maximum drawdown from $-36.1$ to $-19.0$ per cent, outperforming in all four pre-selected
+stress episodes, in 18 of 19 calendar years on drawdown and in all 18 cells of a fully disclosed
+specification sweep; on a 665-session holdout that postdates every design decision it records a
+higher Sharpe ratio and a smaller drawdown than all three benchmarks. Ablation at matched average
+exposure locates the source precisely: timing risk by identified market state improves both the
+Sharpe ratio and the drawdown with no significant change in mean return, whereas the signal fusion
+layer contributes nothing detectable, for reasons the information coefficients make plain.
+Cross-market transfer reproduces the defensive behaviour and the regime effect in a concentrated
+mega-capitalisation universe while losing on risk-adjusted return, bounding applicability to
+universes with genuine dispersion in asset volatility.
+
+The overall conclusion is precise rather than expansive. Multi-source integration and
+language-model sentiment demonstrably improve the \emph{description} of the market, and causal
+structure demonstrably improves the \emph{transparency} of that description. At the horizon and
+granularity at which decisions are actually taken, however, the measurable value of the system
+arises at the allocation layer, through regime-conditional risk timing, rather than at the signal
+layer. A framework whose every layer has been separately tested, and whose applicability has been
+bounded by evidence, is a more useful engineering artefact than one whose aggregate performance
+conceals which of its components is doing the work.
+
+\section{Limitations of the Thesis}
+\label{sec:concl-limits}
+
+The limitations specific to each study are stated in the chapter that reports it. Six apply to the
+thesis as a whole and are consolidated here.
+
+\textbf{Horizon.} Every result is at a daily decision horizon. Nothing in this thesis speaks to
+intraday microstructure or to execution.
+
+\textbf{Direction and leverage.} Every portfolio is long-only and unlevered, and risk budgeting is
+one-sided. The framework cannot express a short view, and its defensive behaviour is achieved
+entirely by moving toward cash.
+
+\textbf{Language coverage.} Sentiment extraction is English-only. A substantial share of Indian
+retail participants consume financial news in regional languages, so the measured sentiment channel
+observes part of the information reaching the market and its measured influence is correspondingly
+a lower bound.
+
+\textbf{Direct rather than adaptive transfer.} The cross-market evidence comes from applying the
+framework without modification. No claim about transfer \emph{learning} is made.
+
+\textbf{No attribution experiments.} Transparency rests on structure; Shapley additive explanations
+and local surrogate models are reviewed and cited but not run, so no comparative claim between
+structural and attributional transparency is supported.
+
+\textbf{The allocation universe is not Indian.} The allocation study is conducted on instruments
+that satisfy its data requirements, and it is presented as a test of the mechanism rather than as a
+claim about Indian allocation.
+
+\section{Future Scope}
+\label{sec:concl-future}
+
+Eight directions follow from the evidence, ordered by how directly they address a limitation
+identified above.
+
+\textbf{1. Textual sentiment in a universe with instrument-level news coverage.} The null reported
+in Chapter~\ref{ch:allocation} is a null about a market-derived proxy, not about textual sentiment.
+Applying the fusion hypothesis where a time-stamped, instrument-level news corpus exists would
+convert a proxy null into a genuine test, and would connect the language-model pipeline of
+Chapter~\ref{ch:llm} directly to the allocation layer of Chapter~\ref{ch:allocation}. The
+information-coefficient evidence of Section~\ref{sec:alloc-ic} --- positive and marginally
+significant on single names, indistinguishable from zero on broad instruments --- suggests this is
+where the signal, if any, will be found~\cite{officioso2026,liu2024llmreview}.
+
+\textbf{2. Bayesian neural experts for epistemic uncertainty.} The uncertainty estimate of
+Chapter~\ref{ch:dynfusion} is a rolling error variance, which captures aleatoric variation.
+Replacing the point-estimating experts with Bayesian neural models would additionally expose
+epistemic uncertainty, producing a confidence measure that distinguishes a noisy environment from
+an unfamiliar one~\cite{gal2016dropout,kendall2017,khuwaja2023}. The operational difference is
+that the system could report low confidence \emph{before} accumulating errors rather than after,
+which is exactly the behaviour required at the onset of an unprecedented event.
+
+\textbf{3. Non-stationary debiasing.} The stationarity assumption in the multi-scale debiasing layer
+fails at exactly the moments that matter, as the 77.67 per cent peak volatility during the 2024
+Union Budget window shows. A formulation whose noise model is itself state-dependent --- estimated
+separately within identified market states, or allowed to follow the volatility process --- is the
+direct remedy, and it connects naturally to the regime identification already present in
+Chapter~\ref{ch:allocation}.
+
+\textbf{4. Scalable causal discovery.} Extending conditional independence testing from five
+instruments to a full fifty-constituent index requires an algorithm whose cost does not grow
+combinatorially. This is a prerequisite for causal transparency at production scale, and without it
+the structural-transparency argument of Chapter~\ref{ch:causal} remains a demonstration rather than
+a deployable
+method~\cite{liu2026dynamic,spirtes2000}.
+
+\textbf{5. Adaptation-based cross-market transfer.} The natural extension of the direct-transfer
+result is genuine transfer learning: pre-training the regime model and the source-reliability
+estimates on a data-rich market and fine-tuning them on a thinner one, so that an emerging-market
+deployment inherits structure learned elsewhere instead of starting from its own limited history.
+The transferability condition identified in Section~\ref{sec:alloc-transfer} --- dispersion in
+asset volatility --- gives a testable criterion for when this should be expected to work.
+
+\textbf{6. An Indian multi-asset allocation study.} The allocation framework requires a universe
+with volatility dispersion and long clean history. Nifty sectoral indices, government securities,
+gold and real-estate instruments together satisfy the first requirement, and the history available
+is now long enough to include the 2008 and 2020 episodes. This would close the one structural gap
+between the prediction chapters and the decision chapter of this thesis.
+
+\textbf{7. Learned risk budgets and explicit state persistence.} The regime multipliers are fixed
+at 1.00, 0.75 and 0.50. Learning them --- reinforcement learning being the natural candidate given
+the sequential structure~\cite{kabbani2022drl} --- would adapt the budget to the universe, subject
+to the overfitting controls this thesis argues are mandatory~\cite{harvey2015}. Replacing the
+Gaussian mixture with a hidden Markov or jump formulation would represent regime persistence
+directly rather than recovering it incidentally~\cite{luo2026regime,hamilton1989}.
+
+\textbf{8. Regional-language and higher-frequency sentiment, and deployment engineering.} Sentiment
+extraction is currently English-only and daily. A large share of Indian retail participants read
+financial news in regional languages, and intraday resolution would expose incorporation dynamics
+that daily aggregation averages away --- particularly the two distinct incorporation regimes
+identified in Section~\ref{sec:sent-leadlag}. On deployment, inference cost is negligible; the
+binding constraints are the latency of retrieving and scoring text at scale, feed rate limits,
+coordinated manipulation of social signals at exactly the market extremes where they carry most
+weight, transaction costs, and compliance with algorithmic trading regulation. These are treated
+here as first-class engineering problems rather than as afterthoughts, because a framework that
+cannot be operated is not a decision-support system.

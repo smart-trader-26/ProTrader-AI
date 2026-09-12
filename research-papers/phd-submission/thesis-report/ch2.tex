@@ -1,0 +1,678 @@
+%=====================================================================
+\chapter{Background and Preliminaries}
+\label{ch:background}
+%=====================================================================
+
+This chapter assembles the technical material on which the rest of the thesis depends. It is
+deliberately self-contained: a reader who works through it should be able to read
+Chapters~\ref{ch:fusion} to~\ref{ch:allocation} without recourse to external references for
+notation, for the definition of a metric or for the justification of a statistical procedure.
+The chapter does not survey the research literature --- that is the task of
+Chapter~\ref{ch:litsurvey} --- but establishes the objects the literature operates on.
+
+\section{The Market Environment and Its Information Streams}
+
+\subsection{Market efficiency and the scale of the achievable edge}
+
+Any claim about forecastable structure in asset prices must be positioned against the
+efficient market hypothesis in the form given by Fama~\cite{fama1970}: if prices reflect
+available information, systematic outperformance net of costs should not persist. The
+hypothesis is not falsified by the existence of a small measurable edge; it constrains its
+size. The benchmark machine-learning study in empirical asset pricing, by Gu, Kelly and
+Xiu~\cite{gu2020}, reports exactly this pattern --- statistically detectable predictability
+whose magnitude is modest and whose economic value depends heavily on how it is harvested.
+
+This framing is used throughout the thesis in a specific way. When Chapter~\ref{ch:llm}
+reports a directional accuracy of 47.72 per cent against a baseline mean of 46.43 per cent,
+the correct reaction is not disappointment but recognition that the measured increment is of
+the order the literature leads one to expect at a single-name daily horizon. Conversely, when
+Chapter~\ref{ch:fusion} reports 84.7 per cent at the index level, the correct reaction is to
+ask what object is being predicted and over what horizon, because the two figures are not
+comparable. Section~\ref{sec:reconcile} of Chapter~\ref{ch:conclusion} treats that
+reconciliation as a substantive finding rather than as a caveat.
+
+Two qualifications to the strict efficiency reading are relevant. The first is empirical: robust
+cross-sectional regularities exist, of which the size and value factors of Fama and
+French~\cite{famafrench1993} and the momentum effect of Jegadeesh and
+Titman~\cite{jegadeesh1993} are the most durable, and their persistence establishes that
+predictable structure is a matter of degree rather than of existence. The second is behavioural.
+Prospect theory~\cite{kahneman1979} and the behavioural-finance programme that followed
+it~\cite{shiller2003} describe systematic departures from the rationality that strict efficiency
+assumes; Lo's adaptive markets hypothesis~\cite{lo2004} reconciles the two positions by treating
+efficiency as an evolving property of a population of strategies rather than a fixed state. On
+that reading, an edge can exist, be competed away and re-emerge --- which is precisely the
+non-stationarity of source reliability that Chapter~\ref{ch:dynfusion} is built to accommodate.
+
+\subsection{Structural characteristics of the Indian equity market}
+
+The National Stock Exchange of India and the Bombay Stock Exchange together constitute the
+primary venue for Indian equity trading. Three characteristics are relevant to the design
+decisions taken in this thesis.
+
+\textbf{Retail participation and sentiment transmission.} Retail participation in Indian
+equities is high and has risen sharply over the study period. Sentiment expressed on social
+platforms is therefore not only a commentary on the market but a partial determinant of
+short-term price movement, and the relationship is asymmetric: Khan and
+Chahal~\cite{khan2025asymmetric} find that the influence of social media sentiment on Indian
+sectoral returns is strongest at market extremes. This motivates the inclusion of social media
+as a distinct stream in Chapter~\ref{ch:fusion} rather than as an adjunct to news.
+
+\textbf{Policy sensitivity and discrete structural breaks.} The annual Union Budget, monetary
+policy committee announcements by the Reserve Bank of India, and regulatory decisions of the
+Securities and Exchange Board of India produce discrete, scheduled events that reset
+relationships between instruments within hours. This is the reason a \emph{static} causal
+graph is inadequate for the Indian market and a time-varying one is required, as
+Chapter~\ref{ch:causal} argues; it is also the reason the stationarity assumption embedded in
+standard debiasing layers fails at exactly the moments that matter.
+
+\textbf{Sectoral concentration and dual exposure.} The index carries pronounced concentration
+in financial services, so shocks in that sector propagate to the aggregate disproportionately;
+and the market is simultaneously exposed to global factors, including crude oil prices, the
+rupee--dollar exchange rate and United States monetary policy. Domestic and international
+information can therefore disagree, and the disagreement is informative. This is what makes
+the market a demanding test of a fusion architecture rather than a convenient one.
+
+\subsection{The four information streams}
+
+Table~\ref{tab:streams} summarises the four streams used in this thesis, their native sampling
+frequency, the transformation applied to reach a common daily representation, and the
+distortion that transformation introduces. The final column is the important one: every
+alignment step buys comparability at the cost of some fidelity, and stating the cost is part of
+the methodology rather than an afterthought.
+
+\begin{table}[!htb]
+\centering
+\caption[The four information streams and their alignment costs]{The four information streams,
+their native frequency, the transformation applied to reach a common daily representation, and
+the distortion that transformation introduces}
+\label{tab:streams}
+\tabfont
+\begin{tabular}{@{}L{2.3cm}L{2.4cm}L{4.3cm}L{4.3cm}@{}}
+\toprule
+\textbf{Stream} & \textbf{Native frequency} & \textbf{Transformation to daily} &
+\textbf{Distortion introduced} \\
+\midrule
+Market data (OHLCV and derived indicators) & Per session, and intraday where available &
+Indicators computed on closing series; intraday series aggregated to session features & None
+at the daily horizon; intraday aggregation discards microstructure ordering \\
+News text & Irregular, time-stamped & Scored per article, aggregated per session, with
+post-close publications attributed to the next session & Within-day ordering of articles is
+lost; relevance weighting is a modelling choice, not a measurement \\
+Social media text & Irregular, high volume & Scored per post, aggregated into daily polarity,
+mention volume and dispersion & Bot and coordinated-posting contamination is not separated;
+dispersion partly compensates \\
+Macroeconomic series & Monthly or quarterly & Interpolated to daily frequency &
+Announcement-day effects are discontinuous and interpolation understates them; the direction
+of the resulting bias is known and stated \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Technical Indicators}
+
+Technical indicators compress the price and volume record into features intended to expose
+trend, momentum, volatility and participation. Fifteen indicators are used in
+Chapters~\ref{ch:fusion} to~\ref{ch:llm}; the families and the reasons for their inclusion are
+given here, with the canonical definitions, which follow the standard
+references~\cite{murphy1999,wilder1978,bollinger2001}. No claim is made that any individual
+indicator carries independent predictive power; they are used as a feature basis that the
+learning architecture combines, and the question of which of them matters is answered by the
+ablations of Chapter~\ref{ch:fusion} rather than assumed here.
+
+\subsection{Trend and moving averages}
+
+The simple moving average over $n$ sessions,
+\begin{equation}
+\mathrm{SMA}_n(t) = \frac{1}{n}\sum_{k=0}^{n-1} P_{t-k},
+\end{equation}
+is the elementary trend statistic; the exponential moving average,
+$\mathrm{EMA}_n(t) = \beta P_t + (1-\beta)\,\mathrm{EMA}_n(t-1)$ with
+$\beta = 2/(n+1)$, weights recent observations more heavily and responds faster to a turn.
+Windows of 5, 10 and 20 sessions are used, capturing weekly, fortnightly and monthly trend
+respectively. The slope of the exponential average supplies a directional feature that the
+level does not.
+
+\subsection{Momentum oscillators}
+
+The relative strength index of Wilder~\cite{wilder1978} normalises the ratio of average gains
+to average losses over $n$ sessions onto a bounded scale,
+\begin{equation}
+\mathrm{RSI}_n(t) = 100 - \frac{100}{1 + \mathrm{RS}_n(t)},
+\qquad
+\mathrm{RS}_n(t) = \frac{\overline{\text{gain}}_n(t)}{\overline{\text{loss}}_n(t)},
+\end{equation}
+and is conventionally read as indicating overbought conditions above 70 and oversold conditions
+below 30. The moving average convergence divergence statistic is the difference between two
+exponential averages, $\mathrm{MACD}(t) = \mathrm{EMA}_{12}(t) - \mathrm{EMA}_{26}(t)$, with a
+signal line given by $\mathrm{EMA}_{9}$ of the statistic itself; the crossing of the two is the
+conventional trigger. The Aroon indicators measure the number of sessions since the highest
+high and the lowest low within a window, and the average directional index summarises trend
+strength independently of direction.
+
+\subsection{Volatility and range}
+
+Bollinger bands place a $k$-standard-deviation envelope around a moving average,
+$\mathrm{SMA}_n(t) \pm k\,\sigma_n(t)$, with $k=2$ conventional; the band width and the
+position of the close within the band are both used as features. The average true range
+averages the maximum of the session range and the gaps to the previous close, and realised
+volatility over a window is computed as the standard deviation of log returns
+$r_t = \log(P_t / P_{t-1})$, annualised by $\sqrt{252}$.
+
+That volatility is itself predictable, clusters in time, and responds asymmetrically to negative
+returns is the standard description of financial return series since the autoregressive
+conditional heteroskedasticity model of Engle~\cite{engle1982} and its generalisation by
+Bollerslev~\cite{bollerslev1986} --- a description that the linear
+autoregressive-integrated-moving-average machinery of Box and Jenkins~\cite{boxjenkins1970},
+which supplies the classical baseline in Chapter~\ref{ch:fusion}, cannot represent. This matters
+twice in the thesis: it is the reason a regime-conditional risk budget is worth constructing at
+all (Chapter~\ref{ch:allocation}), and it is the reason a debiasing layer that assumes stationary
+noise fails under stress (Chapter~\ref{ch:causal}).
+
+\subsection{Participation and volume}
+
+On-balance volume accumulates signed volume,
+$\mathrm{OBV}(t) = \mathrm{OBV}(t-1) + \mathrm{sgn}(P_t - P_{t-1})\,V_t$, and the
+volume-weighted average price,
+$\mathrm{VWAP}(t) = \sum_k P_k V_k / \sum_k V_k$, supplies a participation-weighted reference
+level. Volume momentum, the ratio of current volume to its own moving average, distinguishes a
+price move made on conviction from one made on thin trading.
+
+A caution applies to the unbounded accumulators. On-balance volume grows without bound and
+takes values of the order $10^{8}$ to $10^{9}$ on liquid instruments, while a risk term in a
+mean-variance objective is of the order $10^{-4}$. Passing such a feature into an optimiser
+without rescaling lets the ratio of units, rather than the information in the signal, determine
+the solution. This is not a hypothetical concern: it is one of the two engineering failure
+modes diagnosed in Chapter~\ref{ch:allocation}.
+
+\section{Sentiment Extraction from Financial Text}
+
+Financial text analysis has passed through three generations, and the distinctions between them
+determine what a sentiment score means.
+
+\subsection{Lexicon methods}
+
+The first generation scores text against a predefined polarity dictionary. The decisive finding
+for finance is that of Loughran and McDonald~\cite{loughran2011}: general-purpose lexicons
+misclassify financial language badly, because words that are negative in ordinary usage
+(``liability'', ``tax'', ``cost'') are neutral descriptors in a filing. Domain-specific
+dictionaries are therefore required. VADER~\cite{hutto2014} remains a widely used reference
+implementation for social text, augmenting a lexicon with rules for intensifiers, negation,
+capitalisation and punctuation. Lexicon methods are fast, fully interpretable and deterministic;
+they are insensitive to context, sarcasm and syntax.
+
+\subsection{Supervised machine learning}
+
+The second generation learns polarity from annotated corpora using conventional classifiers.
+Accuracy improves over lexicon baselines but at the cost of annotation, and generalisation
+across market conditions is weak: a classifier trained on one regime's vocabulary degrades when
+the vocabulary shifts~\cite{rouf2021}.
+
+\subsection{Transformer language models}
+
+The third generation replaced both. The transformer architecture~\cite{vaswani2017} computes
+representations through scaled dot-product self-attention,
+\begin{equation}
+\mathrm{Attention}(Q,K,V) = \mathrm{softmax}\!\left(\frac{QK^{\!\top}}{\sqrt{d_k}}\right) V,
+\end{equation}
+where $Q$, $K$ and $V$ are query, key and value projections of the input and $d_k$ is the key
+dimension. The same mechanism, applied across modalities rather than across tokens, is the
+cross-modal attention used for fusion in Chapter~\ref{ch:fusion}; the notational continuity is
+deliberate.
+
+The bidirectional pre-training objective of BERT~\cite{devlin2019bert} and the optimised
+training recipe of RoBERTa~\cite{liu2019roberta} established the encoder family on which
+financial adaptation is built, while the demonstration that sufficiently large autoregressive
+models perform new tasks from instructions alone~\cite{brown2020gpt3} opened the generative route
+to sentiment extraction that Chapter~\ref{ch:llm} does not take but that
+Section~\ref{sec:llm-rationale} discusses.
+
+Domain adaptation followed quickly. FinBERT~\cite{araci2019} further-trains a bidirectional
+encoder on financial text; larger domain models~\cite{wu2023bloomberggpt,yang2023fingpt,
+wang2024fingptbench} extend the approach to generative reasoning over financial documents, and
+surveys of their practical application record both the gains and the operational
+obstacles~\cite{khan2024chatgpt}. Jung and Jang~\cite{jung2024} showed that masking numerically
+significant tokens during adaptation preserves quantitative context that generic pre-processing
+destroys --- ``GDP growth at 7.8 per cent'' carries information that ``GDP growth at [NUM] per
+cent'' does not.
+
+\subsection{Continuous versus categorical scores}
+
+A design decision recurs throughout this thesis: sentiment is retained as a continuous polarity
+score $s_t \in [-1,+1]$ rather than as a categorical label. Categorical output discards
+intensity, and intensity is exactly what distinguishes a routine positive report from a
+significant one. Retaining the continuous score, together with the model's own confidence,
+preserves that information for the fusion layer and makes it possible to examine the empirical
+distribution of sentiment as a diagnostic --- a symmetric distribution about neutral with
+moderate tails indicates that the pipeline is measuring variation rather than producing a biased
+categorical output, and this check is reported in Chapter~\ref{ch:llm}.
+
+\section{Multi-Source Data Fusion}
+
+\subsection{The three canonical strategies}
+
+Given $M$ heterogeneous sources with per-source representations $x_1, \dots, x_M$ and a target
+$y$, three fusion strategies dominate.
+
+\textbf{Early (feature-level) fusion} concatenates representations before modelling,
+$\hat{y} = f([x_1; \dots; x_M])$. It is simple and preserves cross-feature interactions, but
+forces one architecture to learn interactions across domains with very different statistical
+properties, and is prone to modality dominance if scales are not equalised~\cite{moodi2024}.
+
+\textbf{Late (decision-level) fusion} trains source-specific models and combines their outputs,
+$\hat{y} = \sum_m w_m f_m(x_m)$. It preserves modularity and allows each architecture to match
+its source, but the weights $w_m$ are typically fixed in advance or learned once and then
+frozen~\cite{farimani2024,vargas2022}.
+
+\textbf{Hybrid (model-level) fusion} combines intermediate representations inside the network,
+usually through attention or gating~\cite{liu2019attention,haryono2023,zong2025}. This is the
+current state of the art and is a genuine advance, because the combination is learned rather
+than assumed.
+
+\subsection{What attention weights do and do not express}
+
+The limitation that motivates Chapter~\ref{ch:dynfusion} can be stated precisely. A learned
+attention weight $\alpha_m$ is a point estimate obtained by minimising a loss over an entire
+training set. It expresses the \emph{average} relevance of modality $m$ across that set. It is
+not a statement about the reliability of modality $m$ at a particular moment, and it carries no
+uncertainty. Consequently, if a source degrades after training --- because a news feed changes
+composition, because a social channel is contaminated, or because a regime shift alters which
+signals carry information --- the architecture continues to weight it at its historical value
+until the next retraining cycle.
+
+The remedy pursued in this thesis is to make the weight a function of a \emph{measured}
+quantity. If $e_{i,t} = y_t - \hat{y}_{i,t}$ is the prediction error of source $i$, then
+\begin{equation}
+\sigma_{i,t}^2 = \frac{1}{\tau}\sum_{k=1}^{\tau}\left(e_{i,t-k} - \bar{e}_{i,t}\right)^2
+\label{eq:uncertainty}
+\end{equation}
+is an empirical estimate of that source's recent predictive volatility over a trailing window
+of $\tau$ sessions, and the fusion weights
+\begin{equation}
+w_{i,t} = \frac{\exp\!\left(-\sigma_{i,t}^2 / T\right)}
+               {\sum_j \exp\!\left(-\sigma_{j,t}^2 / T\right)}
+\label{eq:softmaxweights}
+\end{equation}
+discount a source in proportion to how unreliable it has recently been, with temperature $T$
+controlling the sharpness of the discounting. The estimate in Equation~\eqref{eq:uncertainty} is
+\emph{aleatoric}: it captures variation attributable to noise in the environment. It does not
+capture \emph{epistemic} uncertainty --- the model's ignorance about regions of input space it
+has not seen --- for which a Bayesian treatment of the network weights would be
+required~\cite{gal2016dropout,kendall2017}. The distinction is maintained in
+Chapter~\ref{ch:dynfusion} and the epistemic extension is identified as future work.
+
+\subsection{Distribution-aware normalisation}
+
+Heterogeneous sources have heterogeneous distributions, and a single scaler applied to all of
+them lets the heaviest-tailed input dominate the fused representation. Three scalers are used
+according to the shape of the input: standard scaling, $(x - \mu)/\sigma$, for approximately
+symmetric series such as log returns; min--max scaling, $(x - x_{\min})/(x_{\max} - x_{\min})$,
+for bounded series such as the sentiment score, which preserves the interpretable range; and
+robust scaling, $(x - \mathrm{med})/\mathrm{IQR}$, for heavy-tailed series such as a volatility
+index, where the mean and standard deviation are themselves unstable.
+
+Every scaler in this thesis is fitted on an expanding window of strictly earlier observations.
+Fitting a scaler on the full sample is a subtle and common form of look-ahead: the test-period
+mean and variance leak into the training representation even though no test label is used.
+
+\section{Temporal Alignment and Look-Ahead}
+
+The streams of Table~\ref{tab:streams} arrive on different clocks, and reconciling them is
+where look-ahead bias most often enters. Four rules are applied throughout this thesis.
+
+\textbf{Publication-time attribution.} A news item or post is attributed to the first trading
+session that begins strictly after its time stamp. An article published after the close is
+attributed to the next session, never to the session that has already ended.
+
+\textbf{Holidays are gaps, not repeats.} Market holidays are treated as genuine absences rather
+than forward-filled. Forward-filling a closed session injects artificial autocorrelation into
+the return series and inflates any statistic that depends on persistence.
+
+\textbf{Macroeconomic release lag.} A macroeconomic series is available only after its release
+date, not after the period it describes. Interpolation to daily frequency is applied between
+releases, with the consequence --- understatement of announcement-day discontinuities ---
+stated explicitly.
+
+\textbf{Strictly chronological partitioning.} Training, validation and test blocks are
+contiguous and ordered in time. Random or stratified splitting of a time series is a defect,
+not a variant, because it permits the model to learn from the future of the observation it is
+scored on.
+
+\section{Learning Architectures}
+
+\subsection{Recurrent networks}
+
+Long short-term memory~\cite{hochreiter1997} maintains a cell state regulated by input, forget
+and output gates, which permits gradients to propagate across long sequences without vanishing
+--- the failure mode that Bengio, Simard and Frasconi~\cite{bengio1994} showed to be intrinsic to
+simple recurrent networks trained by gradient descent. The bidirectional variant runs two such
+networks in opposite directions and concatenates their hidden states,
+$h_t = [\overrightarrow{h}_t; \overleftarrow{h}_t]$, so that the representation at each step
+reflects both past and future context \emph{within the input window}. This is not look-ahead
+provided the input window closes at or before the decision time; the distinction is between
+context inside a supplied window and information from beyond it. A temporal attention layer over
+the hidden sequence, in the form introduced for sequence alignment by Bahdanau, Cho and
+Bengio~\cite{bahdanau2015}, allows the output to weight positions in that window unequally.
+
+The gated recurrent unit~\cite{cho2014gru} merges the forget and input gates into a single
+update gate and dispenses with the separate cell state. It has fewer parameters than long
+short-term memory and trains faster on comparable data, which is why it is the market-series
+expert in Chapter~\ref{ch:dynfusion} while the full bidirectional variant is used for the fused
+representation in Chapter~\ref{ch:fusion}.
+
+\subsection{Convolutional encoders for indicator streams}
+
+One-dimensional convolution applied along the time axis of an indicator stream extracts local
+patterns --- a crossover, a squeeze, a volume spike --- with far fewer parameters than a dense
+layer, and with translation invariance that is appropriate because the same pattern carries the
+same meaning wherever it occurs. The encoder used in Chapter~\ref{ch:fusion} is
+\begin{equation}
+h_m^{(l)} = \mathrm{ReLU}\!\left(\mathrm{Conv1D}\!\left(W_m^{(l)} * h_m^{(l-1)} +
+b_m^{(l)}\right)\right),
+\label{eq:conv}
+\end{equation}
+with $h_m^{(0)}$ the raw feature matrix of modality $m$, and max-pooling between layers.
+
+\subsection{Gradient-boosted trees}
+
+Gradient boosting, in the general formulation of Friedman~\cite{friedman2001}, fits an additive
+ensemble of regression trees, each fitted to the gradient of the loss with respect to the current
+prediction. The implementation used here~\cite{chen2016xgboost} adds second-order optimisation and
+explicit regularisation on tree complexity; histogram-based alternatives~\cite{ke2017lightgbm}
+trade a small amount of fidelity for speed and are not required at the sample sizes involved.
+Tree ensembles are used in Chapter~\ref{ch:llm} rather than a deep network for three reasons:
+they are invariant to monotone rescaling of features, which matters when combining indicators
+measured in incompatible units; they handle heterogeneous feature types without embedding layers;
+and their split-gain statistics supply a feature-importance measure that is intrinsic to the
+fitted model rather than a post-hoc approximation. Random forests~\cite{breiman2001} and support
+vector machines~\cite{cortes1995svm}, in the standard implementations of
+Pedregosa et al.~\cite{pedregosa2011}, serve as baselines.
+
+\subsection{Regularisation and optimisation}
+
+Dropout~\cite{srivastava2014dropout} randomly zeroes activations during training, which prevents
+co-adaptation and acts as an implicit ensemble; it is also the mechanism by which an approximate
+predictive distribution can be obtained at inference time, as Section~2.4.2 noted. Batch
+normalisation~\cite{ioffe2015bn} stabilises the distribution of layer inputs and permits larger
+learning rates. Adaptive moment estimation~\cite{kingma2015adam} is used as the optimiser
+throughout, with early stopping on validation loss and a fixed patience. Random seeds are fixed
+for data shuffling and weight initialisation in every reported experiment, so that a difference
+between two configurations reflects the architecture rather than the initialisation.
+
+\section{Regime Modelling}
+
+\subsection{Why regimes}
+
+Financial series are not homogeneous through time. The insight formalised by
+Hamilton~\cite{hamilton1989} is that a series may be generated by a small number of distinct
+states with different means, variances and persistence, and that identifying the current state
+is a precondition for acting sensibly. Ang and Bekaert~\cite{ang2002} demonstrated that
+accounting for regime shifts materially changes optimal allocations, and Kritzman et
+al.~\cite{kritzman2012} made the practical case for regime-aware dynamic strategies.
+
+\subsection{Gaussian mixture identification}
+
+The regime model used in Chapter~\ref{ch:allocation} is a $K$-component Gaussian mixture over a
+two-dimensional feature vector of rolling realised volatility and rolling momentum. The mixture
+density is
+\begin{equation}
+p(x) = \sum_{k=1}^{K} \pi_k \,\mathcal{N}\!\left(x \mid \mu_k, \Sigma_k\right),
+\qquad \sum_k \pi_k = 1,
+\end{equation}
+fitted by expectation maximisation~\cite{dempster1977}, and the state assigned to a session is
+the component with the highest posterior responsibility. Three components are used, interpreted
+after anchoring as calm, transitional and stress states; the number is fixed \emph{a priori} on
+interpretability grounds rather than selected by an information criterion such as
+Schwarz's~\cite{schwarz1978}, because selecting $K$ on the evaluation sample would be a further
+specification decision requiring disclosure, and three states map onto a distinction a
+practitioner already makes.
+
+Two implementation points are consequential and are stated here because they generalise.
+
+\textbf{Label anchoring is mandatory.} The component indices returned by expectation
+maximisation are arbitrary and permute freely between refits. If the mixture is refitted at
+every rebalance --- which it must be, to avoid look-ahead --- then component~0 in one refit need
+not correspond to component~0 in the next. Components must therefore be sorted by a stable,
+interpretable statistic; ascending fitted volatility is used here. Omitting this step produces
+no error message, only a silently scrambled regime series, and the downstream results will look
+plausible while being meaningless.
+
+\textbf{Refitting must use only earlier data.} The mixture is refitted at each rebalance on an
+expanding window of strictly earlier sessions. Fitting once on the full sample and then
+labelling the history is a severe and easily overlooked form of look-ahead, because the
+identification of ``stress'' is informed by knowing when stress occurred.
+
+\section{Causal Discovery}
+
+\subsection{Predictive precedence}
+
+The oldest operational notion of directed influence in time series is that of
+Granger~\cite{granger1969}: series $X$ is said to Granger-cause series $Y$ if past values of
+$X$ improve the prediction of $Y$ beyond what $Y$'s own past achieves. Formally, comparing the
+residual variances of the restricted and unrestricted regressions
+\begin{equation}
+Y_t = \sum_{k=1}^{p}a_k Y_{t-k} + \varepsilon_t
+\qquad\text{versus}\qquad
+Y_t = \sum_{k=1}^{p}a_k Y_{t-k} + \sum_{k=1}^{p}b_k X_{t-k} + \eta_t,
+\end{equation}
+the null $b_1 = \dots = b_p = 0$ is tested by an $F$ statistic. The notion is predictive rather
+than interventional: it establishes precedence in an information set, not a manipulable cause,
+and the distinction between the two is the subject of the structural-causal
+literature~\cite{pearl2009,peters2017}. The thesis uses the term ``causal'' in this operational
+sense throughout and does not claim interventional identification. Two practical cautions from
+the time-series literature apply and are observed: inference in a vector autoregression with
+possibly integrated series requires the lag augmentation of Toda and
+Yamamoto~\cite{toda1995} if the usual asymptotics are to hold, and the identification problems
+that Sims~\cite{sims1980} raised for structural interpretation of such systems are not solved by
+the procedure used here. Modern constraint-based methods designed for large nonlinear time-series
+datasets~\cite{runge2019} address the scalability limitation discussed below.
+
+\subsection{Constraint-based structure learning}
+
+Constraint-based discovery procedures of the kind formalised by Spirtes, Glymour and
+Scheines~\cite{spirtes2000} recover a directed structure by testing conditional independences.
+Starting from a complete undirected graph, an edge between $X_i$ and $X_j$ is removed whenever a
+conditioning set $S$ is found such that $X_i \perp\!\!\!\perp X_j \mid S$; the surviving skeleton
+is then oriented using the conditioning sets that produced the removals. Applied to lagged
+financial series, the procedure yields a directed adjacency matrix $A(t)$ whose entry $(i,j)$
+records the strength of directed influence of series $i$ on series $j$.
+
+The computational cost is the binding practical constraint: the number of conditional
+independence tests grows combinatorially with the number of variables. This is why the study in
+Chapter~\ref{ch:causal} uses five instruments rather than fifty, and why scalable discovery is
+identified as a prerequisite for production-scale causal transparency.
+
+\subsection{Correlation is not causality, and the difference is exploitable}
+
+Two series can be strongly linearly correlated with neither influencing the other, and --- more
+usefully for this thesis --- one series can exert strong directed influence on another while
+their linear correlation is weak, if the influence operates with a lag or through a nonlinear
+channel. A correlation-based feature selector discards exactly those relationships. The
+empirical demonstration that such pairs exist in the studied universe is the mechanistic
+justification for the causal approach, and it is reported in Chapter~\ref{ch:causal}.
+
+\section{Portfolio Construction}
+
+\subsection{Mean-variance and its estimation problem}
+
+The mean-variance formulation of Markowitz~\cite{markowitz1952} selects weights $w$ maximising
+$\mu^{\!\top} w - \lambda\, w^{\!\top}\Sigma w$ for expected returns $\mu$, covariance $\Sigma$
+and risk aversion $\lambda$. The formulation is correct and the estimation is fragile: sample
+estimates of $\mu$ and $\Sigma$ carry large errors that the optimiser amplifies, because it
+allocates aggressively to whatever the estimates most favour --- the ``optimization enigma''
+described by Michaud~\cite{michaud1989}, who characterised mean-variance optimisers as
+error-maximisers. Four responses matter here. Ledoit and Wolf~\cite{ledoit2004} shrink the sample
+covariance toward a structured target, $\hat{\Sigma} = (1-\delta)S + \delta F$, producing a
+well-conditioned estimator at the cost of a small bias. Black and
+Litterman~\cite{blacklitterman1992} anchor expected returns on equilibrium and blend views into
+them, which stabilises $\mu$ rather than $\Sigma$. Jagannathan and Ma~\cite{jagannathan2003}
+showed that a long-only constraint of the kind used in Chapter~\ref{ch:allocation} is itself a
+form of shrinkage and improves out-of-sample performance for that reason. And risk-parity
+constructions~\cite{maillard2010} dispense with expected returns altogether, equalising risk
+contributions. DeMiguel, Garlappi and Uppal~\cite{demiguel2009} demonstrated that naive equal
+weighting frequently outperforms optimisation that ignores estimation error --- which is why
+equal weighting is used as the primary benchmark in Chapter~\ref{ch:allocation} rather than as a
+straw man. Ang~\cite{ang2014} provides the systematic treatment of the factor-based alternative.
+
+\subsection{Converting a signal into an expected return}
+
+A predictive signal is not an expected return and cannot be substituted for one. The standard
+conversion is information-ratio scaling in the form given by Grinold and
+Kahn~\cite{grinold2000}: a cross-sectionally standardised score $z_{i,t}$ becomes an expected
+excess return through
+\begin{equation}
+\alpha_{i,t} = \mathrm{IC} \cdot \sigma_{i,t} \cdot z_{i,t},
+\label{eq:grinold}
+\end{equation}
+where $\mathrm{IC}$ is the assumed information coefficient of the signal and $\sigma_{i,t}$ the
+asset's forecast volatility. The scaling matters for a reason that is not cosmetic: the linear
+term $\alpha^{\!\top}w$ and the quadratic term $w^{\!\top}\Sigma w$ in the objective must be in
+compatible units, or their ratio --- rather than the information in the signal --- determines the
+solution. Chapter~\ref{ch:allocation} reports what happens when this is neglected.
+
+\subsection{Position sizing under an estimated edge}
+
+The growth-optimal criterion of Kelly~\cite{kelly1956} gives the bet size maximising long-run
+log wealth; for continuous returns with signal strength $s$ and forecast variance
+$\sigma^2$, $f^{*} = \mathrm{IC}\cdot s / \sigma^2$. Full Kelly is rarely appropriate in
+practice, because the criterion assumes $\mathrm{IC}$ and $\sigma$ are known rather than
+estimated; a fractional multiple is standard, and the prototype system described in
+Chapter~\ref{ch:allocation} uses one quarter of full Kelly with per-name and per-sector caps.
+
+\subsection{Risk budgeting: relative rather than absolute}
+
+Volatility-managed portfolios~\cite{moreira2017} scale total exposure by recent volatility.
+Chapter~\ref{ch:allocation} adopts the idea but with one modification that proves decisive: the
+risk budget is expressed as a \emph{fraction of the portfolio's own realised volatility} rather
+than as an absolute annualised target. An absolute target of, say, 15 per cent is not scale-free;
+it is calibrated for a concentrated equity sleeve and will essentially never bind on a
+diversified multi-asset sleeve whose own volatility is 6 per cent. The layer is then present in
+the specification, consumes computation, and does nothing. A relative budget is scale-free and
+remains active in any universe.
+
+\section{Evaluation Metrics}
+
+\subsection{Forecast quality}
+
+For predicted values $\hat{y}_i$ and realised values $y_i$ over $n$ observations,
+\begin{equation}
+\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}\left|y_i - \hat{y}_i\right|,
+\qquad
+\mathrm{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2},
+\end{equation}
+\begin{equation}
+R^2 = 1 - \frac{\sum_{i}(y_i - \hat{y}_i)^2}{\sum_{i}(y_i - \bar{y})^2},
+\qquad
+\mathrm{DA} = \frac{1}{n}\sum_{i=1}^{n}
+\mathbf{1}\!\left[\mathrm{sgn}(\Delta y_i) = \mathrm{sgn}(\Delta \hat{y}_i)\right].
+\end{equation}
+Where errors are reported as normalised, prices have been min--max scaled before the
+computation, so the reported magnitudes are dimensionless and comparable across instruments.
+Directional accuracy must always be read against the base rate of the majority class; on
+approximately balanced daily equity direction that base rate is close to one half, and this is
+the correct reference in Chapter~\ref{ch:llm}.
+
+\subsection{Classification quality}
+
+Precision, recall and the $F_1$ score are reported alongside accuracy in
+Chapter~\ref{ch:llm} because accuracy alone conceals degenerate behaviour: a classifier that
+predicts the positive class unconditionally attains perfect recall and uninformative precision,
+and the reported results contain exactly such a case. Receiver operating characteristic analysis
+summarises the trade-off across thresholds; an area under the curve close to 0.5 indicates
+performance indistinguishable from random ranking.
+
+\subsection{Portfolio quality}
+
+For a return series $r_t$ with risk-free rate $r_f$,
+\begin{equation}
+\mathrm{Sharpe} = \frac{\overline{r} - r_f}{\sigma_r}\sqrt{252},
+\end{equation}
+following Sharpe~\cite{sharpe1966}. Maximum drawdown is the largest peak-to-trough decline of the
+cumulative wealth series, $\mathrm{MDD} = \min_t ( W_t / \max_{s \le t} W_s - 1 )$, and the Calmar
+ratio is the compound annual growth rate divided by the absolute maximum drawdown. Downside and
+upside capture measure the fraction of benchmark movement participated in when the benchmark
+falls and rises respectively; their ratio distinguishes genuine asymmetry from uniform
+de-risking, and Chapter~\ref{ch:allocation} uses exactly this distinction.
+
+Because the Sharpe ratio penalises upside and downside deviation alike, downside-sensitive
+alternatives exist --- the Sortino ratio~\cite{sortino1994} divides excess return by downside
+deviation only --- and the tail-risk measure used in the credibilistic optimiser of
+Chapter~\ref{ch:causal} is conditional value at risk in the form of Rockafellar and
+Uryasev~\cite{rockafellar2000}, which unlike value at risk satisfies the coherence axioms of
+Artzner et al.~\cite{artzner1999} and is therefore well behaved under aggregation. The primary
+reporting in this thesis nonetheless uses Sharpe ratio and maximum drawdown, because they are
+what the comparison literature reports and substituting a more favourable measure would obscure
+rather than clarify.
+
+\subsection{Ablation at matched exposure}
+
+A methodological point is recorded here because it is used as an instrument rather than merely
+cited. Comparing a de-risked strategy against a fully invested benchmark confounds two effects:
+the strategy holds \emph{less} risk on average, and it holds risk at \emph{different times}. The
+first effect alone will improve a drawdown statistic and may improve a Sharpe ratio, without any
+skill in timing. The remedy is a matched-exposure control: a variant carrying the same average
+invested exposure as the full framework but allocating it uniformly rather than by regime. Any
+difference between the framework and that control is attributable to the timing of risk alone.
+This construction is possible only because the framework separates relative composition from
+total risk by design, and it is the central evaluation instrument of
+Chapter~\ref{ch:allocation}.
+
+\section{Statistical Procedures}
+
+\subsection{Inference under serial dependence}
+
+Daily financial returns are serially dependent and heteroskedastic, so ordinary standard errors
+understate sampling variability. The Newey--West estimator~\cite{newey1987} produces a
+heteroskedasticity- and autocorrelation-consistent covariance matrix and is used for every
+$t$ statistic on a time series in this thesis. For statistics whose sampling distribution is not
+analytically tractable --- a Sharpe ratio difference, for example --- the stationary
+bootstrap~\cite{politis1994} resamples blocks of random geometric length, preserving short-range
+dependence, and the reported interval is the empirical quantile range across resamples.
+
+\subsection{Comparing forecasts}
+
+The Diebold--Mariano test~\cite{diebold1995} compares the predictive accuracy of two forecasts
+by testing whether the mean of the loss differential $d_t = L(e_{1,t}) - L(e_{2,t})$ is zero,
+using a long-run variance estimate for the standard error. It is used in Chapter~\ref{ch:llm} to
+establish whether an observed accuracy difference between the sentiment-augmented model and its
+baselines is distinguishable from sampling noise.
+
+\subsection{Multiple testing and the credibility of a reported gain}
+
+The most important statistical point in this thesis is not a test but a disclosure discipline.
+Harvey and Liu~\cite{harvey2015} showed that conventional significance thresholds are inadequate
+once the number of strategies examined is taken into account, and Bailey and López de
+Prado~\cite{bailey2014dsr} formalised the correction through the deflated Sharpe ratio, which
+adjusts for the number of trials, the non-normality of returns and the length of the sample.
+Formal multiple-comparison procedures for exactly this setting exist --- White's reality
+check~\cite{white2000} and Hansen's test for superior predictive ability~\cite{hansen2005} both
+construct a null distribution over the full set of candidate strategies rather than over the
+selected one. The practical consequence adopted here is simpler and stricter: the \emph{entire}
+specification sweep is reported rather than its best cell. Chapter~\ref{ch:allocation}
+accordingly reports all eighteen cells of a three-seed by two-covariance-window by
+three-rebalance-interval grid, and states the range rather than the maximum.
+
+\subsection{Robustness and significance are different properties}
+
+A final distinction, applied consistently: a result is \emph{robust} if it holds across
+specifications, sub-periods and universes; it is \emph{significant} if the observed effect is
+unlikely under a null of no effect. These are different properties and neither implies the
+other. Eighteen years of daily data contain thousands of observations but only a handful of
+independent crisis episodes, so a drawdown claim can be highly robust and simultaneously fail a
+significance test, because the effective sample size for the events that matter is small.
+Chapter~\ref{ch:allocation} reports both and does not conflate them.
+
+\section{Summary}
+
+This chapter has established the objects the thesis operates on: the four information streams
+and the cost of aligning them; the indicator families and the scale hazard that unbounded
+accumulators introduce; the three generations of sentiment extraction and the reason a
+continuous score is retained; the three fusion strategies and the precise limitation of learned
+attention that motivates uncertainty-weighted fusion; the learning architectures and the
+regularisation protocol; regime identification and the two implementation points that make it
+valid; causal discovery in the predictive-precedence sense and the reason correlational
+selection destroys usable information; portfolio construction, signal scaling and the case for a
+relative risk budget; the evaluation metrics, including the matched-exposure ablation that is
+this thesis's principal analytical instrument; and the statistical procedures, including the
+disclosure discipline that makes a reported gain credible. Chapter~\ref{ch:litsurvey} now turns
+to what the research literature has established using these objects, and to what it has left
+unresolved.

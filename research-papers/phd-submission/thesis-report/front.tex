@@ -1,0 +1,289 @@
+%=====================================================================
+%  Preliminary pages
+%=====================================================================
+\begin{titlepage}
+\centering
+\vspace*{0.6cm}
+{\Large\bfseries Integrating Multi-Source Data with Sentiment Analysis\\[4pt]
+and Language Models to Enhance Stock Market\\[4pt] Decision Making}\\[1.6cm]
+{\normalsize A THESIS}\\[0.4cm]
+{\normalsize Submitted in partial fulfilment of the requirements\\
+for the award of the degree of}\\[0.5cm]
+{\large\bfseries DOCTOR OF PHILOSOPHY}\\[0.2cm]
+{\normalsize in \Discipline}\\[1.4cm]
+{\normalsize by}\\[0.35cm]
+{\large\bfseries ANANDKUMAR PARDESHI}\\[0.18cm]
+{\normalsize Registration No.\ \RegNo}\\[0.18cm]
+{\normalsize ORCID \ScholarORCID}\\[1.4cm]
+{\normalsize under the guidance of}\\[0.35cm]
+{\large\bfseries Dr.\ SUJATA DESHMUKH}\\[0.18cm]
+{\normalsize \GuideDesignation, Department of Computer Engineering}\\[0.18cm]
+{\normalsize ORCID \GuideORCID}\\[1.6cm]
+{\normalsize \ResearchCentre}\\[0.25cm]
+{\normalsize \Univ}\\[1.6cm]
+{\normalsize \SubMonth}
+\vfill
+{\footnotesize\color{phcolor} Items shown in red are placeholders; edit
+\texttt{placeholders.tex} to replace them.}
+\end{titlepage}
+
+%---------------------------------------------------------------------
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+\thispagestyle{plain}
+
+I declare that this written submission represents my ideas in my own words and that,
+where the ideas or words of others have been included, I have adequately cited and
+referenced the original sources. I also declare that I have adhered to all principles
+of academic honesty and integrity and have not misrepresented, fabricated or falsified
+any idea, data, fact or source in my submission. I understand that any violation of
+the above will be cause for disciplinary action by the University and may also evoke
+penal action from the sources which have thus not been properly cited, or from whom
+proper permission has not been taken when needed.
+
+The work reported in this thesis has been carried out by me under the supervision of
+Dr.~Sujata Deshmukh and has not been submitted, in whole or in part, for the award of
+any other degree or diploma of this or any other institution.
+
+\vspace{2.5cm}
+\begin{flushright}
+\begin{tabular}{@{}c@{}}
+\rule{6cm}{0.4pt}\\
+\textbf{Anandkumar Pardeshi}\\
+Registration No.\ \RegNo\\
+\SubMonth
+\end{tabular}
+\end{flushright}
+
+%---------------------------------------------------------------------
+\chapter*{Certificate}
+\addcontentsline{toc}{chapter}{Certificate}
+\thispagestyle{plain}
+
+This is to certify that the thesis entitled \textbf{``Integrating Multi-Source Data with
+Sentiment Analysis and Language Models to Enhance Stock Market Decision Making''},
+submitted by \textbf{Anandkumar Pardeshi} (Registration No.\ \RegNo) to \Univ\ for the
+award of the degree of \textbf{Doctor of Philosophy} in \Discipline, is a record of
+bona fide research work carried out by him under my supervision and guidance at
+\ResearchCentre.
+
+The contents of this thesis, in full or in part, have not been submitted to any other
+institute or university for the award of any degree or diploma. The thesis has reached
+the standard of fulfilling the requirements of the regulations relating to the degree.
+
+\vspace{2.5cm}
+\begin{flushright}
+\begin{tabular}{@{}c@{}}
+\rule{6cm}{0.4pt}\\
+\textbf{Dr.\ Sujata Deshmukh}\\
+\GuideDesignation, Department of Computer Engineering\\
+\ResearchCentre\\
+\SubMonth
+\end{tabular}
+\end{flushright}
+
+%---------------------------------------------------------------------
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+\thispagestyle{plain}
+
+I record my sincere gratitude to my research supervisor, Dr.~Sujata Deshmukh, whose
+insistence on separating what the evidence supports from what it merely suggests shaped
+this thesis more than any other single influence. Several of the results reported here
+are negative, and they survive in this document because she treated an honest null as a
+finding rather than a failure.
+
+I thank the Research and Recognition Committee and the faculty of the Department of
+Computer Engineering at \ResearchCentre\ for their assessment of this work at each
+annual review, and my colleagues at the Department of Computer Science and Engineering,
+Fr.~C.~Rodrigues Institute of Technology, Vashi, for accommodating the demands that
+part-time doctoral research places on a teaching schedule.
+
+I acknowledge the reviewers and editors of the venues in which the constituent studies
+of this thesis were published or are under review. Their criticism materially improved
+the work; in one instance a reviewer's insistence on a robustness analysis exposed two
+implementation defects that had silently invalidated an entire results section, and
+correcting them changed the central claim of that study.
+
+Finally, I thank my family for their patience across the years this research has taken.
+
+\vspace{1.5cm}
+\begin{flushright}
+\textbf{Anandkumar Pardeshi}
+\end{flushright}
+
+%---------------------------------------------------------------------
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\thispagestyle{plain}
+
+Equity markets are driven simultaneously by structured price and volume records, by
+qualitative information carried in news and social media, and by slower macroeconomic
+conditions. Each stream is individually incomplete, and each becomes informative or
+uninformative at different times. Conventional forecasting systems compress this
+heterogeneity into a single numerical pipeline, report a statistical accuracy figure, and
+stop short of the decision the investor actually has to take. This thesis addresses that
+shortfall by developing, implementing and validating an integrated framework in which
+multi-source fusion, language-model-based sentiment extraction, transparent reasoning and
+decision-level allocation are treated as one connected engineering problem rather than as
+four separate ones.
+
+The first objective develops a comprehensive model integrating financial metrics, news
+sentiment, social media sentiment and macroeconomic indicators. A hierarchical
+Multi-Source Fusion Network is designed in which convolutional encoders process indicator
+streams, transformer encoders process text, engineered temporal features carry
+macroeconomic conditions, and a cross-modal attention layer assigns time-varying weight to
+each source before a bidirectional recurrent encoder produces the forecast. Evaluated on
+ten years of National Stock Exchange data across ten sectoral indices, the fused model
+attains a normalised mean absolute error of 0.018, a coefficient of determination of 0.988
+and a directional accuracy of 84.7 per cent at the index level, against 76.3 per cent for
+a simple averaging ensemble over identical inputs. Removing both textual sources costs
+10.9 per cent of explained variance, exceeding the sum of their individual removals and
+confirming that sentiment carries information that price history does not. The fusion
+mechanism is then strengthened by a Bayesian formulation in which the weight assigned to a
+source is derived from its own recent predictive uncertainty through a softmax over
+negative error variances, so that a stream is discounted at the moment it becomes
+unreliable rather than at the end of a training cycle. On the Nifty~50 this dynamic rule
+improves the Sharpe ratio by 22.7 per cent and reduces maximum drawdown by 18.3 per cent
+against the strongest static-fusion baseline, while the same expert networks fused with
+fixed weights perform no better than that baseline, which locates the gain in the weighting
+mechanism rather than in the networks.
+
+The second objective designs a hybrid framework coupling large language models with
+conventional financial indicators. A transformer sentiment encoder converts news headlines
+into a continuous polarity score, which is time-aligned to trading sessions and fused with
+fifteen technical indicators before gradient-boosted classification. On Indian equity data
+the sentiment score emerges as the highest-gain predictor, correlating 0.74 with momentum
+yet only 0.04 with price, and the sentiment-augmented model raises directional accuracy
+from a 46.43 per cent baseline average to 47.72 per cent while producing the highest
+prediction confidence of all models examined. The absolute level is reported without
+embellishment: at single-name daily horizons all models cluster near the random classifier,
+so language-model sentiment supplies a measurable but bounded increment rather than a
+decisive edge.
+
+The third objective establishes transparency and examines sentiment noise and
+sentiment-to-price temporal dynamics. A Dynamic-Causal Hybrid Framework replaces
+correlation-based feature selection with a directed causal adjacency matrix recovered by
+conditional independence testing, encodes intraday, daily and weekly horizons through a
+multi-scale memory encoder, and allocates capital through a credibilistic optimiser. On
+308 trading sessions of NIFTY50 data it recovers a causal graph of density 0.850 with an
+identifiable causal hub, and demonstrates that strong causal influence can coexist with
+weak linear correlation --- the mechanistic justification for preferring causal to
+correlational feature selection. Sentiment quality is then treated as a measurable property
+rather than an assumption: a sentiment composite is validated against four independently
+published series, carries the expected sign against every one of them, and separates the
+identified market states at $p = 1.8 \times 10^{-8}$.
+
+The fourth objective evaluates and validates the framework as a decision system. Latent
+market states are identified by an expanding-window Gaussian mixture model, the fused
+signal enters a constrained quadratic program with covariance shrinkage and a turnover
+penalty, and the resulting portfolio is scaled by a regime-dependent risk budget. Over
+eighteen years of ten liquid multi-asset instruments under a walk-forward protocol with
+transaction costs, the framework attains a Sharpe ratio of 0.878 against 0.628 for an
+equal-weighted benchmark and reduces maximum drawdown from $-36.1$ to $-19.0$ per cent. It
+outperforms in all four stress episodes, wins on drawdown in eighteen of nineteen calendar
+years and in all eighteen specifications examined, and on a 665-session holdout that
+postdates every design decision it records a higher Sharpe ratio and a smaller drawdown
+than all three benchmarks. Ablation at matched average exposure isolates the source of the
+gain: timing risk by market state improves both the Sharpe ratio and the drawdown with no
+change in mean return, whereas the signal fusion layer contributes nothing detectable to
+cross-sectional selection. Cross-market transfer to a concentrated mega-capitalisation
+universe reproduces the defensive behaviour but loses on risk-adjusted return, which bounds
+applicability to universes with genuine dispersion in asset volatility.
+
+Taken together, the six publications underlying this thesis demonstrate a coherent
+progression from information integration, through language-model-based signal extraction
+and transparent reasoning, to validated decision making. The component-level nulls are
+retained rather than removed, because they identify precisely which layers of a fusion
+architecture earn their place and which do not.
+
+\vspace{0.6em}
+\noindent\textbf{Keywords:} multi-source data fusion; sentiment analysis; large language
+models; explainable artificial intelligence; causal discovery; regime detection; portfolio
+construction; Indian equity market.
+
+%---------------------------------------------------------------------
+\clearpage
+\renewcommand{\contentsname}{Table of Contents}
+{\setstretch{1.0}\tableofcontents}
+
+\clearpage
+\renewcommand{\listfigurename}{List of Figures}
+{\setstretch{1.0}\listoffigures}
+
+\clearpage
+\renewcommand{\listtablename}{List of Tables}
+{\setstretch{1.0}\listoftables}
+
+%---------------------------------------------------------------------
+\clearpage
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+\thispagestyle{plain}
+
+\begin{center}
+\small
+\setstretch{1.06}
+\begin{tabular}{@{}p{2.1cm}p{4.6cm}p{2.1cm}p{4.6cm}@{}}
+ADX & Average Directional Index & MAE & Mean Absolute Error \\
+ANOVA & Analysis of Variance & MDD & Maximum Drawdown \\
+ARIMA & Autoregressive Integrated Moving Average & ML & Machine Learning \\
+ATR & Average True Range & MLP & Multi-Layer Perceptron \\
+AUC & Area Under the Curve & MOSPI & Ministry of Statistics and Programme Implementation \\
+BERT & Bidirectional Encoder Representations from Transformers & MSE & Mean Squared Error \\
+Bi-LSTM & Bidirectional Long Short-Term Memory & MSFN & Multi-Source Fusion Network \\
+BSE & Bombay Stock Exchange & NLP & Natural Language Processing \\
+CAGR & Compound Annual Growth Rate & NSE & National Stock Exchange \\
+CIT & Conditional Independence Test & OBV & On-Balance Volume \\
+CNN & Convolutional Neural Network & OHLCV & Open, High, Low, Close, Volume \\
+CPI & Consumer Price Index & PC & Peter--Clark (causal discovery algorithm) \\
+CVaR & Conditional Value at Risk & QP & Quadratic Program \\
+DA & Directional Accuracy & RBI & Reserve Bank of India \\
+DCHF & Dynamic-Causal Hybrid Framework & RDM-DEA & Range Directional Measure Data Envelopment Analysis \\
+DL & Deep Learning & RMSE & Root Mean Square Error \\
+DM & Diebold--Mariano (test) & ROC & Receiver Operating Characteristic \\
+EMH & Efficient Market Hypothesis & RSI & Relative Strength Index \\
+ETF & Exchange-Traded Fund & SEBI & Securities and Exchange Board of India \\
+GARCH & Generalised Autoregressive Conditional Heteroskedasticity & SHAP & Shapley Additive Explanations \\
+GMM & Gaussian Mixture Model & SMA & Simple Moving Average \\
+GRU & Gated Recurrent Unit & SVM & Support Vector Machine \\
+IC & Information Coefficient & VADER & Valence Aware Dictionary and sEntiment Reasoner \\
+IIP & Index of Industrial Production & VIX & Volatility Index \\
+LLM & Large Language Model & VWAP & Volume-Weighted Average Price \\
+LSTM & Long Short-Term Memory & WPI & Wholesale Price Index \\
+MACD & Moving Average Convergence Divergence & XAI & Explainable Artificial Intelligence \\
+\end{tabular}
+\end{center}
+
+%---------------------------------------------------------------------
+\clearpage
+\chapter*{List of Symbols}
+\addcontentsline{toc}{chapter}{List of Symbols}
+\thispagestyle{plain}
+
+\begin{center}
+\small
+\setstretch{1.15}
+\begin{tabular}{@{}p{3.0cm}L{10.0cm}@{}}
+$h_m^{(l)}$ & representation of modality $m$ at encoder layer $l$ \\
+$\alpha_m$ & cross-modal attention weight assigned to modality $m$ \\
+$F_t$ & fused multi-source representation at session $t$ \\
+$\sigma_{i,t}^2$ & predictive uncertainty of source $i$ at session $t$ \\
+$w_{i,t}$ & uncertainty-derived fusion weight of source $i$ at session $t$ \\
+$\tau$ & trailing window length used to estimate predictive uncertainty \\
+$T$ & softmax temperature in the dynamic fusion rule \\
+$s_t$ & continuous news-sentiment polarity score, $s_t \in [-1,+1]$ \\
+$A(t)$ & time-varying directed causal adjacency matrix \\
+$e_{ij}$ & directed causal edge from series $i$ to series $j$ \\
+$r_t$ & identified latent market state (regime) at session $t$ \\
+$T_{i,t},\, M_{i,t}$ & technical and sentiment composites for asset $i$ at session $t$ \\
+$c_{i,t}$ & composite-agreement confidence term \\
+$z_{i,t}$ & fused cross-sectional signal for asset $i$ \\
+$\alpha_{i,t}$ & signal placed on a return scale by information-ratio scaling \\
+$\Sigma_t$ & shrinkage-estimated return covariance matrix \\
+$\lambda,\ \kappa$ & risk-aversion and turnover-penalty coefficients \\
+$\tilde{w}_t,\ w_t^{*}$ & risky-sleeve weights before and after the regime risk budget \\
+$k_{r_t}$ & regime risk-budget multiplier, $k \in \{1.00, 0.75, 0.50\}$ \\
+$\tilde{R}$ & fuzzy (triangular) return variable in the credibilistic optimiser \\
+\end{tabular}
+\end{center}

@@ -1,0 +1,147 @@
+%=====================================================================
+\chapter{Research Contributions}
+%=====================================================================
+
+This chapter states what has been contributed against each research objective and identifies the
+published work in which that contribution appears. Each publication is described once, at the
+point where its contribution is actually made; later chapters refer to it by its label
+\pubcite{P1}--\pubcite{P6}, with the methodology and evidence developed in Chapter~5 and full
+bibliographic details in \emph{Publications on PhD Work}.
+
+\section{Research Contribution 1 --- Integrated multi-source model (RO1)}
+
+A comprehensive multi-source model was designed, implemented and evaluated for the Indian
+equity market. The Multi-Source Fusion Network of \pubcite{P1} integrates four streams ---
+technical indicators from National Stock Exchange price and volume records, news sentiment from
+a domain-adapted transformer encoder, social media sentiment from a hybrid lexicon and
+recurrent classifier, and Indian macroeconomic series --- through modality-specific encoders, a
+cross-modal attention layer assigning time-varying relevance, and a bidirectional recurrent
+encoder, validated on ten years of data across ten sectoral indices under a strictly
+chronological split with walk-forward confirmation. The contribution is not that fusion
+improves accuracy, which was already known, but that the improvement is \emph{attributable}:
+ablation isolates the marginal value of each stream, and the attention distribution shows
+source importance shifting with the market regime.
+
+That observation exposed a limitation in the fusion mechanism itself, addressed in
+\pubcite{P4}. A Bayesian dynamic uncertainty-weighted framework models each source with its own
+expert network, estimates each expert's predictive uncertainty continuously from the variance of
+its recent errors, and obtains the fusion weights by a softmax over the negative uncertainties,
+so that a source is discounted at the moment its predictions become unreliable rather than at
+the next retraining cycle. This is the methodological core of the objective: it converts fusion
+from a question of \emph{what} to combine into a question of \emph{how} to combine under
+changing reliability.
+
+\section{Research Contribution 2 --- Hybrid LLM and indicator framework (RO2)}
+
+A hybrid framework combining large language models with conventional financial indicators was
+designed and evaluated in \pubcite{P3}. News headlines are read by a transformer sentiment
+encoder producing a continuous polarity score rather than a categorical label, preserving
+intensity that binary classification discards; the score is time-aligned to trading sessions
+with explicit handling of closing hours and publication timestamps, then fused at feature level
+with fifteen technical indicators and passed to a gradient-boosted ensemble, against
+technical-only baselines under temporal cross-validation.
+
+Three findings constitute the contribution. The sentiment score is the highest-gain predictor in
+the fused model, ahead of established technical features, so language-model sentiment carries
+information price history does not; its low correlation with price-based features confirms that
+the information is orthogonal rather than redundant; and --- reported without softening --- the
+incremental gain in directional accuracy is small, with all models close to the random
+classifier at a single-name daily horizon. The framework's practical value lies instead in the
+highest prediction confidence of the models examined and the strongest performance on buy
+signals. Delivering it in a reproducible, freely accessible environment was an explicit design
+goal, so the result can be independently re-derived.
+
+\section{Research Contribution 3 --- Explainable and causal framework (RO3)}
+
+Transparency was addressed mechanistically rather than by post-hoc attribution alone. The
+Dynamic-Causal Hybrid Framework of \pubcite{P2} replaces correlation-based feature selection
+with a directed causal adjacency matrix recovered by conditional independence testing, so that
+the features entering the model are those with demonstrable directed influence rather than those
+that merely co-move; temporal structure is captured by a multi-scale memory encoder at intraday,
+daily and weekly granularity, and the signal is converted into holdings by a credibilistic
+optimiser. Applied to NIFTY50 constituent data over 308 trading sessions it recovers an
+interpretable causal graph, identifies a systematic causal hub, and demonstrates that strong
+directed causal influence can exist between securities whose linear correlation is weak --- the
+justification for the approach, since correlational selection would have discarded a genuine
+driver.
+
+The second half of the objective, sentiment noise and sentiment-to-price temporal dynamics, is
+addressed by \pubcite{P3} and \pubcite{P5}. The former measures accuracy separately under
+positive, neutral and negative sentiment regimes and shows that sentiment spikes frequently
+precede price movements while the mapping from magnitude to direction is not simple. The latter
+treats the sentiment construct as a testable claim rather than an assumption: validated against
+four independently published series, the composite carries the expected sign against every one
+in every sub-period and separates the identified market states at $1.8 \times 10^{-8}$ --- and
+the same study then measures separately whether it forecasts anything, and reports that it does
+not. Keeping construct validity and predictive usefulness apart is itself a contribution.
+
+\section{Research Contribution 4 --- Validated decision framework and cross-market transfer
+(RO4)}
+
+A decision-theoretic framework converting a fused signal into an executable portfolio was
+specified and evaluated in \pubcite{P5}. Latent market states are identified by a Gaussian
+mixture refitted at every rebalance with explicit label anchoring; composites are fused with
+state-dependent weights and scaled onto a return metric by information-ratio scaling; the scaled
+signal enters a constrained quadratic program with covariance shrinkage, position caps and a
+turnover penalty; and the sleeve is scaled by a regime-dependent risk budget. The design
+deliberately separates \emph{what to hold relative to everything else} from \emph{how much total
+risk to carry}, so that each layer can be removed and tested independently. Evaluation spans
+eighteen years of daily data on ten multi-asset instruments with transaction costs, a fully
+reported specification sweep, four stress episodes selected on documented market history, a
+665-session holdout postdating every design decision, and a secondary mega-capitalisation
+universe as a cross-market test.
+
+The contribution has three parts: the framework itself, specified in enough detail to be
+reproduced from the description alone; an ablation design isolating component contributions
+\emph{at matched average exposure}, necessary because scaling a portfolio toward cash changes
+return and volatility together and would otherwise confound risk timing with risk level; and,
+most useful to a practitioner, the identification of two failure modes --- an absolute
+volatility target never reached on a diversified universe, which silently disables the regime
+layer, and a signal-to-allocation conversion in which mismatched units rather than information
+determine the optimiser's solution. Both were found only by disassembling the framework and
+both generalise beyond it. The cross-market component is answered honestly: transferred
+unchanged, the framework retains its defensive behaviour but loses on risk-adjusted return ---
+a bounded claim, which is more useful than an unbounded one.
+
+\section{Consolidated Mapping of Published Work to Objectives}
+
+Table~\ref{tab:mapping} states the relationship between each publication and each objective. A
+\emph{primary} mapping means the publication was designed to answer the objective and supplies
+its principal evidence; a \emph{partial} mapping means it contributes a specific, identifiable
+component without answering the objective as a whole. Blank cells are deliberate and should be
+read as an accurate statement of scope rather than as an omission. The structure of the research
+programme is visible in the table: two publications feed the integration layer, one supplies the
+language-model signal, one supplies transparency and one supplies the decision layer, and the
+evidence accumulates in sequence rather than in parallel. \pubcite{P6} is comparative groundwork
+that established the gap the later work addresses.
+
+\begin{table}[!htb]
+\centering
+\caption[Mapping of published work to the research objectives]{Mapping of published work to
+the research objectives, with the nature of the contribution in each case}
+\label{tab:mapping}
+\tabfont
+\begin{tabular}{@{}L{1.1cm}L{3.5cm}cccc L{4.4cm}@{}}
+\toprule
+\textbf{Ref.} & \textbf{Publication (short title)} & \textbf{RO1} & \textbf{RO2} &
+\textbf{RO3} & \textbf{RO4} & \textbf{Nature of the contribution} \\
+\midrule
+\pubcite{P1} & Multi-source data fusion framework (conference) & \textbf{P} & p & --- & p
+& Four-stream architecture, cross-modal attention, source ablation, ten-sector evaluation \\
+\pubcite{P2} & Dynamic-causal hybrid framework, NIFTY50 (conference) & p & --- &
+\textbf{P} & p & Directed causal feature selection, multi-granularity memory, credibilistic
+allocation \\
+\pubcite{P3} & LLM-extracted news sentiment and market data (journal) & p & \textbf{P} & p
+& --- & LLM sentiment pipeline, feature-level fusion, sentiment-regime accuracy analysis \\
+\pubcite{P4} & Bayesian dynamic uncertainty-weighted fusion (journal) & \textbf{P} & p &
+p & --- & Time-varying source reliability, softmax weighting over negative uncertainties \\
+\pubcite{P5} & Signal fusion to asset allocation (journal) & --- & --- & p & \textbf{P} &
+Regime detection, constrained allocation, matched-exposure ablation, holdout and
+cross-market test \\
+\pubcite{P6} & Deep learning in stock forecasting (conference) & p & p & --- & --- &
+Comparative groundwork that established the research gap \\
+\bottomrule
+\multicolumn{7}{@{}l@{}}{\scriptsize \textbf{P} = primary contribution;\quad p = partial
+contribution;\quad --- = no contribution claimed.}
+\end{tabular}
+\end{table}

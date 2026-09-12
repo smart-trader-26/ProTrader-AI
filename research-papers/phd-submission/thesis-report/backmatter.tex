@@ -1,0 +1,674 @@
+%=====================================================================
+\chapter*{Publications on PhD Work}
+\addcontentsline{toc}{chapter}{Publications on PhD Work}
+\markboth{Publications on PhD Work}{}
+\setcounter{table}{0}
+\renewcommand{\thetable}{P.\arabic{table}}
+%=====================================================================
+
+The research reported in this thesis has been published or communicated in the following works.
+The labels \pubcite{P1}--\pubcite{P6} are used throughout the thesis to refer to them, and
+publication status is as of the date of submission.
+
+\vspace{0.6em}
+\textbf{International Journals}
+
+\begin{enumerate}[label={[P\arabic*]},leftmargin=2.9em,start=3]
+\item A. Pardeshi and S. Deshmukh, ``Fusing LLM-Extracted News Sentiment and Market Data for
+Enhanced Stock Movement Prediction,'' \emph{Liberte Journal}, ISSN 0024-2020, vol.~14, no.~6,
+pp.~424--439, 2026. \textbf{(Published)}\\
+\indexing{\LiberteIndexing} \\ \link{\LiberteURL}\\
+\textit{Supports Research Objective~2; reported in Chapter~\ref{ch:llm} and, for the
+sentiment-noise diagnostics, Chapter~\ref{ch:causal}.}
+
+\item A. Pardeshi and S. Deshmukh, ``Dynamic Uncertainty-Weighted Fusion for Multi-Source
+Financial Data: A Bayesian Framework for Time-Varying Source Reliability,''
+\emph{International Journal of Computer Information Systems and Industrial Management
+Applications} (IJCISIM). \textbf{(Communicated, \IJCISIMDate)}\\
+\link{\IJCISIMURL}\\
+\textit{Supports Research Objective~1; reported in Chapter~\ref{ch:dynfusion}.}
+
+\item A. Pardeshi and S. Deshmukh, ``From Signal Fusion to Asset Allocation: A
+Decision-Theoretic Model for Portfolio Construction Under Regime-Based Sentiment and
+Volatility,'' \emph{International Journal of Applied Decision Sciences} (Inderscience),
+manuscript IJADS-312370. \textbf{(Under review --- revised manuscript submitted after a
+major-revision decision)}\\
+\link{\IJADSURL}\\
+\textit{Supports Research Objective~4; reported in Chapter~\ref{ch:allocation} and, for the
+sentiment construct validation, Chapter~\ref{ch:causal}.}
+\end{enumerate}
+
+\vspace{0.4em}
+\textbf{International Conferences}
+
+\begin{enumerate}[label={[P\arabic*]},leftmargin=2.9em]
+\item A. Pardeshi and S. Deshmukh, ``A Multi-Source Data Fusion Framework for Enhanced Stock
+Market Prediction,'' \emph{2026 International Conference on Sustainability, Innovation and
+Technology (ICSIT)}, \ICSITVenue, IEEE, 2026, \ICSITPages.\\
+\link{\ICSITURL}\\
+\textit{Supports Research Objective~1; reported in Chapter~\ref{ch:fusion}.}
+
+\item A. Pardeshi and S. Deshmukh, ``A Dynamic-Causal Hybrid Framework for NIFTY50 Stock
+Decision Making: A Multi-Granularity Temporal Learning Approach,'' \DCHFVenue.
+\textbf{(Communicated)}\\
+\link{\DCHFURL}\\
+\textit{Supports Research Objective~3; reported in Chapter~\ref{ch:causal}.}
+\setcounter{enumi}{5}
+\item A. Pardeshi and S. Deshmukh, ``Deep Learning in Stock Market Forecasting: Comparative
+Insights and Future Directions,'' \emph{2025 International Conference on Emerging Trends in
+Industry 4.0 Technologies (ICETI4T)}, Navi Mumbai, India, IEEE, June 2025, \ICETIPages.\\
+\link{\ICETIURL}\\
+\textit{Comparative groundwork that established the research gap; cited in
+Chapter~\ref{ch:litsurvey}.}
+\end{enumerate}
+
+\ifHasIPR
+\vspace{0.4em}
+\textbf{Copyrights and Patents}
+
+\begin{itemize}
+\item \IPRentries
+\end{itemize}
+\fi
+
+\vspace{0.8em}
+Table~\ref{tab:pubmap} states the relationship between each publication and each research
+objective. A \emph{primary} mapping means the publication was designed to answer the objective and
+supplies its principal evidence; a \emph{partial} mapping means it contributes a specific,
+identifiable component without answering the objective as a whole. Blank cells are deliberate and
+should be read as an accurate statement of scope rather than as an omission.
+
+\begin{table}[!htb]
+\centering
+\caption[Mapping of published work to the research objectives]{Mapping of published work to the
+research objectives and to the chapters in which each contribution is developed}
+\label{tab:pubmap}
+\tabfont
+\begin{tabular}{@{}L{1.0cm}L{3.1cm}ccccL{1.4cm}L{3.2cm}@{}}
+\toprule
+\textbf{Ref.} & \textbf{Publication} & \textbf{RO1} & \textbf{RO2} & \textbf{RO3} &
+\textbf{RO4} & \textbf{Chapter} & \textbf{Nature of the contribution} \\
+\midrule
+\pubcite{P1} & Multi-source data fusion framework & \textbf{P} & p & --- & p & 4, 6 &
+Four-stream architecture, cross-modal attention, source ablation, ten-sector evaluation \\
+\pubcite{P2} & Dynamic-causal hybrid framework & p & --- & \textbf{P} & p & 7 & Directed causal
+feature selection, multi-granularity memory, credibilistic allocation \\
+\pubcite{P3} & LLM news sentiment and market data & p & \textbf{P} & p & --- & 6, 7 & LLM
+sentiment pipeline, feature-level fusion, sentiment-regime analysis \\
+\pubcite{P4} & Bayesian dynamic uncertainty-weighted fusion & \textbf{P} & p & p & --- & 5 &
+Time-varying source reliability, softmax weighting over negative uncertainties \\
+\pubcite{P5} & Signal fusion to asset allocation & --- & --- & p & \textbf{P} & 7, 8 & Regime
+detection, constrained allocation, matched-exposure ablation, holdout, cross-market test \\
+\pubcite{P6} & Deep learning in stock forecasting & p & p & --- & --- & 3 & Comparative
+groundwork that established the research gap \\
+\bottomrule
+\multicolumn{8}{@{}l@{}}{\scriptsize \textbf{P} = primary contribution;\quad p = partial
+contribution;\quad --- = no contribution claimed.}
+\end{tabular}
+\end{table}
+
+%=====================================================================
+\clearpage
+\markboth{References}{}
+\begin{footnotesize}
+\setstretch{1.0}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{16pt}
+\begin{multicols}{2}
+\begin{thebibliography}{999}
+\setlength{\itemsep}{2pt}\setlength{\parsep}{0pt}
+\addcontentsline{toc}{chapter}{References}
+
+%---------------------------------------------- multi-source fusion
+\bibitem{snasel2024} V. Sn\'a\v{s}el, J. D. Vel\'asquez, M. Pant, D. Georgiou and L. Kong,
+``A generalization of multi-source fusion-based framework to stock selection,''
+\emph{Information Fusion}, vol.~102, p.~102018, 2024.
+
+\bibitem{long2024} W. Long, J. Gao, K. Bai and Z. Lu, ``A hybrid model for stock price
+prediction based on multi-view heterogeneous data,'' \emph{Financial Innovation}, vol.~10,
+no.~1, p.~48, 2024.
+
+\bibitem{zhang2022fusion} C. Zhang, N. N. A. Sjarif and R. B. Ibrahim, ``Decision fusion for
+stock market prediction: a systematic review,'' \emph{IEEE Access}, vol.~10, pp.~81364--81379,
+2022.
+
+\bibitem{nti2021} I. K. Nti, A. F. Adekoya and B. A. Weyori, ``A novel multi-source
+information-fusion predictive framework based on deep neural networks for accuracy enhancement
+in stock market prediction,'' \emph{Journal of Big Data}, vol.~8, no.~1, p.~17, 2021.
+
+\bibitem{farimani2024} S. Anbaee Farimani, M. V. Jahan and A. Milani Fard, ``An adaptive
+multimodal learning model for financial market price prediction,'' \emph{IEEE Access}, vol.~12,
+pp.~121846--121863, 2024.
+
+\bibitem{moodi2024} F. Moodi, A. J. Rafsanjani, S. Zarifzadeh and M. A. Zare Chahooki, ``Fusion
+of technical indicators and sentiment analysis in a hybrid framework of deep learning models for
+stock price movement prediction,'' \emph{IEEE Access}, vol.~12, pp.~195696--195709, 2024.
+
+\bibitem{liu2019attention} G. Liu and X. Wang, ``A numerical-based attention method for stock
+market prediction with dual information,'' \emph{IEEE Access}, vol.~7, pp.~7357--7367, 2019.
+
+\bibitem{mu2023investor} G. Mu, N. Gao, Y. Wang and L. Dai, ``A stock price prediction model
+based on investor sentiment and optimized deep learning,'' \emph{IEEE Access}, vol.~11,
+pp.~51353--51367, 2023.
+
+\bibitem{haryono2023} A. T. Haryono, R. Sarno and K. R. Sungkono, ``Transformer-gated recurrent
+unit method for predicting stock price based on news sentiments and technical indicators,''
+\emph{IEEE Access}, vol.~11, pp.~77132--77146, 2023.
+
+\bibitem{haryono2024} A. T. Haryono, R. Sarno, R. N. E. Anggraini and K. R. Sungkono, ``Permuted
+temporal Kolmogorov--Arnold networks for stock price forecasting using generative aspect-based
+sentiment analysis,'' \emph{IEEE Access}, vol.~12, pp.~178672--178689, 2024.
+
+\bibitem{tai2022} W. Tai, T. Zhong, Y. Mo and F. Zhou, ``Learning sentimental and financial
+signals with normalizing flows for stock movement prediction,'' \emph{IEEE Signal Processing
+Letters}, vol.~29, pp.~414--418, 2022.
+
+\bibitem{bacco2024} L. Bacco, L. Petrosino, D. Arganese, L. Vollero, M. Papi and M. Merone,
+``Investigating stock prediction using LSTM networks and sentiment analysis of tweets under high
+uncertainty,'' \emph{IEEE Access}, vol.~12, pp.~122239--122248, 2024.
+
+\bibitem{jung2024} H. D. Jung and B. Jang, ``Enhancing financial sentiment analysis ability of
+language model via targeted numerical change-related masking,'' \emph{IEEE Access}, vol.~12,
+pp.~50809--50820, 2024.
+
+\bibitem{liu2024llmreview} C. Liu, A. Arulappan, R. Naha, A. Mahanti, J. Kamruzzaman and I.-H.
+Ra, ``Large language models and sentiment analysis in financial markets: a review, datasets, and
+case study,'' \emph{IEEE Access}, vol.~12, pp.~134041--134061, 2024.
+
+\bibitem{onozo2024} L. R. \'On\'oz\'o, F. V. Arthur and B. Gyires-T\'oth, ``Leveraging LLMs for
+financial news analysis and macroeconomic indicator nowcasting,'' \emph{IEEE Access}, vol.~12,
+pp.~160529--160547, 2024.
+
+\bibitem{khuwaja2023} P. Khuwaja, S. A. Khowaja and K. Dev, ``Adversarial learning networks for
+FinTech applications using heterogeneous data sources,'' \emph{IEEE Internet of Things Journal},
+vol.~10, no.~3, pp.~2194--2201, 2023.
+
+\bibitem{vargas2022} G. Vargas, L. Silvestre, L. Rigo J\'unior and H. Rocha, ``B3 stock price
+prediction using LSTM neural networks and sentiment analysis,'' \emph{IEEE Latin America
+Transactions}, vol.~20, no.~7, pp.~1067--1074, 2022.
+
+\bibitem{wang2024spcm} J. Wang and Z. Chen, ``SPCM: a machine learning approach for
+sentiment-based stock recommendation system,'' \emph{IEEE Access}, vol.~12, pp.~14116--14129,
+2024.
+
+\bibitem{shang2025} L. Shang, ``Sentiment-driven Bitcoin price range forecasting: enhancing CART
+decision trees with high-dimensional indicators and Twitter dynamics,'' \emph{IEEE Access},
+vol.~13, pp.~60508--60518, 2025.
+
+\bibitem{sami2025} H. M. Sami, M. Shah Jalal, M. F. Kabir and M. N. Huda, ``IntPort: an
+intelligent portfolio construction technique based on financial forecasting by statistical average
+method,'' \emph{IEEE Access}, vol.~13, pp.~35355--35375, 2025.
+
+\bibitem{choi2023} J. Choi, S. Yoo, X. Zhou and Y. Kim, ``Hybrid information mixing module for
+stock movement prediction,'' \emph{IEEE Access}, vol.~11, pp.~28781--28790, 2023.
+
+\bibitem{ho2021} T.-T. Ho and Y. Huang, ``Stock price movement prediction using sentiment
+analysis and CandleStick chart representation,'' \emph{Sensors}, vol.~21, no.~23, p.~7957, 2021.
+
+\bibitem{rouf2021} N. Rouf, M. B. Malik, T. Arif, S. Sharma, S. Singh, S. Aich and H.-C. Kim,
+``Stock market prediction using machine learning techniques: a decade survey on methodologies,
+recent developments, and future directions,'' \emph{Electronics}, vol.~10, no.~21, p.~2717, 2021.
+
+\bibitem{song2024} Y. Song, ``Enhancing stock market trend reversal prediction using
+feature-enriched neural networks,'' \emph{Heliyon}, vol.~10, p.~e24136, 2024.
+
+\bibitem{javaid2024} N. Javaid, F. Aslam et al., ``Enhanced prediction of stock markets using a
+novel deep learning model PLSTM-TAL in urbanized smart cities,'' \emph{Heliyon}, vol.~10,
+p.~e27747, 2024.
+
+\bibitem{shaban2024} W. M. Shaban et al., ``SMP-DL: a novel stock market prediction approach based
+on deep learning for effective trend forecasting,'' \emph{Neural Computing and Applications},
+vol.~36, pp.~1849--1873, 2024.
+
+\bibitem{fu2024} K. Fu and Y. Zhang, ``Incorporating multi-source market sentiment and price data
+for stock price prediction,'' \emph{Mathematics}, vol.~12, no.~10, p.~1572, 2024.
+
+\bibitem{dong2024} Y. Dong and Y. Hao, ``A stock prediction method based on multidimensional and
+multilevel feature dynamic fusion,'' \emph{Electronics}, vol.~13, no.~20, p.~4111, 2024.
+
+\bibitem{chen2024lasso} X. Chen, L. Cao, Z. Cao and H. Zhang, ``A multi-feature stock price
+prediction model based on multi-feature calculation, LASSO feature selection, and Ca-LSTM
+network,'' \emph{Connection Science}, vol.~36, no.~1, p.~2286188, 2024.
+
+\bibitem{li2023datafusion} A. Li, Q. Wei, Y. Shi and Z. Liu, ``Research on stock price prediction
+from a data fusion perspective,'' \emph{Data Science in Finance and Economics}, vol.~3, no.~3,
+pp.~230--250, 2023.
+
+\bibitem{zhang2018mil} X. Zhang, S. Qu, J. Huang, B. Fang and P. Yu, ``Stock market prediction via
+multi-source multiple instance learning,'' \emph{IEEE Access}, vol.~6, pp.~50720--50728, 2018.
+
+\bibitem{zhu2025informer} Y. Zhu, ``Stock prediction method based on multi-source data of social
+media and Informer model,'' in \emph{Proc. Int. Conf. Digital Management and Information
+Technology}, Shenyang, China, 2025, pp.~372--377.
+
+\bibitem{hong2025mtl} Y. Hong, ``Boosting the accuracy of stock market prediction via multi-layer
+hybrid MTL structure,'' arXiv:2501.09760, 2025.
+
+\bibitem{alsheebah2024} F. M. M. Alsheebah and B. A. Al-Fuhaidi, ``Emerging stock market
+prediction using GRU algorithm: incorporating endogenous and exogenous variables,'' \emph{IEEE
+Access}, vol.~12, pp.~132964--132971, 2024.
+
+\bibitem{khan2025asymmetric} H. A. Khan and R. J. K. Chahal, ``Asymmetric impact of social media
+sentiments and stock market uncertainty on Indian sectoral returns: a quantile-on-quantile
+approach,'' \emph{The North American Journal of Economics and Finance}, vol.~79, p.~102456, 2025.
+
+\bibitem{zong2025} C. Zong, J. Wan, L. Cascone and H. Zhou, ``Stock movement prediction with
+multimodal stable fusion via gated cross-attention mechanism,'' \emph{Complex and Intelligent
+Systems}, vol.~11, no.~9, 2025.
+
+%---------------------------------------------- language models and sentiment
+\bibitem{li2024llmsurvey} Y. Li, S. Wang, H. Ding and H. Chen, ``Large language models in
+finance: a survey,'' in \emph{Proc. 4th ACM Int. Conf. AI in Finance}, 2024.
+
+\bibitem{todd2024} A. Todd, J. Bowden and Y. Moshfeghi, ``Text-based sentiment analysis in
+finance: synthesising the existing literature and exploring future directions,'' \emph{Intelligent
+Systems in Accounting, Finance and Management}, vol.~31, no.~1, p.~e1549, 2024.
+
+\bibitem{bahoo2024} S. Bahoo, M. Cucculelli, X. Goga and J. Mondolo, ``Artificial intelligence in
+finance: a comprehensive review through bibliometric and content analysis,'' \emph{SN Business and
+Economics}, vol.~4, no.~23, 2024.
+
+\bibitem{khan2024chatgpt} M. S. Khan and H. Umer, ``ChatGPT in finance: applications, challenges,
+and solutions,'' \emph{Heliyon}, vol.~10, no.~2, p.~e24890, 2024.
+
+\bibitem{fatouros2024} G. Fatouros, J. Soldatos, K. Kouroumali, G. Makridis and D. Kyriazis,
+``Transforming sentiment analysis in the financial domain with ChatGPT,'' \emph{Machine Learning
+with Applications}, vol.~14, p.~100508, 2024.
+
+\bibitem{wilksch2024} M. Wilksch and O. Abramova, ``PyFin-sentiment: towards a
+machine-learning-based model for deriving sentiment from financial tweets,'' \emph{International
+Journal of Information Management Data Insights}, vol.~3, no.~1, p.~100171, 2024.
+
+\bibitem{wu2023bloomberggpt} S. Wu, O. Irsoy, S. Lu, V. Dabravolski, M. Dredze, S. Gehrmann,
+P. Kambadur, D. Rosenberg and G. Mann, ``BloombergGPT: a large language model for finance,''
+arXiv:2303.17564, 2023.
+
+\bibitem{yang2023fingpt} H. Yang, X.-Y. Liu and C. D. Wang, ``FinGPT: open-source financial large
+language models,'' arXiv:2306.06031, 2023.
+
+\bibitem{wang2024fingptbench} N. Wang, H. Yang and C. D. Wang, ``FinGPT: instruction tuning
+benchmark for open-source large language models in financial datasets,'' arXiv:2310.04793, 2024.
+
+\bibitem{araci2019} D. Araci, ``FinBERT: financial sentiment analysis with pre-trained language
+models,'' arXiv:1908.10063, 2019.
+
+\bibitem{hutto2014} C. J. Hutto and E. Gilbert, ``VADER: a parsimonious rule-based model for
+sentiment analysis of social media text,'' in \emph{Proc. 8th Int. AAAI Conf. Weblogs and Social
+Media}, 2014, pp.~216--225.
+
+\bibitem{loughran2011} T. Loughran and B. McDonald, ``When is a liability not a liability?
+Textual analysis, dictionaries, and 10-Ks,'' \emph{The Journal of Finance}, vol.~66, no.~1,
+pp.~35--65, 2011.
+
+\bibitem{devlin2019bert} J. Devlin, M.-W. Chang, K. Lee and K. Toutanova, ``BERT: pre-training of
+deep bidirectional transformers for language understanding,'' in \emph{Proc. NAACL-HLT}, 2019,
+pp.~4171--4186.
+
+\bibitem{liu2019roberta} Y. Liu, M. Ott, N. Goyal, J. Du, M. Joshi, D. Chen, O. Levy, M. Lewis,
+L. Zettlemoyer and V. Stoyanov, ``RoBERTa: a robustly optimized BERT pretraining approach,''
+arXiv:1907.11692, 2019.
+
+\bibitem{brown2020gpt3} T. B. Brown et al., ``Language models are few-shot learners,'' in
+\emph{Adv. Neural Inf. Process. Syst.}, 2020, pp.~1877--1901.
+
+\bibitem{tetlock2007} P. C. Tetlock, ``Giving content to investor sentiment: the role of media in
+the stock market,'' \emph{The Journal of Finance}, vol.~62, no.~3, pp.~1139--1168, 2007.
+
+\bibitem{tetlock2008} P. C. Tetlock, M. Saar-Tsechansky and S. Macskassy, ``More than words:
+quantifying language to measure firms' fundamentals,'' \emph{The Journal of Finance}, vol.~63,
+no.~3, pp.~1437--1467, 2008.
+
+\bibitem{bollen2011} J. Bollen, H. Mao and X. Zeng, ``Twitter mood predicts the stock market,''
+\emph{Journal of Computational Science}, vol.~2, no.~1, pp.~1--8, 2011.
+
+\bibitem{antweiler2004} W. Antweiler and M. Z. Frank, ``Is all that talk just noise? The
+information content of internet stock message boards,'' \emph{The Journal of Finance}, vol.~59,
+no.~3, pp.~1259--1294, 2004.
+
+\bibitem{da2011attention} Z. Da, J. Engelberg and P. Gao, ``In search of attention,'' \emph{The
+Journal of Finance}, vol.~66, no.~5, pp.~1461--1499, 2011.
+
+\bibitem{barber2008} B. M. Barber and T. Odean, ``All that glitters: the effect of attention and
+news on the buying behavior of individual and institutional investors,'' \emph{The Review of
+Financial Studies}, vol.~21, no.~2, pp.~785--818, 2008.
+
+\bibitem{elahi2024} A. Elahi and F. Taghvaei, ``Combining financial data and news articles for
+stock price movement prediction using large language models,'' in \emph{Proc. IEEE Int. Conf. Big
+Data}, 2024, pp.~4875--4883.
+
+\bibitem{mishra2025} N. Mishra, M. Anzar, S. Pandey and S. Mishra, ``A review on stock market
+trends and stock price prediction using sentiment analysis and market data,'' in \emph{Proc. Int.
+Conf. Communication, Security, and Artificial Intelligence}, 2025, pp.~56--62.
+
+\bibitem{officioso2026} G. Officioso, G. Sperl\`i and A. Vignali, ``Financial news sentiment meets
+market data: a large language model-based approach to stock price prediction,'' \emph{Information
+Sciences}, vol.~754, p.~123711, 2026.
+
+%---------------------------------------------- deep learning foundations
+\bibitem{vaswani2017} A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+{\L}. Kaiser and I. Polosukhin, ``Attention is all you need,'' in \emph{Adv. Neural Inf. Process.
+Syst.}, 2017, pp.~5998--6008.
+
+\bibitem{bahdanau2015} D. Bahdanau, K. Cho and Y. Bengio, ``Neural machine translation by jointly
+learning to align and translate,'' in \emph{Proc. 3rd Int. Conf. Learning Representations}, 2015.
+
+\bibitem{hochreiter1997} S. Hochreiter and J. Schmidhuber, ``Long short-term memory,'' \emph{Neural
+Computation}, vol.~9, no.~8, pp.~1735--1780, 1997.
+
+\bibitem{bengio1994} Y. Bengio, P. Simard and P. Frasconi, ``Learning long-term dependencies with
+gradient descent is difficult,'' \emph{IEEE Trans. Neural Networks}, vol.~5, no.~2, pp.~157--166,
+1994.
+
+\bibitem{cho2014gru} K. Cho, B. van Merri\"enboer, C. Gulcehre, D. Bahdanau, F. Bougares,
+H. Schwenk and Y. Bengio, ``Learning phrase representations using RNN encoder--decoder for
+statistical machine translation,'' in \emph{Proc. Conf. Empirical Methods in Natural Language
+Processing}, 2014, pp.~1724--1734.
+
+\bibitem{chen2016xgboost} T. Chen and C. Guestrin, ``XGBoost: a scalable tree boosting system,'' in
+\emph{Proc. 22nd ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining}, 2016, pp.~785--794.
+
+\bibitem{friedman2001} J. H. Friedman, ``Greedy function approximation: a gradient boosting
+machine,'' \emph{The Annals of Statistics}, vol.~29, no.~5, pp.~1189--1232, 2001.
+
+\bibitem{ke2017lightgbm} G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye and T.-Y. Liu,
+``LightGBM: a highly efficient gradient boosting decision tree,'' in \emph{Adv. Neural Inf.
+Process. Syst.}, 2017, pp.~3146--3154.
+
+\bibitem{breiman2001} L. Breiman, ``Random forests,'' \emph{Machine Learning}, vol.~45, no.~1,
+pp.~5--32, 2001.
+
+\bibitem{cortes1995svm} C. Cortes and V. Vapnik, ``Support-vector networks,'' \emph{Machine
+Learning}, vol.~20, no.~3, pp.~273--297, 1995.
+
+\bibitem{srivastava2014dropout} N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever and
+R. Salakhutdinov, ``Dropout: a simple way to prevent neural networks from overfitting,''
+\emph{Journal of Machine Learning Research}, vol.~15, no.~1, pp.~1929--1958, 2014.
+
+\bibitem{ioffe2015bn} S. Ioffe and C. Szegedy, ``Batch normalization: accelerating deep network
+training by reducing internal covariate shift,'' in \emph{Proc. 32nd Int. Conf. Machine Learning},
+2015, pp.~448--456.
+
+\bibitem{kingma2015adam} D. P. Kingma and J. Ba, ``Adam: a method for stochastic optimization,'' in
+\emph{Proc. 3rd Int. Conf. Learning Representations}, 2015.
+
+\bibitem{pedregosa2011} F. Pedregosa et al., ``Scikit-learn: machine learning in Python,''
+\emph{Journal of Machine Learning Research}, vol.~12, pp.~2825--2830, 2011.
+
+\bibitem{gal2016dropout} Y. Gal and Z. Ghahramani, ``Dropout as a Bayesian approximation:
+representing model uncertainty in deep learning,'' in \emph{Proc. 33rd Int. Conf. Machine
+Learning}, 2016, pp.~1050--1059.
+
+\bibitem{kendall2017} A. Kendall and Y. Gal, ``What uncertainties do we need in Bayesian deep
+learning for computer vision?'' in \emph{Adv. Neural Inf. Process. Syst.}, 2017, pp.~5574--5584.
+
+\bibitem{fischer2018} T. Fischer and C. Krauss, ``Deep learning with long short-term memory
+networks for financial market predictions,'' \emph{European Journal of Operational Research},
+vol.~270, no.~2, pp.~654--669, 2018.
+
+\bibitem{sezer2020} O. B. Sezer, M. U. Gudelek and A. M. Ozbayoglu, ``Financial time series
+forecasting with deep learning: a systematic literature review, 2005--2019,'' \emph{Applied Soft
+Computing}, vol.~90, p.~106181, 2020.
+
+\bibitem{ozbayoglu2020} A. M. Ozbayoglu, M. U. Gudelek and O. B. Sezer, ``Deep learning for
+financial applications: a survey,'' \emph{Applied Soft Computing}, vol.~93, p.~106384, 2020.
+
+\bibitem{jiang2021} W. Jiang, ``Applications of deep learning in stock market prediction: recent
+progress,'' \emph{Expert Systems with Applications}, vol.~184, p.~115537, 2021.
+
+%---------------------------------------------- explainability and causality
+\bibitem{koa2024} K. J. L. Koa, Y. Ma, R. Ng and T.-S. Chua, ``Learning to generate explainable
+stock predictions using self-reflective large language models,'' in \emph{Proc. ACM Web Conference
+(WWW '24)}, Singapore, 2024, pp.~4304--4315.
+
+\bibitem{lundberg2017} S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model
+predictions,'' in \emph{Adv. Neural Inf. Process. Syst.}, 2017, pp.~4765--4774.
+
+\bibitem{ribeiro2016} M. T. Ribeiro, S. Singh and C. Guestrin, ```Why should I trust you?'
+Explaining the predictions of any classifier,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf.
+Knowledge Discovery and Data Mining}, 2016, pp.~1135--1144.
+
+\bibitem{arrieta2020} A. Barredo Arrieta et al., ``Explainable artificial intelligence (XAI):
+concepts, taxonomies, opportunities and challenges toward responsible AI,'' \emph{Information
+Fusion}, vol.~58, pp.~82--115, 2020.
+
+\bibitem{doshivelez2017} F. Doshi-Velez and B. Kim, ``Towards a rigorous science of interpretable
+machine learning,'' arXiv:1702.08608, 2017.
+
+\bibitem{rudin2019} C. Rudin, ``Stop explaining black box machine learning models for high stakes
+decisions and use interpretable models instead,'' \emph{Nature Machine Intelligence}, vol.~1,
+no.~5, pp.~206--215, 2019.
+
+\bibitem{xu2026causal} S. Xu, Q. Cheng and C.-G. Lee, ``A causal perspective of stock prediction
+models,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~38, no.~1, pp.~14--25, 2026.
+
+\bibitem{liu2026dynamic} H. Liu, B. Hu, Y. Zhou and Y. Zhou, ``A dynamic-causal lens of stock
+interactions: graph modeling from symbolic movement patterns,'' \emph{IEEE Trans. Knowledge and
+Data Engineering}, vol.~38, no.~2, pp.~722--735, 2026.
+
+\bibitem{yu2025causalseqgnn} H. Yu and J. Liu, ``CausalSeqGNN: a Fama--French inspired fuzzy
+cognitive map combined with graph neural network for stock prediction,'' \emph{IEEE Trans. Fuzzy
+Systems}, vol.~33, no.~12, pp.~4418--4430, 2025.
+
+\bibitem{luo2025magicnet} D. Luo, S. Li, W. Liao and R. Yan, ``MagicNet: memory-aware graph
+interactive causal network for multivariate stock price movement prediction,'' \emph{IEEE Trans.
+Knowledge and Data Engineering}, vol.~37, no.~4, pp.~1989--2000, 2025.
+
+\bibitem{wang2025mtmd} M. Wang, J. Tian, M. Zhang, J. Guo and W. Jia, ``MTMD: multi-scale temporal
+memory learning and efficient debiasing framework for stock trend forecasting,'' \emph{IEEE Trans.
+Emerging Topics in Computational Intelligence}, vol.~9, no.~3, pp.~2151--2163, 2025.
+
+\bibitem{zhu2025multigran} P. Zhu, Y. Li, Q. Liu, D. Cheng and C. Jiang, ``Financial time series
+prediction with multi-granularity graph augmented learning,'' \emph{IEEE Trans. Knowledge and Data
+Engineering}, vol.~37, no.~11, pp.~6436--6449, 2025.
+
+\bibitem{xing2024vague} R. Xing, R. Cheng, J. Huang, Q. Li and J. Zhao, ``Learning to understand
+the vague graph for stock prediction with momentum spillovers,'' \emph{IEEE Trans. Knowledge and
+Data Engineering}, vol.~36, no.~4, pp.~1698--1712, 2024.
+
+\bibitem{patel2024hybrid} M. Patel, K. Jariwala and C. Chattopadhyay, ``A hybrid relational
+approach toward stock price prediction and profitability,'' \emph{IEEE Trans. Artificial
+Intelligence}, vol.~5, no.~11, pp.~5844--5854, 2024.
+
+\bibitem{liu2024heterogeneous} H. Liu, Y. Zhou, Y. Zhou and B. Hu, ``Heterogeneous dual-dynamic
+attention network for modeling mutual interplay of stocks,'' \emph{IEEE Trans. Artificial
+Intelligence}, vol.~5, no.~7, pp.~3595--3606, 2024.
+
+\bibitem{gao2025relational} Q. Gao, Z. Liu, L. Huang, K. Zhang, J. Wang and G. Liu, ``Relational
+stock selection via probabilistic state space learning,'' \emph{IEEE Trans. Knowledge and Data
+Engineering}, vol.~37, no.~2, pp.~865--880, 2025.
+
+\bibitem{granger1969} C. W. J. Granger, ``Investigating causal relations by econometric models and
+cross-spectral methods,'' \emph{Econometrica}, vol.~37, no.~3, pp.~424--438, 1969.
+
+\bibitem{spirtes2000} P. Spirtes, C. Glymour and R. Scheines, \emph{Causation, Prediction, and
+Search}, 2nd~ed. Cambridge, MA: MIT Press, 2000.
+
+\bibitem{pearl2009} J. Pearl, \emph{Causality: Models, Reasoning, and Inference}, 2nd~ed.
+Cambridge: Cambridge University Press, 2009.
+
+\bibitem{peters2017} J. Peters, D. Janzing and B. Sch\"olkopf, \emph{Elements of Causal Inference:
+Foundations and Learning Algorithms}. Cambridge, MA: MIT Press, 2017.
+
+\bibitem{runge2019} J. Runge et al., ``Detecting and quantifying causal associations in large
+nonlinear time series datasets,'' \emph{Science Advances}, vol.~5, no.~11, p.~eaau4996, 2019.
+
+\bibitem{toda1995} H. Y. Toda and T. Yamamoto, ``Statistical inference in vector autoregressions
+with possibly integrated processes,'' \emph{Journal of Econometrics}, vol.~66, no.~1--2,
+pp.~225--250, 1995.
+
+\bibitem{sims1980} C. A. Sims, ``Macroeconomics and reality,'' \emph{Econometrica}, vol.~48,
+no.~1, pp.~1--48, 1980.
+
+%---------------------------------------------- portfolio construction and regimes
+\bibitem{markowitz1952} H. Markowitz, ``Portfolio selection,'' \emph{The Journal of Finance},
+vol.~7, no.~1, pp.~77--91, 1952.
+
+\bibitem{kelly1956} J. L. Kelly, ``A new interpretation of information rate,'' \emph{Bell System
+Technical Journal}, vol.~35, no.~4, pp.~917--926, 1956.
+
+\bibitem{sharpe1966} W. F. Sharpe, ``Mutual fund performance,'' \emph{The Journal of Business},
+vol.~39, no.~1, pp.~119--138, 1966.
+
+\bibitem{ledoit2004} O. Ledoit and M. Wolf, ``A well-conditioned estimator for large-dimensional
+covariance matrices,'' \emph{Journal of Multivariate Analysis}, vol.~88, no.~2, pp.~365--411, 2004.
+
+\bibitem{demiguel2009} V. DeMiguel, L. Garlappi and R. Uppal, ``Optimal versus naive
+diversification: how inefficient is the $1/N$ portfolio strategy?'' \emph{The Review of Financial
+Studies}, vol.~22, no.~5, pp.~1915--1953, 2009.
+
+\bibitem{michaud1989} R. O. Michaud, ``The Markowitz optimization enigma: is `optimized'
+optimal?'' \emph{Financial Analysts Journal}, vol.~45, no.~1, pp.~31--42, 1989.
+
+\bibitem{blacklitterman1992} F. Black and R. Litterman, ``Global portfolio optimization,''
+\emph{Financial Analysts Journal}, vol.~48, no.~5, pp.~28--43, 1992.
+
+\bibitem{jagannathan2003} R. Jagannathan and T. Ma, ``Risk reduction in large portfolios: why
+imposing the wrong constraints helps,'' \emph{The Journal of Finance}, vol.~58, no.~4,
+pp.~1651--1683, 2003.
+
+\bibitem{maillard2010} S. Maillard, T. Roncalli and J. Teiletche, ``The properties of equally
+weighted risk contribution portfolios,'' \emph{The Journal of Portfolio Management}, vol.~36,
+no.~4, pp.~60--70, 2010.
+
+\bibitem{lopezdeprado2016} M. L\'opez de Prado, ``Building diversified portfolios that outperform
+out of sample,'' \emph{The Journal of Portfolio Management}, vol.~42, no.~4, pp.~59--69, 2016.
+
+\bibitem{grinold2000} R. C. Grinold and R. N. Kahn, \emph{Active Portfolio Management}, 2nd~ed.
+New York: McGraw-Hill, 2000.
+
+\bibitem{ang2014} A. Ang, \emph{Asset Management: A Systematic Approach to Factor Investing}.
+Oxford: Oxford University Press, 2014.
+
+\bibitem{hamilton1989} J. D. Hamilton, ``A new approach to the economic analysis of nonstationary
+time series and the business cycle,'' \emph{Econometrica}, vol.~57, no.~2, pp.~357--384, 1989.
+
+\bibitem{ang2002} A. Ang and G. Bekaert, ``International asset allocation with regime shifts,''
+\emph{The Review of Financial Studies}, vol.~15, no.~4, pp.~1137--1187, 2002.
+
+\bibitem{kritzman2012} M. Kritzman, S. Page and D. Turkington, ``Regime shifts: implications for
+dynamic strategies,'' \emph{Financial Analysts Journal}, vol.~68, no.~3, pp.~22--39, 2012.
+
+\bibitem{luo2026regime} Y. Luo and J. M. Mulvey, ``Regime-aware asset allocation with dual-regime
+signals and regime-dependent asset selection,'' \emph{The Journal of Financial Data Science},
+vol.~8, no.~3, pp.~104--134, 2026.
+
+\bibitem{moreira2017} A. Moreira and T. Muir, ``Volatility-managed portfolios,'' \emph{The Journal
+of Finance}, vol.~72, no.~4, pp.~1611--1644, 2017.
+
+\bibitem{kumar2024rdmdea} A. Kumar and S. Yadav, ``A multiobjective multiperiod efficient portfolio
+selection approach for positive and negative returns using RDM-DEA under a credibilistic
+framework,'' \emph{IEEE Trans. Engineering Management}, vol.~71, pp.~14114--14125, 2024.
+
+\bibitem{gu2025ragic} J. Gu, W. Du and G. Wang, ``RAGIC: risk-aware generative framework for stock
+interval construction,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~37, no.~4,
+pp.~2085--2096, 2025.
+
+\bibitem{zhu2025spin} M. Zhu et al., ``SPIN: sparse portfolio strategy with irregular news in
+fluctuating markets,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~37, no.~6,
+pp.~3714--3727, 2025.
+
+\bibitem{kabbani2022drl} T. Kabbani and E. Duman, ``Deep reinforcement learning approach for
+trading automation in the stock market,'' \emph{IEEE Access}, vol.~10, pp.~93564--93574, 2022.
+
+\bibitem{rockafellar2000} R. T. Rockafellar and S. Uryasev, ``Optimization of conditional
+value-at-risk,'' \emph{Journal of Risk}, vol.~2, no.~3, pp.~21--41, 2000.
+
+\bibitem{artzner1999} P. Artzner, F. Delbaen, J.-M. Eber and D. Heath, ``Coherent measures of
+risk,'' \emph{Mathematical Finance}, vol.~9, no.~3, pp.~203--228, 1999.
+
+\bibitem{sortino1994} F. A. Sortino and L. N. Price, ``Performance measurement in a downside risk
+framework,'' \emph{The Journal of Investing}, vol.~3, no.~3, pp.~59--64, 1994.
+
+%---------------------------------------------- market behaviour and sentiment indices
+\bibitem{bakerwurgler2007} M. Baker and J. Wurgler, ``Investor sentiment in the stock market,''
+\emph{Journal of Economic Perspectives}, vol.~21, no.~2, pp.~129--151, 2007.
+
+\bibitem{singsiri2026} P. Singsiri and J. Yokrattanasak, ``Machine learning-driven portfolio
+optimization using money flow index-based sentiment signals,'' \emph{International Journal of
+Financial Studies}, vol.~14, no.~5, p.~112, 2026.
+
+\bibitem{naidoo2025} T. Naidoo, P. Moores-Pitt, P.-F. Muzindutsi and K. O. Isah, ``Analysing
+investor sentiment and stock market volatility of the JSE size-based indices: a GARCH-MIDAS
+approach,'' \emph{Risk Management}, vol.~27, no.~3, 2025.
+
+\bibitem{fama1970} E. F. Fama, ``Efficient capital markets: a review of theory and empirical
+work,'' \emph{The Journal of Finance}, vol.~25, no.~2, pp.~383--417, 1970.
+
+\bibitem{famafrench1993} E. F. Fama and K. R. French, ``Common risk factors in the returns on
+stocks and bonds,'' \emph{Journal of Financial Economics}, vol.~33, no.~1, pp.~3--56, 1993.
+
+\bibitem{jegadeesh1993} N. Jegadeesh and S. Titman, ``Returns to buying winners and selling losers:
+implications for stock market efficiency,'' \emph{The Journal of Finance}, vol.~48, no.~1,
+pp.~65--91, 1993.
+
+\bibitem{kahneman1979} D. Kahneman and A. Tversky, ``Prospect theory: an analysis of decision under
+risk,'' \emph{Econometrica}, vol.~47, no.~2, pp.~263--291, 1979.
+
+\bibitem{shiller2003} R. J. Shiller, ``From efficient markets theory to behavioral finance,''
+\emph{Journal of Economic Perspectives}, vol.~17, no.~1, pp.~83--104, 2003.
+
+\bibitem{lo2004} A. W. Lo, ``The adaptive markets hypothesis: market efficiency from an
+evolutionary perspective,'' \emph{The Journal of Portfolio Management}, vol.~30, no.~5,
+pp.~15--29, 2004.
+
+\bibitem{gu2020} S. Gu, B. Kelly and D. Xiu, ``Empirical asset pricing via machine learning,''
+\emph{The Review of Financial Studies}, vol.~33, no.~5, pp.~2223--2273, 2020.
+
+%---------------------------------------------- technical analysis and volatility
+\bibitem{wilder1978} J. W. Wilder, \emph{New Concepts in Technical Trading Systems}. Greensboro,
+NC: Trend Research, 1978.
+
+\bibitem{bollinger2001} J. Bollinger, \emph{Bollinger on Bollinger Bands}. New York: McGraw-Hill,
+2001.
+
+\bibitem{murphy1999} J. J. Murphy, \emph{Technical Analysis of the Financial Markets}. New York:
+New York Institute of Finance, 1999.
+
+\bibitem{boxjenkins1970} G. E. P. Box and G. M. Jenkins, \emph{Time Series Analysis: Forecasting
+and Control}. San Francisco: Holden-Day, 1970.
+
+\bibitem{engle1982} R. F. Engle, ``Autoregressive conditional heteroscedasticity with estimates of
+the variance of United Kingdom inflation,'' \emph{Econometrica}, vol.~50, no.~4, pp.~987--1008,
+1982.
+
+\bibitem{bollerslev1986} T. Bollerslev, ``Generalized autoregressive conditional
+heteroskedasticity,'' \emph{Journal of Econometrics}, vol.~31, no.~3, pp.~307--327, 1986.
+
+%---------------------------------------------- statistics and evaluation
+\bibitem{dempster1977} A. P. Dempster, N. M. Laird and D. B. Rubin, ``Maximum likelihood from
+incomplete data via the EM algorithm,'' \emph{Journal of the Royal Statistical Society: Series B},
+vol.~39, no.~1, pp.~1--22, 1977.
+
+\bibitem{schwarz1978} G. Schwarz, ``Estimating the dimension of a model,'' \emph{The Annals of
+Statistics}, vol.~6, no.~2, pp.~461--464, 1978.
+
+\bibitem{harvey2015} C. R. Harvey and Y. Liu, ``Backtesting,'' \emph{The Journal of Portfolio
+Management}, vol.~42, no.~1, pp.~13--28, 2015.
+
+\bibitem{bailey2014dsr} D. H. Bailey and M. L\'opez de Prado, ``The deflated Sharpe ratio:
+correcting for selection bias, backtest overfitting and non-normality,'' \emph{The Journal of
+Portfolio Management}, vol.~40, no.~5, pp.~94--107, 2014.
+
+\bibitem{white2000} H. White, ``A reality check for data snooping,'' \emph{Econometrica}, vol.~68,
+no.~5, pp.~1097--1126, 2000.
+
+\bibitem{hansen2005} P. R. Hansen, ``A test for superior predictive ability,'' \emph{Journal of
+Business and Economic Statistics}, vol.~23, no.~4, pp.~365--380, 2005.
+
+\bibitem{valls2026} F. B. Valls and E. Steurer, ``When strategies work too well: volatility-based
+investing, overfitting and the limits of empirical finance,'' \emph{Journal of Financial Risk
+Management}, vol.~15, no.~3, pp.~189--211, 2026.
+
+\bibitem{newey1987} W. K. Newey and K. D. West, ``A simple, positive semi-definite,
+heteroskedasticity and autocorrelation consistent covariance matrix,'' \emph{Econometrica},
+vol.~55, no.~3, pp.~703--708, 1987.
+
+\bibitem{politis1994} D. N. Politis and J. P. Romano, ``The stationary bootstrap,'' \emph{Journal
+of the American Statistical Association}, vol.~89, no.~428, pp.~1303--1313, 1994.
+
+\bibitem{diebold1995} F. X. Diebold and R. S. Mariano, ``Comparing predictive accuracy,''
+\emph{Journal of Business and Economic Statistics}, vol.~13, no.~3, pp.~253--263, 1995.
+
+\end{thebibliography}
+\end{multicols}
+\end{footnotesize}

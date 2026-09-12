@@ -1,0 +1,763 @@
+%=====================================================================
+\chapter{Results Discussion and Research Significance}
+%=====================================================================
+
+\section{Consolidated Outcomes Against the Objectives}
+
+Table~\ref{tab:outcomes} summarises what each objective produced and the status of the
+evidence behind it. The final column is stated deliberately, because the strength of a result
+and the confidence that can be placed in it are separate properties and are treated separately
+throughout this work.
+
+\begin{table}[!htb]
+\centering
+\caption[Objective-wise consolidated outcomes and evidence status]{Objective-wise consolidated
+outcomes and the status of the supporting evidence}
+\label{tab:outcomes}
+\tabfont
+\begin{tabular}{@{}L{0.85cm}L{4.4cm}L{4.4cm}L{4.5cm}@{}}
+\toprule
+\textbf{Obj.} & \textbf{Principal outcome} & \textbf{Key quantitative evidence} &
+\textbf{Status and limits} \\
+\midrule
+RO1 & Four-stream fusion model with adaptive, then uncertainty-conditioned, source weighting
+& MAE 0.018, $R^2$ 0.988, DA 84.7\% against 76.3\% for a fixed-weight ensemble on identical
+inputs; both textual sources contribute 10.9\% of $R^2$ superadditively; dynamic weighting
+adds 22.7\% Sharpe and removes 18.3\% of drawdown &
+Established. Index-level, one-day horizon; macro interpolation understates
+announcement-day effects \\
+RO2 & Hybrid LLM sentiment and indicator framework in a reproducible environment &
+Sentiment is the highest-gain feature; correlation with price 0.04, with momentum 0.74;
+accuracy 47.72\% against a 46.43\% baseline mean; highest prediction confidence &
+Established but bounded. All models near the random classifier at a single-name daily
+horizon \\
+RO3 & Causal, multi-granularity transparency and a measured account of sentiment noise &
+Causal graph density 0.850 with an identifiable hub; correct external sign in 16 of 16
+series-by-period tests; market states separated at $p=1.8\times10^{-8}$ & Established for
+construct validity. Predictive content of the composite is separately measured and is not
+significant \\
+RO4 & Regime-conditional decision framework, ablated at matched risk and tested across
+markets & Sharpe 0.878 against 0.628; drawdown $-18.98\%$ against $-36.08\%$; wins in
+18/18 specifications, 18/19 years, 4/4 stress episodes; holdout Sharpe 1.614 & Established
+as consistent, not as statistically significant. Bootstrap interval $[-0.102, 0.574]$
+includes zero \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Read as a ledger the pattern is consistent: adaptive fusion beats fixed-weight combination, but
+index-level accuracy does not transfer to single-name daily direction; language-model sentiment
+is orthogonal and highest-importance, but does not overturn market efficiency at a daily
+horizon; the sentiment construct is validated, but a validated construct does not thereby
+forecast returns; regime risk timing improves both Sharpe ratio and drawdown at matched
+exposure, but the Sharpe gain is not statistically significant on eighteen years of data; and
+the defensive behaviour transfers to a second universe, though the framework does not add value
+in a concentrated single-factor one. These bounding statements are not shortcomings but the
+boundary of the contribution, and stating them is what makes the positive claims credible.
+
+\section{Reconciling the Divergent Performance Across Studies}
+
+A reader comparing the objectives will notice an apparent contradiction: Objective~1 reports
+84.7 per cent directional accuracy while Objective~2 reports 47.72 per cent. The two numbers are
+not in conflict, and understanding why is central to the significance of this research. They
+answer different questions on different objects. Objective~1 predicts the next-day level of a
+diversified index from four fused sources; an index aggregates hundreds of constituents, so
+idiosyncratic noise largely cancels and the remaining signal is dominated by persistent
+market-wide state, which fusion captures well. Objective~2 predicts the next-day direction of an
+individual equity, which carries its full idiosyncratic component, has close to balanced classes
+and offers no aggregation to average the noise away. Predictability is therefore expected to be
+far lower, and this is what the empirical asset pricing literature
+reports~\cite{gu2020,fama1970}.
+
+Three implications follow, and together they define the trajectory of the research programme.
+First, an accuracy figure is meaningless without its object and horizon. Second, the level at
+which a system is applied should match where the signal actually lives: aggregate state is
+predictable, single-name daily direction is largely not. Third, and most consequentially, if the
+signal channel is weak at the level where decisions are taken, value must be created at the
+decision layer rather than the prediction layer. Objective~4 tests exactly that, and the
+matched-exposure ablation confirms it. The apparent contradiction between the two accuracy
+figures is therefore not an inconsistency but the finding that organises the work.
+
+\section{Research Significance}
+
+\textbf{Methodological significance.} The work advances multi-source fusion from a question of
+\emph{what} to combine to a question of \emph{how} to combine under changing reliability.
+Expressing fusion weights as a function of measured, time-varying predictive
+uncertainty~\cite{farimani2024,kendall2017} gives a source-weighting rule that self-corrects
+within days rather than at the next retraining cycle, and distribution-aware normalisation
+prevents a heavy-tailed input from dominating the fused representation. Separating the
+allocation decision into relative composition and total risk is a second contribution: it makes
+each layer independently falsifiable, and without it the central ablation of this thesis could
+not have been constructed at all.
+
+\textbf{Evaluation significance.} Three practices used here are uncommon in this literature and
+are the most transferable part of the work: ablation at matched risk, which separates the timing
+of risk from its level, since comparing a de-risked strategy against a fully invested benchmark
+confounds the two and credits a framework for merely holding less; disclosure of the entire
+specification sweep rather than its best cell, the minimum required once multiple testing is
+taken seriously~\cite{harvey2015,bailey2014dsr,valls2026}; and separation of construct validity
+from predictive usefulness, the sentiment composite being shown to measure sentiment and,
+separately, shown not to forecast returns. Conflating those questions is a recurring error, and
+keeping them apart changes what a null result means.
+
+\textbf{Engineering significance.} Two failure modes were diagnosed that generalise beyond this
+framework. The first is scale mismatch in signal-to-allocation conversion: passing an unscaled
+indicator into a mean-variance objective lets the ratio of units between the linear and
+quadratic terms, rather than the information in the signal, determine the solution, producing a
+degenerate single-asset portfolio; information-ratio scaling~\cite{grinold2000} removes it. The
+second is an inert risk layer: an absolute volatility target calibrated for a concentrated
+equity portfolio binds in one rebalance out of 224 on a diversified universe, so the layer is
+present, consumes computation and does nothing, whereas a relative budget is scale-free and
+remains active. Mixture-model label anchoring has the same character --- omitting it produces no
+error message, only a silently scrambled regime series.
+
+\textbf{Practical significance.} For a practitioner the results support a specific and limited
+prescription: fuse sources but weight them by measured reliability rather than by historical
+average importance; use language-model sentiment for what it demonstrably provides ---
+orthogonal information and better-calibrated confidence --- rather than for a directional edge
+it does not provide at a daily horizon; prefer causally selected features where the structure is
+recoverable, because they survive regime change better and can be audited; implement a regime
+risk budget in relative rather than absolute form, evaluate it against a volatility-matched
+benchmark, and expect it to help only where the universe contains genuine dispersion in asset
+volatility; and size positions conservatively, in the fractional form the growth-optimal
+criterion recommends once estimation error is admitted~\cite{kelly1956}. For the Indian market
+specifically the measured weights matter: macroeconomic indicators carry 25 per cent of average
+attention, sentiment sources jointly carry 40 per cent with the social media share rising
+sharply at market extremes, and sectoral predictability varies systematically with information
+availability and factor exposure --- measured properties of that information environment rather
+than assumptions imported from elsewhere.
+
+%=====================================================================
+\chapter{Conclusion and Future Scope}
+%=====================================================================
+
+\section{Conclusion}
+
+This research set out to integrate multi-source data with sentiment analysis and language
+models in order to improve stock market decision making, and to determine which parts of such
+an integration actually contribute to the outcome. Both aims are met, though not entirely in
+the direction originally anticipated, and the divergence is itself the most useful result.
+
+A four-stream fusion model integrating financial metrics, news sentiment, social media sentiment
+and macroeconomic indicators was developed and evaluated on ten years of Indian market data
+across ten sectoral indices. It attains a normalised mean absolute error of 0.018, $R^2$ of
+0.988 and directional accuracy of 84.7 per cent against 76.3 per cent for a fixed-weight
+ensemble over identical inputs, with stability confirmed by walk-forward evaluation at
+$0.0016 \pm 0.0004$ normalised error; removing both textual sources costs 10.9 per cent of
+explained variance, exceeding the sum of their individual removals --- the quantitative
+signature of complementary information. The fusion rule was then advanced from learned average
+relevance to measured instantaneous reliability through a Bayesian formulation in which weights
+are obtained by a softmax over negative predictive uncertainties, improving the Sharpe ratio by
+22.7 per cent and reducing maximum drawdown by 18.3 per cent against the strongest
+static-fusion baseline while the same experts fused statically add nothing.
+
+A hybrid framework coupling a transformer language model with fifteen conventional technical
+indicators was implemented in a reproducible computational environment and evaluated under a
+strict temporal protocol. Language-model sentiment emerged as the highest-gain feature in the
+fused space, correlating 0.74 with momentum yet only 0.04 with price, establishing that it
+supplies orthogonal information. The gain in raw accuracy is modest --- 47.72 per cent against a
+baseline mean of 46.43 per cent --- and all models operate close to the random classifier at a
+single-name daily horizon. That limit is reported rather than concealed, and it redirected the
+research toward the decision layer. Transparency was then established structurally: a directed
+causal adjacency matrix recovered by conditional independence testing yields a graph of density
+0.850 with an identifiable causal hub and demonstrates that strong directed influence can
+coexist with weak linear correlation --- the precise justification for causal rather than
+correlational feature selection. Sentiment noise was quantified rather than assumed: the
+composite carries the expected sign against four independently published series in all sixteen
+series-by-sub-period combinations and separates the identified market states at
+$p = 1.8 \times 10^{-8}$, while its predictive content, measured separately, is not significant.
+Keeping construct validity and forecasting power apart is a contribution in its own right.
+
+The decision framework was evaluated over eighteen years on ten liquid multi-asset instruments
+under a walk-forward protocol with transaction costs. It attains a Sharpe ratio of 0.878 against
+0.628 for an equal-weighted benchmark and reduces maximum drawdown from $-36.1$ to $-19.0$ per
+cent, outperforming in all four stress episodes, in 18 of 19 calendar years on drawdown and in
+all 18 specifications examined; on a 665-session holdout that postdates every design decision it
+records a higher Sharpe ratio and a smaller drawdown than all three benchmarks. Ablation at
+matched average exposure locates the source precisely: timing risk by identified market state
+improves both the Sharpe ratio and the drawdown with no significant change in mean return,
+whereas the signal fusion layer contributes nothing detectable. Cross-market transfer reproduces
+the defensive behaviour in a concentrated mega-capitalisation universe while losing on
+risk-adjusted return, bounding applicability to universes with genuine dispersion in asset
+volatility.
+
+The overall conclusion is precise rather than expansive. Multi-source integration and
+language-model sentiment demonstrably improve the description of the market, and causal
+structure demonstrably improves the transparency of that description. At the horizon and
+granularity at which decisions are actually taken, however, the measurable value of the system
+arises at the allocation layer, through regime-conditional risk timing, rather than at the
+signal layer. A framework whose every layer has been separately tested, and whose applicability
+has been bounded by evidence, is a more useful engineering artefact than one whose aggregate
+performance conceals which of its components is doing the work.
+
+\section{Future Scope}
+
+\begin{itemize}
+\item \textbf{Textual sentiment in a universe with instrument-level news coverage.} The null
+reported for the market-derived composite is a null about that proxy, not about textual
+sentiment. Applying the fusion hypothesis where a time-stamped, instrument-level news corpus
+exists would convert a proxy null into a genuine test, and would connect the language-model
+pipeline of Objective~2 directly to the allocation layer of Objective~4~\cite{officioso2026,
+liu2024llmreview}.
+
+\item \textbf{Bayesian neural networks for richer uncertainty.} The present uncertainty
+estimate is a rolling error variance, which captures aleatoric variation. Replacing it with
+proper Bayesian neural expert models would additionally expose epistemic uncertainty, producing
+a confidence measure that distinguishes a noisy environment from an unfamiliar
+one~\cite{gal2016dropout,kendall2017,khuwaja2023}.
+
+\item \textbf{Non-stationary debiasing and scalable causal discovery.} The stationarity
+assumption in the multi-scale debiasing layer fails at exactly the moments that matter, as the
+77.67 per cent peak volatility during the Union Budget window shows; an adaptive formulation
+whose noise model is itself state-dependent is the direct remedy. In parallel, extending
+conditional independence testing from five instruments to the full fifty-constituent index
+requires an algorithm whose cost does not grow quadratically, which is a prerequisite for
+causal transparency at production scale~\cite{liu2026dynamic,spirtes2000}.
+
+\item \textbf{Adaptation-based cross-market transfer.} The cross-market evidence reported here
+comes from applying the framework to a second universe without modification, which tests
+whether the mechanism generalises but forgoes any benefit from adapting to the target market.
+The natural extension is genuine transfer learning: pre-training the regime model and the
+source-reliability estimates on a data-rich market and fine-tuning them on a thinner one, so
+that an emerging-market deployment inherits structure learned elsewhere instead of starting
+from its own limited history.
+
+\item \textbf{Learned risk budgets and explicit state persistence.} The regime multipliers are
+fixed at 1.00, 0.75 and 0.50; learning them --- reinforcement learning being the natural
+candidate given the sequential structure~\cite{kabbani2022drl} --- would adapt the budget to
+the universe, subject to the overfitting controls this work argues are
+mandatory~\cite{harvey2015}. Replacing the Gaussian mixture with a hidden Markov or jump
+formulation would represent regime persistence directly rather than recovering it
+incidentally~\cite{luo2026regime,hamilton1989}.
+
+\item \textbf{Regional-language and higher-frequency sentiment.} Sentiment extraction is
+currently English-only and daily. A large share of Indian retail participants read financial
+news in regional languages, and intraday resolution would expose incorporation dynamics that
+daily aggregation averages away.
+
+\item \textbf{Deployment engineering.} Inference cost is negligible; the binding constraints
+are the latency of retrieving and scoring text at scale, feed rate limits, coordinated
+manipulation of social signals, transaction costs and compliance with algorithmic trading
+regulation. These are treated as first-class engineering problems rather than as afterthoughts.
+\end{itemize}
+
+%=====================================================================
+\chapter{Organisation of the Thesis}
+%=====================================================================
+
+The thesis is organised into nine chapters.
+
+\textbf{Chapter I --- Introduction.} Introduces stock market decision making as an
+information-integration problem, describes the structure of the Indian equity market, and
+states the motivation for combining quantitative, textual and macroeconomic evidence within a
+single system.
+
+\textbf{Chapter II --- Background and Preliminaries.} Presents the technical foundations:
+technical indicator construction, sentiment extraction from lexicon methods through to
+transformer language models, fusion strategies, regime modelling, and the evaluation metrics
+and statistical procedures used throughout the thesis.
+
+\textbf{Chapter III --- Literature Survey and Research Gaps.} Reviews multi-source fusion,
+language-model sentiment analysis, explainable and causal financial modelling, and
+decision-level allocation, and derives the five research gaps that define the scope of the
+work.
+
+\textbf{Chapter IV --- Multi-Source Data Integration Framework.} Develops the Multi-Source
+Fusion Network: data acquisition and temporal alignment, modality-specific encoders,
+cross-modal attention, the Bi-LSTM predictor, the experimental setup, the sectoral and ablation
+results, and the walk-forward robustness analysis.
+
+\textbf{Chapter V --- Dynamic Uncertainty-Weighted Fusion.} Develops the Bayesian formulation
+of the fusion rule: expert models per source, time-varying uncertainty estimation, softmax
+weighting over negative uncertainties, distribution-aware normalisation, and comparison against
+static early, late and attention-based fusion baselines.
+
+\textbf{Chapter VI --- Hybrid Language Model and Indicator Framework.} Develops the sentiment
+extraction pipeline, feature-level fusion with technical indicators, model training and
+comparison, feature-importance and sentiment-regime analysis, confidence calibration and the
+simulated trading evaluation.
+
+\textbf{Chapter VII --- Explainable and Causal Framework.} Develops causal graph discovery,
+multi-granularity temporal memory encoding and credibilistic optimisation; reports the
+recovered causal structure, the contrast between correlation and causality, the sentiment
+noise diagnostics and the sentiment-to-price temporal dynamics.
+
+\textbf{Chapter VIII --- Decision-Theoretic Allocation and Cross-Market Validation.} Develops
+regime identification, constrained portfolio optimisation and the regime risk budget; reports
+the eighteen-year evaluation, the specification sweep, the matched-exposure ablation, the
+stress-episode analysis, the holdout and the cross-market transfer test.
+
+\textbf{Chapter IX --- Conclusion and Future Scope.} Consolidates the findings across the four
+objectives, states the limits of the evidence, and sets out the future research directions.
+
+%=====================================================================
+\chapter*{Publications on PhD Work}
+\addcontentsline{toc}{chapter}{Publications on PhD Work}
+%=====================================================================
+
+\textbf{International Journals}
+
+\begin{enumerate}[label={[P\arabic*]},leftmargin=2.6em,start=3]
+\item A. Pardeshi and S. Deshmukh, ``Fusing LLM-Extracted News Sentiment and Market Data for
+Enhanced Stock Movement Prediction,'' \emph{Liberte Journal}, ISSN 0024-2020, vol.~14, no.~6,
+pp.~424--439, 2026. \textbf{(Published)}\\
+\indexing{\LiberteIndexing} \\ \link{\LiberteURL}
+
+\item A. Pardeshi and S. Deshmukh, ``Dynamic Uncertainty-Weighted Fusion for Multi-Source
+Financial Data: A Bayesian Framework for Time-Varying Source Reliability,''
+\emph{International Journal of Computer Information Systems and Industrial Management
+Applications} (IJCISIM). \textbf{(Communicated, \IJCISIMDate)}\\
+\link{\IJCISIMURL}
+
+\item A. Pardeshi and S. Deshmukh, ``From Signal Fusion to Asset Allocation: A
+Decision-Theoretic Model for Portfolio Construction Under Regime-Based Sentiment and
+Volatility,'' \emph{International Journal of Applied Decision Sciences} (Inderscience),
+manuscript IJADS-312370. \textbf{(Under review --- revised manuscript submitted after a
+major-revision decision)}\\
+\link{\IJADSURL}
+\end{enumerate}
+
+\textbf{International Conferences}
+
+\begin{enumerate}[label={[P\arabic*]},leftmargin=2.6em]
+\item A. Pardeshi and S. Deshmukh, ``A Multi-Source Data Fusion Framework for Enhanced Stock
+Market Prediction,'' \emph{2026 International Conference on Sustainability, Innovation and
+Technology (ICSIT)}, \ICSITVenue, IEEE, 2026, \ICSITPages.\\
+\link{\ICSITURL}
+
+\item A. Pardeshi and S. Deshmukh, ``A Dynamic-Causal Hybrid Framework for NIFTY50 Stock
+Decision Making: A Multi-Granularity Temporal Learning Approach,'' \DCHFVenue.
+\textbf{(Communicated)}\\
+\link{\DCHFURL}
+\setcounter{enumi}{5}
+\item A. Pardeshi and S. Deshmukh, ``Deep Learning in Stock Market Forecasting: Comparative
+Insights and Future Directions,'' \emph{2025 International Conference on Emerging Trends in
+Industry 4.0 Technologies (ICETI4T)}, Navi Mumbai, India, IEEE, June 2025, \ICETIPages.\\
+\link{\ICETIURL}
+\end{enumerate}
+
+\ifHasIPR
+\textbf{Copyrights and Patents}
+
+\begin{itemize}
+\item \IPRentries
+\end{itemize}
+\fi
+
+\vspace{0.4em}
+\textit{Note:} The labels \pubcite{P1}--\pubcite{P6} are used throughout this report to refer
+to the above works. Publication status is as of the date of submission of this report.
+
+%=====================================================================
+\clearpage
+\begin{footnotesize}
+\setstretch{1.0}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{16pt}
+\begin{multicols}{2}
+\begin{thebibliography}{999}
+\setlength{\itemsep}{1.5pt}\setlength{\parsep}{0pt}
+\addcontentsline{toc}{chapter}{References}
+
+\bibitem{snasel2024} V. Sn\'a\v{s}el, J. D. Vel\'asquez, M. Pant, D. Georgiou and L. Kong,
+``A generalization of multi-source fusion-based framework to stock selection,''
+\emph{Information Fusion}, vol.~102, p.~102018, 2024.
+
+\bibitem{long2024} W. Long, J. Gao, K. Bai and Z. Lu, ``A hybrid model for stock price
+prediction based on multi-view heterogeneous data,'' \emph{Financial Innovation}, vol.~10,
+no.~1, p.~48, 2024.
+
+\bibitem{zhang2022fusion} C. Zhang, N. N. A. Sjarif and R. B. Ibrahim, ``Decision fusion for
+stock market prediction: a systematic review,'' \emph{IEEE Access}, vol.~10,
+pp.~81364--81379, 2022.
+
+\bibitem{nti2021} I. K. Nti, A. F. Adekoya and B. A. Weyori, ``A novel multi-source
+information-fusion predictive framework based on deep neural networks for accuracy
+enhancement in stock market prediction,'' \emph{Journal of Big Data}, vol.~8, no.~1, p.~17,
+2021.
+
+\bibitem{farimani2024} S. Anbaee Farimani, M. V. Jahan and A. Milani Fard, ``An adaptive
+multimodal learning model for financial market price prediction,'' \emph{IEEE Access},
+vol.~12, pp.~121846--121863, 2024.
+
+\bibitem{moodi2024} F. Moodi, A. J. Rafsanjani, S. Zarifzadeh and M. A. Zare Chahooki,
+``Fusion of technical indicators and sentiment analysis in a hybrid framework of deep
+learning models for stock price movement prediction,'' \emph{IEEE Access}, vol.~12,
+pp.~195696--195709, 2024.
+
+\bibitem{liu2019attention} G. Liu and X. Wang, ``A numerical-based attention method for stock
+market prediction with dual information,'' \emph{IEEE Access}, vol.~7, pp.~7357--7367, 2019.
+
+\bibitem{mu2023investor} G. Mu, N. Gao, Y. Wang and L. Dai, ``A stock price prediction model
+based on investor sentiment and optimized deep learning,'' \emph{IEEE Access}, vol.~11,
+pp.~51353--51367, 2023.
+
+\bibitem{haryono2023} A. T. Haryono, R. Sarno and K. R. Sungkono, ``Transformer-gated
+recurrent unit method for predicting stock price based on news sentiments and technical
+indicators,'' \emph{IEEE Access}, vol.~11, pp.~77132--77146, 2023.
+
+\bibitem{haryono2024} A. T. Haryono, R. Sarno, R. N. E. Anggraini and K. R. Sungkono,
+``Permuted temporal Kolmogorov--Arnold networks for stock price forecasting using generative
+aspect-based sentiment analysis,'' \emph{IEEE Access}, vol.~12, pp.~178672--178689, 2024.
+
+\bibitem{tai2022} W. Tai, T. Zhong, Y. Mo and F. Zhou, ``Learning sentimental and financial
+signals with normalizing flows for stock movement prediction,'' \emph{IEEE Signal Processing
+Letters}, vol.~29, pp.~414--418, 2022.
+
+\bibitem{bacco2024} L. Bacco, L. Petrosino, D. Arganese, L. Vollero, M. Papi and M. Merone,
+``Investigating stock prediction using LSTM networks and sentiment analysis of tweets under
+high uncertainty,'' \emph{IEEE Access}, vol.~12, pp.~122239--122248, 2024.
+
+\bibitem{jung2024} H. D. Jung and B. Jang, ``Enhancing financial sentiment analysis ability of
+language model via targeted numerical change-related masking,'' \emph{IEEE Access}, vol.~12,
+pp.~50809--50820, 2024.
+
+\bibitem{liu2024llmreview} C. Liu, A. Arulappan, R. Naha, A. Mahanti, J. Kamruzzaman and
+I.-H. Ra, ``Large language models and sentiment analysis in financial markets: a review,
+datasets, and case study,'' \emph{IEEE Access}, vol.~12, pp.~134041--134061, 2024.
+
+\bibitem{onozo2024} L. R. \'On\'oz\'o, F. V. Arthur and B. Gyires-T\'oth, ``Leveraging LLMs
+for financial news analysis and macroeconomic indicator nowcasting,'' \emph{IEEE Access},
+vol.~12, pp.~160529--160547, 2024.
+
+\bibitem{khuwaja2023} P. Khuwaja, S. A. Khowaja and K. Dev, ``Adversarial learning networks
+for FinTech applications using heterogeneous data sources,'' \emph{IEEE Internet of Things
+Journal}, vol.~10, no.~3, pp.~2194--2201, 2023.
+
+\bibitem{vargas2022} G. Vargas, L. Silvestre, L. Rigo J\'unior and H. Rocha, ``B3 stock price
+prediction using LSTM neural networks and sentiment analysis,'' \emph{IEEE Latin America
+Transactions}, vol.~20, no.~7, pp.~1067--1074, 2022.
+
+\bibitem{wang2024spcm} J. Wang and Z. Chen, ``SPCM: a machine learning approach for
+sentiment-based stock recommendation system,'' \emph{IEEE Access}, vol.~12, pp.~14116--14129,
+2024.
+
+\bibitem{shang2025} L. Shang, ``Sentiment-driven Bitcoin price range forecasting: enhancing
+CART decision trees with high-dimensional indicators and Twitter dynamics,'' \emph{IEEE
+Access}, vol.~13, pp.~60508--60518, 2025.
+
+\bibitem{sami2025} H. M. Sami, M. Shah Jalal, M. F. Kabir and M. N. Huda, ``IntPort: an
+intelligent portfolio construction technique based on financial forecasting by statistical
+average method,'' \emph{IEEE Access}, vol.~13, pp.~35355--35375, 2025.
+
+\bibitem{choi2023} J. Choi, S. Yoo, X. Zhou and Y. Kim, ``Hybrid information mixing module for
+stock movement prediction,'' \emph{IEEE Access}, vol.~11, pp.~28781--28790, 2023.
+
+\bibitem{ho2021} T.-T. Ho and Y. Huang, ``Stock price movement prediction using sentiment
+analysis and CandleStick chart representation,'' \emph{Sensors}, vol.~21, no.~23, p.~7957,
+2021.
+
+\bibitem{rouf2021} N. Rouf, M. B. Malik, T. Arif, S. Sharma, S. Singh, S. Aich and H.-C. Kim,
+``Stock market prediction using machine learning techniques: a decade survey on
+methodologies, recent developments, and future directions,'' \emph{Electronics}, vol.~10,
+no.~21, p.~2717, 2021.
+
+\bibitem{song2024} Y. Song, ``Enhancing stock market trend reversal prediction using
+feature-enriched neural networks,'' \emph{Heliyon}, vol.~10, p.~e24136, 2024.
+
+\bibitem{javaid2024} N. Javaid, F. Aslam et al., ``Enhanced prediction of stock markets using
+a novel deep learning model PLSTM-TAL in urbanized smart cities,'' \emph{Heliyon}, vol.~10,
+p.~e27747, 2024.
+
+\bibitem{shaban2024} W. M. Shaban et al., ``SMP-DL: a novel stock market prediction approach
+based on deep learning for effective trend forecasting,'' \emph{Neural Computing and
+Applications}, vol.~36, pp.~1849--1873, 2024.
+
+\bibitem{fu2024} K. Fu and Y. Zhang, ``Incorporating multi-source market sentiment and price
+data for stock price prediction,'' \emph{Mathematics}, vol.~12, no.~10, p.~1572, 2024.
+
+\bibitem{dong2024} Y. Dong and Y. Hao, ``A stock prediction method based on multidimensional
+and multilevel feature dynamic fusion,'' \emph{Electronics}, vol.~13, no.~20, p.~4111, 2024.
+
+\bibitem{chen2024lasso} X. Chen, L. Cao, Z. Cao and H. Zhang, ``A multi-feature stock price
+prediction model based on multi-feature calculation, LASSO feature selection, and Ca-LSTM
+network,'' \emph{Connection Science}, vol.~36, no.~1, p.~2286188, 2024.
+
+\bibitem{li2023datafusion} A. Li, Q. Wei, Y. Shi and Z. Liu, ``Research on stock price
+prediction from a data fusion perspective,'' \emph{Data Science in Finance and Economics},
+vol.~3, no.~3, pp.~230--250, 2023.
+
+\bibitem{zhang2018mil} X. Zhang, S. Qu, J. Huang, B. Fang and P. Yu, ``Stock market
+prediction via multi-source multiple instance learning,'' \emph{IEEE Access}, vol.~6,
+pp.~50720--50728, 2018.
+
+\bibitem{zhu2025informer} Y. Zhu, ``Stock prediction method based on multi-source data of
+social media and Informer model,'' in \emph{Proc. Int. Conf. Digital Management and
+Information Technology}, Shenyang, China, 2025, pp.~372--377.
+
+\bibitem{hong2025mtl} Y. Hong, ``Boosting the accuracy of stock market prediction via
+multi-layer hybrid MTL structure,'' arXiv:2501.09760, 2025.
+
+\bibitem{alsheebah2024} F. M. M. Alsheebah and B. A. Al-Fuhaidi, ``Emerging stock market
+prediction using GRU algorithm: incorporating endogenous and exogenous variables,''
+\emph{IEEE Access}, vol.~12, pp.~132964--132971, 2024.
+
+\bibitem{khan2025asymmetric} H. A. Khan and R. J. K. Chahal, ``Asymmetric impact of social
+media sentiments and stock market uncertainty on Indian sectoral returns: a
+quantile-on-quantile approach,'' \emph{The North American Journal of Economics and Finance},
+vol.~79, p.~102456, 2025.
+
+\bibitem{li2024llmsurvey} Y. Li, S. Wang, H. Ding and H. Chen, ``Large language models in
+finance: a survey,'' in \emph{Proc. 4th ACM Int. Conf. AI in Finance}, 2024.
+
+\bibitem{todd2024} A. Todd, J. Bowden and Y. Moshfeghi, ``Text-based sentiment analysis in
+finance: synthesising the existing literature and exploring future directions,''
+\emph{Intelligent Systems in Accounting, Finance and Management}, vol.~31, no.~1, p.~e1549,
+2024.
+
+\bibitem{bahoo2024} S. Bahoo, M. Cucculelli, X. Goga and J. Mondolo, ``Artificial intelligence
+in finance: a comprehensive review through bibliometric and content analysis,'' \emph{SN
+Business and Economics}, vol.~4, no.~23, 2024.
+
+\bibitem{khan2024chatgpt} M. S. Khan and H. Umer, ``ChatGPT in finance: applications,
+challenges, and solutions,'' \emph{Heliyon}, vol.~10, no.~2, p.~e24890, 2024.
+
+\bibitem{fatouros2024} G. Fatouros, J. Soldatos, K. Kouroumali, G. Makridis and D. Kyriazis,
+``Transforming sentiment analysis in the financial domain with ChatGPT,'' \emph{Machine
+Learning with Applications}, vol.~14, p.~100508, 2024.
+
+\bibitem{wilksch2024} M. Wilksch and O. Abramova, ``PyFin-sentiment: towards a
+machine-learning-based model for deriving sentiment from financial tweets,''
+\emph{International Journal of Information Management Data Insights}, vol.~3, no.~1,
+p.~100171, 2024.
+
+\bibitem{wu2023bloomberggpt} S. Wu, O. Irsoy, S. Lu, V. Dabravolski, M. Dredze, S. Gehrmann,
+P. Kambadur, D. Rosenberg and G. Mann, ``BloombergGPT: a large language model for finance,''
+arXiv:2303.17564, 2023.
+
+\bibitem{yang2023fingpt} H. Yang, X.-Y. Liu and C. D. Wang, ``FinGPT: open-source financial
+large language models,'' arXiv:2306.06031, 2023.
+
+\bibitem{wang2024fingptbench} N. Wang, H. Yang and C. D. Wang, ``FinGPT: instruction tuning
+benchmark for open-source large language models in financial datasets,'' arXiv:2310.04793,
+2024.
+
+\bibitem{araci2019} D. Araci, ``FinBERT: financial sentiment analysis with pre-trained
+language models,'' arXiv:1908.10063, 2019.
+
+\bibitem{hutto2014} C. J. Hutto and E. Gilbert, ``VADER: a parsimonious rule-based model for
+sentiment analysis of social media text,'' in \emph{Proc. 8th Int. AAAI Conf. Weblogs and
+Social Media}, 2014, pp.~216--225.
+
+\bibitem{loughran2011} T. Loughran and B. McDonald, ``When is a liability not a liability?
+Textual analysis, dictionaries, and 10-Ks,'' \emph{The Journal of Finance}, vol.~66, no.~1,
+pp.~35--65, 2011.
+
+\bibitem{vaswani2017} A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+{\L}. Kaiser and I. Polosukhin, ``Attention is all you need,'' in \emph{Adv. Neural Inf.
+Process. Syst.}, 2017, pp.~5998--6008.
+
+\bibitem{hochreiter1997} S. Hochreiter and J. Schmidhuber, ``Long short-term memory,''
+\emph{Neural Computation}, vol.~9, no.~8, pp.~1735--1780, 1997.
+
+\bibitem{cho2014gru} K. Cho, B. van Merri\"enboer, C. Gulcehre, D. Bahdanau, F. Bougares,
+H. Schwenk and Y. Bengio, ``Learning phrase representations using RNN encoder--decoder for
+statistical machine translation,'' in \emph{Proc. Conf. Empirical Methods in Natural Language
+Processing}, 2014, pp.~1724--1734.
+
+\bibitem{chen2016xgboost} T. Chen and C. Guestrin, ``XGBoost: a scalable tree boosting
+system,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining},
+2016, pp.~785--794.
+
+\bibitem{breiman2001} L. Breiman, ``Random forests,'' \emph{Machine Learning}, vol.~45,
+no.~1, pp.~5--32, 2001.
+
+\bibitem{cortes1995svm} C. Cortes and V. Vapnik, ``Support-vector networks,'' \emph{Machine
+Learning}, vol.~20, no.~3, pp.~273--297, 1995.
+
+\bibitem{srivastava2014dropout} N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever and
+R. Salakhutdinov, ``Dropout: a simple way to prevent neural networks from overfitting,''
+\emph{Journal of Machine Learning Research}, vol.~15, no.~1, pp.~1929--1958, 2014.
+
+\bibitem{kingma2015adam} D. P. Kingma and J. Ba, ``Adam: a method for stochastic
+optimization,'' in \emph{Proc. 3rd Int. Conf. Learning Representations}, 2015.
+
+\bibitem{koa2024} K. J. L. Koa, Y. Ma, R. Ng and T.-S. Chua, ``Learning to generate
+explainable stock predictions using self-reflective large language models,'' in \emph{Proc.
+ACM Web Conference (WWW '24)}, Singapore, 2024, pp.~4304--4315.
+
+\bibitem{lundberg2017} S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting
+model predictions,'' in \emph{Adv. Neural Inf. Process. Syst.}, 2017, pp.~4765--4774.
+
+\bibitem{ribeiro2016} M. T. Ribeiro, S. Singh and C. Guestrin, ```Why should I trust you?'
+Explaining the predictions of any classifier,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf.
+Knowledge Discovery and Data Mining}, 2016, pp.~1135--1144.
+
+\bibitem{xu2026causal} S. Xu, Q. Cheng and C.-G. Lee, ``A causal perspective of stock
+prediction models,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~38, no.~1,
+pp.~14--25, 2026.
+
+\bibitem{liu2026dynamic} H. Liu, B. Hu, Y. Zhou and Y. Zhou, ``A dynamic-causal lens of stock
+interactions: graph modeling from symbolic movement patterns,'' \emph{IEEE Trans. Knowledge
+and Data Engineering}, vol.~38, no.~2, pp.~722--735, 2026.
+
+\bibitem{yu2025causalseqgnn} H. Yu and J. Liu, ``CausalSeqGNN: a Fama--French inspired fuzzy
+cognitive map combined with graph neural network for stock prediction,'' \emph{IEEE Trans.
+Fuzzy Systems}, vol.~33, no.~12, pp.~4418--4430, 2025.
+
+\bibitem{luo2025magicnet} D. Luo, S. Li, W. Liao and R. Yan, ``MagicNet: memory-aware graph
+interactive causal network for multivariate stock price movement prediction,'' \emph{IEEE
+Trans. Knowledge and Data Engineering}, vol.~37, no.~4, pp.~1989--2000, 2025.
+
+\bibitem{wang2025mtmd} M. Wang, J. Tian, M. Zhang, J. Guo and W. Jia, ``MTMD: multi-scale
+temporal memory learning and efficient debiasing framework for stock trend forecasting,''
+\emph{IEEE Trans. Emerging Topics in Computational Intelligence}, vol.~9, no.~3,
+pp.~2151--2163, 2025.
+
+\bibitem{zhu2025multigran} P. Zhu, Y. Li, Q. Liu, D. Cheng and C. Jiang, ``Financial time
+series prediction with multi-granularity graph augmented learning,'' \emph{IEEE Trans.
+Knowledge and Data Engineering}, vol.~37, no.~11, pp.~6436--6449, 2025.
+
+\bibitem{xing2024vague} R. Xing, R. Cheng, J. Huang, Q. Li and J. Zhao, ``Learning to
+understand the vague graph for stock prediction with momentum spillovers,'' \emph{IEEE Trans.
+Knowledge and Data Engineering}, vol.~36, no.~4, pp.~1698--1712, 2024.
+
+\bibitem{patel2024hybrid} M. Patel, K. Jariwala and C. Chattopadhyay, ``A hybrid relational
+approach toward stock price prediction and profitability,'' \emph{IEEE Trans. Artificial
+Intelligence}, vol.~5, no.~11, pp.~5844--5854, 2024.
+
+\bibitem{liu2024heterogeneous} H. Liu, Y. Zhou, Y. Zhou and B. Hu, ``Heterogeneous
+dual-dynamic attention network for modeling mutual interplay of stocks,'' \emph{IEEE Trans.
+Artificial Intelligence}, vol.~5, no.~7, pp.~3595--3606, 2024.
+
+\bibitem{gao2025relational} Q. Gao, Z. Liu, L. Huang, K. Zhang, J. Wang and G. Liu,
+``Relational stock selection via probabilistic state space learning,'' \emph{IEEE Trans.
+Knowledge and Data Engineering}, vol.~37, no.~2, pp.~865--880, 2025.
+
+\bibitem{kumar2024rdmdea} A. Kumar and S. Yadav, ``A multiobjective multiperiod efficient
+portfolio selection approach for positive and negative returns using RDM-DEA under a
+credibilistic framework,'' \emph{IEEE Trans. Engineering Management}, vol.~71,
+pp.~14114--14125, 2024.
+
+\bibitem{gu2025ragic} J. Gu, W. Du and G. Wang, ``RAGIC: risk-aware generative framework for
+stock interval construction,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~37,
+no.~4, pp.~2085--2096, 2025.
+
+\bibitem{zhu2025spin} M. Zhu et al., ``SPIN: sparse portfolio strategy with irregular news in
+fluctuating markets,'' \emph{IEEE Trans. Knowledge and Data Engineering}, vol.~37, no.~6,
+pp.~3714--3727, 2025.
+
+\bibitem{elahi2024} A. Elahi and F. Taghvaei, ``Combining financial data and news articles for
+stock price movement prediction using large language models,'' in \emph{Proc. IEEE Int. Conf.
+Big Data}, 2024, pp.~4875--4883.
+
+\bibitem{mishra2025} N. Mishra, M. Anzar, S. Pandey and S. Mishra, ``A review on stock market
+trends and stock price prediction using sentiment analysis and market data,'' in \emph{Proc.
+Int. Conf. Communication, Security, and Artificial Intelligence}, 2025, pp.~56--62.
+
+\bibitem{officioso2026} G. Officioso, G. Sperl\`i and A. Vignali, ``Financial news sentiment
+meets market data: a large language model-based approach to stock price prediction,''
+\emph{Information Sciences}, vol.~754, p.~123711, 2026.
+
+\bibitem{zong2025} C. Zong, J. Wan, L. Cascone and H. Zhou, ``Stock movement prediction with
+multimodal stable fusion via gated cross-attention mechanism,'' \emph{Complex and Intelligent
+Systems}, vol.~11, no.~9, 2025.
+
+\bibitem{kabbani2022drl} T. Kabbani and E. Duman, ``Deep reinforcement learning approach for
+trading automation in the stock market,'' \emph{IEEE Access}, vol.~10, pp.~93564--93574,
+2022.
+
+\bibitem{singsiri2026} P. Singsiri and J. Yokrattanasak, ``Machine learning-driven portfolio
+optimization using money flow index-based sentiment signals,'' \emph{International Journal of
+Financial Studies}, vol.~14, no.~5, p.~112, 2026.
+
+\bibitem{naidoo2025} T. Naidoo, P. Moores-Pitt, P.-F. Muzindutsi and K. O. Isah, ``Analysing
+investor sentiment and stock market volatility of the JSE size-based indices: a GARCH-MIDAS
+approach,'' \emph{Risk Management}, vol.~27, no.~3, 2025.
+
+\bibitem{markowitz1952} H. Markowitz, ``Portfolio selection,'' \emph{The Journal of Finance},
+vol.~7, no.~1, pp.~77--91, 1952.
+
+\bibitem{kelly1956} J. L. Kelly, ``A new interpretation of information rate,'' \emph{Bell
+System Technical Journal}, vol.~35, no.~4, pp.~917--926, 1956.
+
+\bibitem{sharpe1966} W. F. Sharpe, ``Mutual fund performance,'' \emph{The Journal of
+Business}, vol.~39, no.~1, pp.~119--138, 1966.
+
+\bibitem{ledoit2004} O. Ledoit and M. Wolf, ``A well-conditioned estimator for
+large-dimensional covariance matrices,'' \emph{Journal of Multivariate Analysis}, vol.~88,
+no.~2, pp.~365--411, 2004.
+
+\bibitem{demiguel2009} V. DeMiguel, L. Garlappi and R. Uppal, ``Optimal versus naive
+diversification: how inefficient is the $1/N$ portfolio strategy?'' \emph{The Review of
+Financial Studies}, vol.~22, no.~5, pp.~1915--1953, 2009.
+
+\bibitem{lopezdeprado2016} M. L\'opez de Prado, ``Building diversified portfolios that
+outperform out of sample,'' \emph{The Journal of Portfolio Management}, vol.~42, no.~4,
+pp.~59--69, 2016.
+
+\bibitem{hamilton1989} J. D. Hamilton, ``A new approach to the economic analysis of
+nonstationary time series and the business cycle,'' \emph{Econometrica}, vol.~57, no.~2,
+pp.~357--384, 1989.
+
+\bibitem{ang2002} A. Ang and G. Bekaert, ``International asset allocation with regime
+shifts,'' \emph{The Review of Financial Studies}, vol.~15, no.~4, pp.~1137--1187, 2002.
+
+\bibitem{kritzman2012} M. Kritzman, S. Page and D. Turkington, ``Regime shifts: implications
+for dynamic strategies,'' \emph{Financial Analysts Journal}, vol.~68, no.~3, pp.~22--39,
+2012.
+
+\bibitem{luo2026regime} Y. Luo and J. M. Mulvey, ``Regime-aware asset allocation with
+dual-regime signals and regime-dependent asset selection,'' \emph{The Journal of Financial
+Data Science}, vol.~8, no.~3, pp.~104--134, 2026.
+
+\bibitem{moreira2017} A. Moreira and T. Muir, ``Volatility-managed portfolios,'' \emph{The
+Journal of Finance}, vol.~72, no.~4, pp.~1611--1644, 2017.
+
+\bibitem{bollerslev1986} T. Bollerslev, ``Generalized autoregressive conditional
+heteroskedasticity,'' \emph{Journal of Econometrics}, vol.~31, no.~3, pp.~307--327, 1986.
+
+\bibitem{bakerwurgler2007} M. Baker and J. Wurgler, ``Investor sentiment in the stock
+market,'' \emph{Journal of Economic Perspectives}, vol.~21, no.~2, pp.~129--151, 2007.
+
+\bibitem{grinold2000} R. C. Grinold and R. N. Kahn, \emph{Active Portfolio Management},
+2nd~ed. New York: McGraw-Hill, 2000.
+
+\bibitem{fama1970} E. F. Fama, ``Efficient capital markets: a review of theory and empirical
+work,'' \emph{The Journal of Finance}, vol.~25, no.~2, pp.~383--417, 1970.
+
+\bibitem{gu2020} S. Gu, B. Kelly and D. Xiu, ``Empirical asset pricing via machine learning,''
+\emph{The Review of Financial Studies}, vol.~33, no.~5, pp.~2223--2273, 2020.
+
+\bibitem{harvey2015} C. R. Harvey and Y. Liu, ``Backtesting,'' \emph{The Journal of Portfolio
+Management}, vol.~42, no.~1, pp.~13--28, 2015.
+
+\bibitem{bailey2014dsr} D. H. Bailey and M. L\'opez de Prado, ``The deflated Sharpe ratio:
+correcting for selection bias, backtest overfitting and non-normality,'' \emph{The Journal of
+Portfolio Management}, vol.~40, no.~5, pp.~94--107, 2014.
+
+\bibitem{valls2026} F. B. Valls and E. Steurer, ``When strategies work too well:
+volatility-based investing, overfitting and the limits of empirical finance,'' \emph{Journal
+of Financial Risk Management}, vol.~15, no.~3, pp.~189--211, 2026.
+
+\bibitem{newey1987} W. K. Newey and K. D. West, ``A simple, positive semi-definite,
+heteroskedasticity and autocorrelation consistent covariance matrix,''
+\emph{Econometrica}, vol.~55, no.~3, pp.~703--708, 1987.
+
+\bibitem{politis1994} D. N. Politis and J. P. Romano, ``The stationary bootstrap,''
+\emph{Journal of the American Statistical Association}, vol.~89, no.~428, pp.~1303--1313,
+1994.
+
+\bibitem{diebold1995} F. X. Diebold and R. S. Mariano, ``Comparing predictive accuracy,''
+\emph{Journal of Business and Economic Statistics}, vol.~13, no.~3, pp.~253--263, 1995.
+
+\bibitem{granger1969} C. W. J. Granger, ``Investigating causal relations by econometric models
+and cross-spectral methods,'' \emph{Econometrica}, vol.~37, no.~3, pp.~424--438, 1969.
+
+\bibitem{spirtes2000} P. Spirtes, C. Glymour and R. Scheines, \emph{Causation, Prediction, and
+Search}, 2nd~ed. Cambridge, MA: MIT Press, 2000.
+
+\bibitem{gal2016dropout} Y. Gal and Z. Ghahramani, ``Dropout as a Bayesian approximation:
+representing model uncertainty in deep learning,'' in \emph{Proc. 33rd Int. Conf. Machine
+Learning}, 2016, pp.~1050--1059.
+
+\bibitem{kendall2017} A. Kendall and Y. Gal, ``What uncertainties do we need in Bayesian deep
+learning for computer vision?'' in \emph{Adv. Neural Inf. Process. Syst.}, 2017,
+pp.~5574--5584.
+
+\bibitem{wilder1978} J. W. Wilder, \emph{New Concepts in Technical Trading Systems}.
+Greensboro, NC: Trend Research, 1978.
+
+\end{thebibliography}
+\end{multicols}
+\end{footnotesize}

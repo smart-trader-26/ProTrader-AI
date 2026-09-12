@@ -5,9 +5,20 @@
 *.blg
 *.spl
 *.toc
+*.lof
+*.lot
+*.log
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.idx
+*.ilg
+*.ind
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
 
 # regenerable scoring caches (parquet already ignored repo-wide)
 # kept on disk - papers 19 and 20 read from it - but not tracked
